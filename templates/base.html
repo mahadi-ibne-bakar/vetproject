@@ -1,0 +1,31 @@
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VetProject{% endblock %}</title>
+    {% load static %}
+    {% tailwind_css %}
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Navigation placeholder — we'll build this properly on Day 7 -->
+    <nav class="bg-white shadow-sm px-6 py-4">
+        <span class="font-bold text-blue-600">VetProject</span>
+    </nav>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer placeholder -->
+    <footer class="bg-gray-100 text-center py-4 text-sm text-gray-500 mt-8">
+        VetProject &copy; 2025
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

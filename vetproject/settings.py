@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'tailwind',
     'crispy_forms',
     'crispy_tailwind',
+    'theme',
 
     # Our apps (we will add these as we create them)
     'accounts',
