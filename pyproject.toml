@@ -1,0 +1,18 @@
+[project]
+name = "vetproject"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "crispy-tailwind>=1.0.3",
+    "dj-database-url>=3.1.2",
+    "django==5.1",
+    "django-crispy-forms>=2.5",
+    "django-tailwind>=4.4.2",
+    "pillow>=12.2.0",
+    "psycopg2-binary>=2.9.12",
+    "python-decouple>=3.8",
+    "reportlab>=4.5.1",
+    "whitenoise>=6.12.0",
+]
