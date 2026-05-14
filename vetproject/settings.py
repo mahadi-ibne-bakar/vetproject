@@ -40,10 +40,10 @@ INSTALLED_APPS = [
 
     # Our apps (we will add these as we create them)
     'accounts',
-    # 'core',
-    # 'consultations',
+    'core',
+    'consultations',
     # 'prescriptions',
-    # 'blog',
+    'blog',
 ]
 
 TAILWIND_APP_NAME = 'theme'
