@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: vetproject
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn vetproject.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.13
+      - key: SECRET_KEY
+        fromSecret: SECRET_KEY
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromSecret: DATABASE_URL
+      - key: ALLOWED_HOSTS
+        fromSecret: ALLOWED_HOSTS
+      - key: EMAIL_HOST_USER
+        fromSecret: EMAIL_HOST_USER
+      - key: EMAIL_HOST_PASSWORD
+        fromSecret: EMAIL_HOST_PASSWORD

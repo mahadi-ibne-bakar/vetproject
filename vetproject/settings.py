@@ -19,7 +19,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default='localhost,127.0.0.1')
 
 
 # ─── Applications ─────────────────────────────────────────────────────────────
@@ -167,3 +167,8 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 3600
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+# ─── Production Static Files ──────────────────────────────────────────────────
+# Whitenoise serves static files directly — no separate static file server needed
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
