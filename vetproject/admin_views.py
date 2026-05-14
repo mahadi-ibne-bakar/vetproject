@@ -1,86 +1,101 @@
 from django.http import HttpResponse
 
 
+def dashboard_home(request):
+    return HttpResponse("Coming soon")
+
 def vet_list(request):
     return HttpResponse("Coming soon")
 
 def vet_detail(request, vet_id):
     return HttpResponse("Coming soon")
 
-def book_appointment(request, vet_id):
+def approve_vet(request, vet_id):
     return HttpResponse("Coming soon")
 
-def get_available_slots(request, vet_id):
+def reject_vet(request, vet_id):
     return HttpResponse("Coming soon")
 
-def submit_payment(request, appointment_id):
+def toggle_vet(request, vet_id):
     return HttpResponse("Coming soon")
 
-def payment_done(request, appointment_id):
+def user_list(request):
     return HttpResponse("Coming soon")
 
-def my_appointments(request):
+def ban_user(request, user_id):
     return HttpResponse("Coming soon")
 
-def appointment_detail(request, appointment_id):
+def unban_user(request, user_id):
     return HttpResponse("Coming soon")
 
-def reschedule_appointment(request, appointment_id):
+def consultation_list(request):
     return HttpResponse("Coming soon")
 
-def cancel_appointment(request, appointment_id):
+def consultation_detail(request, appointment_id):
     return HttpResponse("Coming soon")
 
-def submit_feedback(request, appointment_id):
+def cancel_consultation(request, appointment_id):
     return HttpResponse("Coming soon")
 
-def submit_second_payment(request, appointment_id):
+def payment_list(request):
     return HttpResponse("Coming soon")
 
-def my_pets(request):
+def verify_payment(request):
     return HttpResponse("Coming soon")
 
-def add_pet(request):
+def refund_list(request):
     return HttpResponse("Coming soon")
 
-def edit_pet(request, pet_id):
+def mark_refunded(request, payment_id):
     return HttpResponse("Coming soon")
 
-def delete_pet(request, pet_id):
+def meet_links(request):
     return HttpResponse("Coming soon")
 
-def view_prescription(request, appointment_id):
+def add_meet_link(request):
     return HttpResponse("Coming soon")
 
-def download_prescription(request, appointment_id):
+def delete_meet_link(request, link_id):
     return HttpResponse("Coming soon")
 
-def vet_dashboard(request):
+def blog_list(request):
     return HttpResponse("Coming soon")
 
-def vet_edit_profile(request):
+def blog_detail(request, post_id):
     return HttpResponse("Coming soon")
 
-def vet_availability(request):
+def approve_blog(request, post_id):
     return HttpResponse("Coming soon")
 
-def add_availability(request):
+def reject_blog(request, post_id):
     return HttpResponse("Coming soon")
 
-def delete_availability(request, window_id):
+def create_blog(request):
     return HttpResponse("Coming soon")
 
-def vet_appointments(request):
+def delete_blog(request, post_id):
     return HttpResponse("Coming soon")
 
-def vet_appointment_detail(request, appointment_id):
+def review_list(request):
     return HttpResponse("Coming soon")
 
-def start_consultation(request, appointment_id):
+def toggle_review(request, review_id):
     return HttpResponse("Coming soon")
 
-def end_consultation(request, appointment_id):
+def delete_review(request, review_id):
     return HttpResponse("Coming soon")
 
-def submit_prescription(request, appointment_id):
+def site_settings(request):
+    return HttpResponse("Coming soon")
+
+def analytics(request):
+    return HttpResponse("Coming soon")
+
+def admin_list(request):
+    return HttpResponse("Coming soon")
+
+def add_admin(request):
+    return HttpResponse("Coming soon")
+
+def remove_admin(request, user_id):
     return HttpResponse("Coming soon")
