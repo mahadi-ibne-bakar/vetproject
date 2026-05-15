@@ -1,85 +1,98 @@
 {% extends 'base.html' %}
-
 {% block title %}Apply as a Vet — VetProject{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto py-12 px-4">
-    <div class="bg-white rounded-2xl shadow-md p-8">
+<div style="max-width: 600px; margin: 0 auto; padding: 24px 0;">
+    <div class="card" style="padding: 32px;">
 
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">Apply to Join as a Vet</h2>
-        <p class="text-gray-500 text-sm mb-6">
-            Fill in your details below. Our team will review your application
-            within 2–3 business days and contact you via email.
-        </p>
-
-        {% if messages %}
-            {% for message in messages %}
-                <div class="mb-4 px-4 py-3 rounded-lg
-                    {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
-                    {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+        <div style="text-align:center; margin-bottom: 32px;">
+            <div style="width:56px; height:56px; background:#DCFCE7;
+                        border-radius:var(--md-shape-lg); display:flex; align-items:center;
+                        justify-content:center; margin: 0 auto 16px;">
+                <span class="ms lg filled" style="color:#16A34A;">stethoscope</span>
+            </div>
+            <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 6px;">Apply to Join as a Vet</h1>
+            <p style="color:var(--md-on-surface-variant); font-size:0.9rem; margin:0;">
+                Fill in your details below. We'll review your application within 2–3 business days.
+            </p>
+        </div>
 
         <form method="post" novalidate>
             {% csrf_token %}
-            <div class="space-y-6">
+            <div style="display:flex; flex-direction:column; gap:20px;">
 
                 <!-- Personal Information -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-100">
-                        Personal Information
-                    </h3>
-                    <div class="space-y-4">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;
+                                padding-bottom:10px; border-bottom:1px solid var(--md-outline-variant);">
+                        <span class="ms sm filled" style="color:var(--md-primary);">person</span>
+                        <span style="font-weight:700; font-size:0.95rem; color:var(--md-on-surface);">
+                            Personal Information
+                        </span>
+                    </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                    <div style="display:flex; flex-direction:column; gap:14px;">
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">First name</label>
-                                {{ form.first_name }}
+                                <div class="field-wrap">
+                                    {{ form.first_name }}
+                                    <label>First name</label>
+                                </div>
                                 {% if form.first_name.errors %}
-                                    <p class="text-red-500 text-xs mt-1">{{ form.first_name.errors.0 }}</p>
+                                    <p class="field-error">{{ form.first_name.errors.0 }}</p>
                                 {% endif %}
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Last name</label>
-                                {{ form.last_name }}
+                                <div class="field-wrap">
+                                    {{ form.last_name }}
+                                    <label>Last name</label>
+                                </div>
                                 {% if form.last_name.errors %}
-                                    <p class="text-red-500 text-xs mt-1">{{ form.last_name.errors.0 }}</p>
+                                    <p class="field-error">{{ form.last_name.errors.0 }}</p>
                                 {% endif %}
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-                            {{ form.email }}
+                            <div class="field-wrap">
+                                {{ form.email }}
+                                <label>Email address</label>
+                            </div>
                             {% if form.email.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.email.errors.0 }}</p>
+                                <p class="field-error">{{ form.email.errors.0 }}</p>
                             {% endif %}
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone number</label>
-                            {{ form.phone_number }}
+                            <div class="field-wrap">
+                                {{ form.phone_number }}
+                                <label>Phone number</label>
+                            </div>
                             {% if form.phone_number.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.phone_number.errors.0 }}</p>
+                                <p class="field-error">{{ form.phone_number.errors.0 }}</p>
                             {% endif %}
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            {{ form.password1 }}
-                            {% if form.password1.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.password1.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
-                            {{ form.password2 }}
-                            {% if form.password2.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.password2.errors.0 }}</p>
-                            {% endif %}
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div>
+                                <div class="field-wrap">
+                                    {{ form.password1 }}
+                                    <label>Password</label>
+                                </div>
+                                {% if form.password1.errors %}
+                                    <p class="field-error">{{ form.password1.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="field-wrap">
+                                    {{ form.password2 }}
+                                    <label>Confirm password</label>
+                                </div>
+                                {% if form.password2.errors %}
+                                    <p class="field-error">{{ form.password2.errors.0 }}</p>
+                                {% endif %}
+                            </div>
                         </div>
 
                     </div>
@@ -87,60 +100,66 @@
 
                 <!-- Professional Information -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-100">
-                        Professional Information
-                    </h3>
-                    <div class="space-y-4">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;
+                                padding-bottom:10px; border-bottom:1px solid var(--md-outline-variant);">
+                        <span class="ms sm filled" style="color:var(--md-primary);">badge</span>
+                        <span style="font-weight:700; font-size:0.95rem; color:var(--md-on-surface);">
+                            Professional Information
+                        </span>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:14px;">
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                BVC Registration Number
-                            </label>
-                            {{ form.bvc_registration_number }}
+                            <div class="field-wrap">
+                                {{ form.bvc_registration_number }}
+                                <label>BVC Registration Number</label>
+                            </div>
                             {% if form.bvc_registration_number.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.bvc_registration_number.errors.0 }}</p>
+                                <p class="field-error">{{ form.bvc_registration_number.errors.0 }}</p>
                             {% endif %}
                         </div>
 
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div>
+                                <div class="field-wrap">
+                                    {{ form.years_of_experience }}
+                                    <label>Years of Experience</label>
+                                </div>
+                                {% if form.years_of_experience.errors %}
+                                    <p class="field-error">{{ form.years_of_experience.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="field-wrap">
+                                    {{ form.specializations }}
+                                    <label>Specializations</label>
+                                </div>
+                                <p class="field-hint">e.g. Cats, Dogs, Dermatology</p>
+                                {% if form.specializations.errors %}
+                                    <p class="field-error">{{ form.specializations.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Education
-                            </label>
-                            {{ form.education }}
-                            <p class="text-gray-400 text-xs mt-1">e.g. DVM, Bangladesh Agricultural University, 2018</p>
+                            <div class="field-wrap">
+                                {{ form.education }}
+                                <label>Education</label>
+                            </div>
+                            <p class="field-hint">e.g. DVM, Bangladesh Agricultural University, 2018</p>
                             {% if form.education.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.education.errors.0 }}</p>
+                                <p class="field-error">{{ form.education.errors.0 }}</p>
                             {% endif %}
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Years of Experience
-                            </label>
-                            {{ form.years_of_experience }}
-                            {% if form.years_of_experience.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.years_of_experience.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Specializations
-                            </label>
-                            {{ form.specializations }}
-                            <p class="text-gray-400 text-xs mt-1">e.g. Cats, Dogs, Dermatology, Nutrition</p>
-                            {% if form.specializations.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.specializations.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Professional Bio
-                            </label>
-                            {{ form.bio }}
+                            <div class="field-wrap">
+                                {{ form.bio }}
+                                <label>Professional Bio</label>
+                            </div>
                             {% if form.bio.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.bio.errors.0 }}</p>
+                                <p class="field-error">{{ form.bio.errors.0 }}</p>
                             {% endif %}
                         </div>
 
@@ -148,24 +167,29 @@
                 </div>
 
                 {% if form.non_field_errors %}
-                    <div class="bg-red-50 text-red-700 border border-red-200 px-4 py-3 rounded-lg text-sm">
+                    <div class="alert alert-error">
+                        <span class="ms sm filled">error</span>
                         {{ form.non_field_errors }}
                     </div>
                 {% endif %}
 
-                <button type="submit"
-                    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition duration-200">
+                <button type="submit" class="btn btn-filled ripple"
+                        style="width:100%; background:#16A34A; margin-top:4px;">
+                    <span class="ms sm">send</span>
                     Submit Application
                 </button>
 
             </div>
         </form>
 
-        <p class="text-center text-xs text-gray-400 mt-6">
-            Already applied?
-            <a href="{% url 'accounts:vet_login' %}" class="text-blue-600 hover:underline">Login here</a>
-        </p>
-
     </div>
+
+    <p style="text-align:center; font-size:0.85rem; color:var(--md-on-surface-variant);
+              font-weight:600; margin-top:20px;">
+        Already applied?
+        <a href="{% url 'accounts:vet_login' %}"
+           style="color:var(--md-primary); text-decoration:none; font-weight:700;">Login here →</a>
+    </p>
+
 </div>
 {% endblock %}

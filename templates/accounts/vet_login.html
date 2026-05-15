@@ -1,72 +1,81 @@
 {% extends 'base.html' %}
-
 {% block title %}Vet Login — VetProject{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4">
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-md p-8">
+<div style="max-width: 440px; margin: 0 auto; padding: 24px 0;">
 
-        <h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">Vet Login</h2>
-        <p class="text-gray-500 text-sm text-center mb-6">
-            Not a vet yet?
-            <a href="{% url 'accounts:vet_apply' %}" class="text-blue-600 hover:underline">Apply here</a>
-        </p>
+    <div class="card" style="padding: 32px;">
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="mb-4 px-4 py-3 rounded-lg
-                    {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
-                    {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+        <div style="text-align:center; margin-bottom: 28px;">
+            <div style="width:56px; height:56px; background:#DCFCE7;
+                        border-radius:var(--md-shape-lg); display:flex; align-items:center;
+                        justify-content:center; margin: 0 auto 16px;">
+                <span class="ms lg filled" style="color:#16A34A;">stethoscope</span>
+            </div>
+            <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 6px;">Vet Login</h1>
+            <p style="color:var(--md-on-surface-variant); font-size:0.9rem; margin:0;">
+                Not a vet yet?
+                <a href="{% url 'accounts:vet_apply' %}"
+                   style="color:var(--md-primary); font-weight:700; text-decoration:none;">Apply here</a>
+            </p>
+        </div>
 
         <form method="post" novalidate>
             {% csrf_token %}
-            <div class="space-y-4">
+            <div style="display:flex; flex-direction:column; gap:16px;">
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-                    {{ form.username }}
+                    <div class="field-wrap">
+                        {{ form.username }}
+                        <label>Email address</label>
+                    </div>
                     {% if form.username.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.username.errors.0 }}</p>
+                        <p class="field-error">{{ form.username.errors.0 }}</p>
                     {% endif %}
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    {{ form.password }}
+                    <div class="field-wrap">
+                        {{ form.password }}
+                        <label>Password</label>
+                    </div>
                     {% if form.password.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.password.errors.0 }}</p>
+                        <p class="field-error">{{ form.password.errors.0 }}</p>
                     {% endif %}
                 </div>
 
                 {% if form.non_field_errors %}
-                    <div class="bg-red-50 text-red-700 border border-red-200 px-4 py-3 rounded-lg text-sm">
+                    <div class="alert alert-error">
+                        <span class="ms sm filled">error</span>
                         {{ form.non_field_errors.0 }}
                     </div>
                 {% endif %}
 
-                <div class="text-right text-sm">
-                    <a href="{% url 'accounts:password_reset' %}" class="text-blue-600 hover:underline">
+                <div style="text-align:right; margin-top:-8px;">
+                    <a href="{% url 'accounts:password_reset' %}"
+                       style="color:var(--md-primary); font-size:0.85rem;
+                              font-weight:700; text-decoration:none;">
                         Forgot password?
                     </a>
                 </div>
 
-                <button type="submit"
-                    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg transition duration-200">
+                <button type="submit" class="btn btn-filled ripple"
+                        style="width:100%; background:#16A34A;">
+                    <span class="ms sm">login</span>
                     Sign in as Vet
                 </button>
 
             </div>
         </form>
 
-        <p class="text-center text-xs text-gray-400 mt-6">
-            Pet owner?
-            <a href="{% url 'accounts:login' %}" class="text-blue-600 hover:underline">Sign in here</a>
-        </p>
-
     </div>
+
+    <p style="text-align:center; font-size:0.85rem; color:var(--md-on-surface-variant);
+              font-weight:600; margin-top:20px;">
+        Pet owner?
+        <a href="{% url 'accounts:login' %}"
+           style="color:var(--md-primary); text-decoration:none; font-weight:700;">Sign in here →</a>
+    </p>
+
 </div>
 {% endblock %}

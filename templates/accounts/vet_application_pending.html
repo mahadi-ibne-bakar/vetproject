@@ -1,31 +1,31 @@
 {% extends 'base.html' %}
-
 {% block title %}Application Submitted — VetProject{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4">
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-md p-8 text-center">
+<div style="max-width: 440px; margin: 0 auto; padding: 24px 0;">
+    <div class="card" style="padding: 32px; text-align:center;">
 
-        <!-- Checkmark icon -->
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
+        <div style="width:64px; height:64px; background:#DCFCE7;
+                    border-radius:var(--md-shape-full); display:flex; align-items:center;
+                    justify-content:center; margin: 0 auto 20px;">
+            <span class="ms lg filled" style="color:#16A34A;">how_to_reg</span>
         </div>
 
-        <h2 class="text-2xl font-bold text-gray-800 mb-3">Application Submitted</h2>
-        <p class="text-gray-500 text-sm mb-6">
+        <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 10px;">Application Submitted</h1>
+        <p style="color:var(--md-on-surface-variant); font-size:0.9rem; line-height:1.6; margin:0 0 20px;">
             Thank you for applying. Our team will review your credentials
             and get back to you within <strong>2–3 business days</strong> via email.
         </p>
 
-        <div class="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-blue-700 text-sm mb-6">
-            Once approved, you will be able to log in through the
-            <a href="{% url 'accounts:vet_login' %}" class="underline font-medium">vet login page</a>.
+        <div class="alert alert-info" style="text-align:left; margin-bottom:20px;">
+            <span class="ms sm filled">info</span>
+            Once approved, log in through the
+            <a href="{% url 'accounts:vet_login' %}"
+               style="color:var(--md-primary); font-weight:700;">vet login page</a>.
         </div>
 
-        <a href="{% url 'core:home' %}"
-            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg transition duration-200">
+        <a href="{% url 'core:home' %}" class="btn btn-tonal ripple" style="width:100%;">
+            <span class="ms sm">home</span>
             Back to Home
         </a>
 
