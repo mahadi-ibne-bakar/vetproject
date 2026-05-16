@@ -1,8 +1,12 @@
 from django.shortcuts import render
+from core.models import SiteSettings
 
 
 def home(request):
-    return render(request, 'home.html', {})
+    settings = SiteSettings.get()
+    return render(request, 'home.html', {
+        'site_settings': settings,
+    })
 
 
 def about(request):

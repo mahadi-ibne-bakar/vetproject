@@ -1,0 +1,218 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Dashboard — VetProject Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Attention banner if things need action -->
+{% if pending_vets or pending_payments %}
+<div class="alert alert-warning" style="margin-bottom: 20px;">
+    <span class="ms sm filled">warning</span>
+    <span>
+        {% if pending_vets %}
+            <strong>{{ pending_vets }} vet application{{ pending_vets|pluralize }}</strong> awaiting review.
+        {% endif %}
+        {% if pending_payments %}
+            &nbsp; <strong>{{ pending_payments }} payment{{ pending_payments|pluralize }}</strong> awaiting verification.
+        {% endif %}
+    </span>
+</div>
+{% endif %}
+
+<!-- Stat cards row -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#DCFCE7;">
+            <span class="ms filled" style="color:#16A34A; font-size:22px;">group</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ total_users }}</div>
+            <div class="stat-card__label">Total Users</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#DBEAFE;">
+            <span class="ms filled" style="color:#1D4ED8; font-size:22px;">stethoscope</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ total_vets }}</div>
+            <div class="stat-card__label">Active Vets</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:var(--md-primary-container);">
+            <span class="ms filled" style="color:var(--md-primary); font-size:22px;">calendar_month</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ total_consultations }}</div>
+            <div class="stat-card__label">Completed Consultations</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#FEF9C3;">
+            <span class="ms filled" style="color:#CA8A04; font-size:22px;">payments</span>
+        </div>
+        <div>
+            <div class="stat-card__value">৳{{ total_revenue }}</div>
+            <div class="stat-card__label">Total Revenue</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Second row -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:16px; margin-bottom:28px;">
+
+    <div class="stat-card" style="border-left: 3px solid #F59E0B;">
+        <div>
+            <div class="stat-card__value" style="font-size:1.4rem; color:#B45309;">
+                {{ pending_payments }}
+            </div>
+            <div class="stat-card__label">Pending Payments</div>
+        </div>
+        <a href="{% url 'dashboard:payment_list' %}" class="btn btn-sm"
+           style="margin-left:auto; background:#FEF9C3; color:#92400E;">
+            Review
+        </a>
+    </div>
+
+    <div class="stat-card" style="border-left: 3px solid #3B82F6;">
+        <div>
+            <div class="stat-card__value" style="font-size:1.4rem; color:#1D4ED8;">
+                {{ pending_vets }}
+            </div>
+            <div class="stat-card__label">Pending Vet Applications</div>
+        </div>
+        <a href="{% url 'dashboard:vet_list' %}" class="btn btn-sm"
+           style="margin-left:auto; background:#DBEAFE; color:#1E40AF;">
+            Review
+        </a>
+    </div>
+
+    <div class="stat-card" style="border-left: 3px solid #10B981;">
+        <div>
+            <div class="stat-card__value" style="font-size:1.4rem; color:#065F46;">
+                {{ available_meet_links }}/{{ total_meet_links }}
+            </div>
+            <div class="stat-card__label">Meet Links Available</div>
+        </div>
+        <a href="{% url 'dashboard:meet_links' %}" class="btn btn-sm"
+           style="margin-left:auto; background:#DCFCE7; color:#166534;">
+            Manage
+        </a>
+    </div>
+
+    <div class="stat-card" style="border-left: 3px solid #8B5CF6;">
+        <div>
+            <div class="stat-card__value" style="font-size:1.4rem; color:#6D28D9;">
+                {{ this_week }}
+            </div>
+            <div class="stat-card__label">Consultations This Week</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bottom two columns -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <!-- Recent consultations -->
+    <div class="admin-table-wrap">
+        <div class="admin-table-header">
+            <span class="admin-table-title">Recent Consultations</span>
+            <a href="{% url 'dashboard:consultation_list' %}" class="btn btn-sm btn-tonal">
+                View all
+            </a>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Pet / Owner</th>
+                    <th>Vet</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in recent_consultations %}
+                <tr>
+                    <td>
+                        <div style="font-weight:700;">{{ appt.pet.name }}</div>
+                        <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                            {{ appt.user.get_full_name|default:appt.user.username }}
+                        </div>
+                    </td>
+                    <td>{{ appt.vet }}</td>
+                    <td>
+                        <span class="status-chip
+                            {% if appt.status == 'completed' %}chip-green
+                            {% elif appt.status == 'confirmed' %}chip-blue
+                            {% elif appt.status == 'cancelled' %}chip-red
+                            {% elif appt.status == 'pending_payment' %}chip-yellow
+                            {% else %}chip-gray{% endif %}">
+                            {{ appt.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">
+                        <div class="empty-state" style="padding:24px;">
+                            <p>No consultations yet.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pending vet applications -->
+    <div class="admin-table-wrap">
+        <div class="admin-table-header">
+            <span class="admin-table-title">Pending Vet Applications</span>
+            <a href="{% url 'dashboard:vet_list' %}" class="btn btn-sm btn-tonal">View all</a>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th>Applied</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vp in recent_vet_applications %}
+                <tr>
+                    <td>
+                        <div style="font-weight:700;">{{ vp.user.get_full_name }}</div>
+                        <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                            {{ vp.user.email }}
+                        </div>
+                    </td>
+                    <td style="font-size:0.82rem;">
+                        {{ vp.specializations|truncatechars:30|default:"—" }}
+                    </td>
+                    <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                        {{ vp.created_at|date:"M d" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">
+                        <div class="empty-state" style="padding:24px;">
+                            <p>No pending applications.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

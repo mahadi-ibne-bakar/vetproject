@@ -1,0 +1,287 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Blog Posts — VetProject Admin{% endblock %}
+{% block page_title %}Blog Management{% endblock %}
+
+{% block content %}
+
+<!-- Header actions -->
+<div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+    <a href="{% url 'dashboard:create_blog' %}" class="btn btn-filled">
+        <span class="ms sm">add</span> Write New Post
+    </a>
+</div>
+
+<!-- Tabs -->
+<div style="display:flex; gap:4px; margin-bottom:20px;
+            background:var(--md-surface); border-radius:var(--md-shape-full);
+            padding:4px; width:fit-content; box-shadow:var(--md-elev-1);">
+    <a href="?tab=pending"
+       style="padding:8px 20px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == 'pending' %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        Pending Review
+        {% if pending_count %}
+            <span style="background:var(--md-secondary); color:#fff;
+                         border-radius:999px; padding:1px 8px; font-size:0.75rem;
+                         margin-left:4px;">{{ pending_count }}</span>
+        {% endif %}
+    </a>
+    <a href="?tab=published"
+       style="padding:8px 20px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == 'published' %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        Published ({{ published_count }})
+    </a>
+    <a href="?tab=drafts"
+       style="padding:8px 20px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == 'drafts' %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        Drafts & Rejected ({{ drafts_count }})
+    </a>
+</div>
+
+<!-- Pending tab -->
+{% if tab == 'pending' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Posts Awaiting Review</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Submitted</th>
+                <th>Preview</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in pending %}
+            <tr>
+                <td>
+                    <div style="font-weight:700;">{{ post.title }}</div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                        {{ post.content|truncatechars:80 }}
+                    </div>
+                </td>
+                <td>
+                    <div style="font-weight:600; font-size:0.875rem;">
+                        {{ post.author.get_full_name|default:post.author.username }}
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                        {{ post.author.email }}
+                    </div>
+                </td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ post.created_at|date:"M d, Y" }}
+                </td>
+                <td>
+                    <a href="{% url 'dashboard:blog_detail' post.id %}"
+                       class="btn btn-sm btn-outlined">
+                        <span class="ms sm">visibility</span> Read
+                    </a>
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px;">
+                        <form method="post"
+                              action="{% url 'dashboard:approve_blog' post.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm"
+                                    style="background:#DCFCE7; color:#166534;">
+                                <span class="ms sm filled">check_circle</span> Publish
+                            </button>
+                        </form>
+                        <button class="btn btn-sm btn-danger"
+                                onclick="openRejectBlogModal(
+                                    {{ post.id }},
+                                    '{{ post.title|escapejs }}'
+                                )">
+                            <span class="ms sm filled">cancel</span> Reject
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">
+                <div class="empty-state">
+                    <span class="ms filled">inbox</span>
+                    <p>No posts awaiting review.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Published tab -->
+{% if tab == 'published' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Published Posts</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Published</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in published %}
+            <tr>
+                <td>
+                    <div style="font-weight:700;">{{ post.title }}</div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                        /blog/{{ post.slug }}/
+                    </div>
+                </td>
+                <td style="font-size:0.875rem;">
+                    {{ post.author.get_full_name|default:post.author.username }}
+                </td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ post.published_at|date:"M d, Y" }}
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px;">
+                        <a href="{% url 'dashboard:blog_detail' post.id %}"
+                           class="btn btn-sm btn-outlined">
+                            <span class="ms sm">visibility</span> View
+                        </a>
+                        <form method="post"
+                              action="{% url 'dashboard:delete_blog' post.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Delete \'{{ post.title|escapejs }}\'?')">
+                                <span class="ms sm">delete</span> Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">
+                <div class="empty-state">
+                    <span class="ms filled">article</span>
+                    <p>No published posts yet.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Drafts tab -->
+{% if tab == 'drafts' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Drafts & Rejected Posts</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Status</th>
+                <th>Rejection Note</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in drafts %}
+            <tr>
+                <td style="font-weight:700;">{{ post.title }}</td>
+                <td style="font-size:0.875rem;">
+                    {{ post.author.get_full_name|default:post.author.username }}
+                </td>
+                <td>
+                    {% if post.status == 'rejected' %}
+                        <span class="status-chip chip-red">Rejected</span>
+                    {% else %}
+                        <span class="status-chip chip-gray">Draft</span>
+                    {% endif %}
+                </td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ post.rejection_note|truncatechars:60|default:"—" }}
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px;">
+                        <form method="post"
+                              action="{% url 'dashboard:approve_blog' post.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm"
+                                    style="background:#DCFCE7; color:#166534;">
+                                <span class="ms sm filled">publish</span> Publish
+                            </button>
+                        </form>
+                        <form method="post"
+                              action="{% url 'dashboard:delete_blog' post.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Delete this post permanently?')">
+                                <span class="ms sm">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">
+                <div class="empty-state">
+                    <span class="ms filled">drafts</span>
+                    <p>No drafts or rejected posts.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Reject blog modal -->
+<div id="rejectBlogModal" style="display:none; position:fixed; inset:0;
+     background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center;">
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                padding:28px; width:100%; max-width:440px; margin:16px;">
+        <h3 style="font-weight:800; margin:0 0 8px;">Reject Blog Post</h3>
+        <p style="color:var(--md-on-surface-variant); font-size:0.875rem; margin:0 0 16px;">
+            Rejecting: <strong id="rejectBlogTitle"></strong>
+        </p>
+        <form method="post" id="rejectBlogForm">
+            {% csrf_token %}
+            <div class="field-wrap" style="margin-bottom:16px;">
+                <textarea name="rejection_note" placeholder=" " rows="3"></textarea>
+                <label>Reason for rejection (shown to vet)</label>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-outlined"
+                        onclick="closeRejectBlogModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">
+                    <span class="ms sm">cancel</span> Confirm Reject
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openRejectBlogModal(postId, postTitle) {
+    document.getElementById('rejectBlogTitle').textContent = postTitle;
+    document.getElementById('rejectBlogForm').action = `/dashboard/blog/${postId}/reject/`;
+    document.getElementById('rejectBlogModal').style.display = 'flex';
+}
+function closeRejectBlogModal() {
+    document.getElementById('rejectBlogModal').style.display = 'none';
+}
+</script>
+{% endblock %}

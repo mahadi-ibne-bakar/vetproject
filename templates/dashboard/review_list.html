@@ -1,0 +1,201 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Reviews — VetProject Admin{% endblock %}
+{% block page_title %}Review Management{% endblock %}
+
+{% block content %}
+
+<!-- Stats -->
+<div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
+    <div class="stat-card" style="flex:1; min-width:150px;">
+        <div class="stat-card__icon" style="background:#FEF9C3;">
+            <span class="ms filled" style="color:#CA8A04;">star</span>
+        </div>
+        <div>
+            <div class="stat-card__value">
+                {% if avg_rating %}{{ avg_rating }}★{% else %}—{% endif %}
+            </div>
+            <div class="stat-card__label">Average Rating</div>
+        </div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:150px;">
+        <div class="stat-card__icon" style="background:#DCFCE7;">
+            <span class="ms filled" style="color:#16A34A;">visibility</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ visible_count }}</div>
+            <div class="stat-card__label">Visible Reviews</div>
+        </div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:150px;">
+        <div class="stat-card__icon" style="background:var(--md-surface-variant);">
+            <span class="ms filled" style="color:var(--md-on-surface-variant);">
+                visibility_off
+            </span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ hidden_count }}</div>
+            <div class="stat-card__label">Hidden Reviews</div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div style="display:flex; gap:4px; margin-bottom:16px;
+            background:var(--md-surface); border-radius:var(--md-shape-full);
+            padding:4px; width:fit-content; box-shadow:var(--md-elev-1);">
+    <a href="?tab=visible"
+       style="padding:8px 20px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == 'visible' %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        Visible ({{ visible_count }})
+    </a>
+    <a href="?tab=hidden"
+       style="padding:8px 20px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == 'hidden' %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        Hidden ({{ hidden_count }})
+    </a>
+</div>
+
+<!-- Visible tab -->
+{% if tab == 'visible' %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Reviewer</th>
+                <th>Vet</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in visible %}
+            <tr>
+                <td>
+                    <div style="font-weight:700;">
+                        {{ review.reviewer.get_full_name|default:review.reviewer.username }}
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                        {{ review.reviewer.email }}
+                    </div>
+                </td>
+                <td style="font-weight:600; font-size:0.875rem;">{{ review.vet }}</td>
+                <td>
+                    <span class="status-chip
+                        {% if review.rating >= 4 %}chip-green
+                        {% elif review.rating == 3 %}chip-yellow
+                        {% else %}chip-red{% endif %}">
+                        {{ review.rating }}★
+                    </span>
+                </td>
+                <td style="font-size:0.85rem; color:var(--md-on-surface-variant);">
+                    {{ review.comment|truncatechars:80|default:"No comment" }}
+                </td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ review.created_at|date:"M d, Y" }}
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px;">
+                        <form method="post"
+                              action="{% url 'dashboard:toggle_review' review.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outlined">
+                                <span class="ms sm">visibility_off</span> Hide
+                            </button>
+                        </form>
+                        <form method="post"
+                              action="{% url 'dashboard:delete_review' review.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Delete this review permanently?')">
+                                <span class="ms sm">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state">
+                    <span class="ms filled">star</span>
+                    <p>No visible reviews yet.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Hidden tab -->
+{% if tab == 'hidden' %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Reviewer</th>
+                <th>Vet</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in hidden %}
+            <tr>
+                <td>
+                    <div style="font-weight:700; color:var(--md-on-surface-variant);">
+                        {{ review.reviewer.get_full_name|default:review.reviewer.username }}
+                    </div>
+                </td>
+                <td style="font-size:0.875rem;">{{ review.vet }}</td>
+                <td>
+                    <span class="status-chip chip-gray">{{ review.rating }}★</span>
+                </td>
+                <td style="font-size:0.85rem; color:var(--md-on-surface-variant);">
+                    {{ review.comment|truncatechars:80|default:"No comment" }}
+                </td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ review.created_at|date:"M d, Y" }}
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px;">
+                        <form method="post"
+                              action="{% url 'dashboard:toggle_review' review.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm"
+                                    style="background:#DCFCE7; color:#166534;">
+                                <span class="ms sm">visibility</span> Show
+                            </button>
+                        </form>
+                        <form method="post"
+                              action="{% url 'dashboard:delete_review' review.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Delete this review permanently?')">
+                                <span class="ms sm">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state">
+                    <span class="ms filled">visibility_off</span>
+                    <p>No hidden reviews.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}{{ post.title }} — VetProject Admin{% endblock %}
+{% block page_title %}Blog Post Detail{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom:16px; display:flex; gap:10px; align-items:center;">
+    <a href="{% url 'dashboard:blog_list' %}" class="btn btn-outlined btn-sm">
+        <span class="ms sm">arrow_back</span> Back
+    </a>
+    {% if post.status == 'pending' %}
+        <form method="post" action="{% url 'dashboard:approve_blog' post.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm"
+                    style="background:#DCFCE7; color:#166534;">
+                <span class="ms sm filled">check_circle</span> Publish
+            </button>
+        </form>
+        <button class="btn btn-sm btn-danger"
+                onclick="openRejectBlogModal({{ post.id }}, '{{ post.title|escapejs }}')">
+            <span class="ms sm filled">cancel</span> Reject
+        </button>
+    {% endif %}
+    <form method="post" action="{% url 'dashboard:delete_blog' post.id %}"
+          style="margin-left:auto;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-danger"
+                onclick="return confirm('Delete this post permanently?')">
+            <span class="ms sm">delete</span> Delete
+        </button>
+    </form>
+</div>
+
+<div class="admin-card">
+    <!-- Status -->
+    <div style="margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+        {% if post.status == 'published' %}
+            <span class="status-chip chip-green">Published</span>
+        {% elif post.status == 'pending' %}
+            <span class="status-chip chip-yellow">Pending Review</span>
+        {% elif post.status == 'rejected' %}
+            <span class="status-chip chip-red">Rejected</span>
+        {% else %}
+            <span class="status-chip chip-gray">Draft</span>
+        {% endif %}
+        <span style="font-size:0.82rem; color:var(--md-on-surface-variant); font-weight:600;">
+            By {{ post.author.get_full_name|default:post.author.username }}
+            · {{ post.created_at|date:"M d, Y" }}
+        </span>
+    </div>
+
+    <!-- Title -->
+    <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 20px;
+               padding-bottom:16px; border-bottom:1px solid var(--md-outline-variant);">
+        {{ post.title }}
+    </h1>
+
+    <!-- Content -->
+    <div style="font-size:0.95rem; line-height:1.8; color:var(--md-on-surface);
+                font-weight:500; white-space:pre-wrap;">
+        {{ post.content }}
+    </div>
+
+    {% if post.rejection_note %}
+    <div class="alert alert-error" style="margin-top:20px;">
+        <span class="ms sm filled">error</span>
+        <div>
+            <strong>Rejection note:</strong><br>
+            {{ post.rejection_note }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Reject modal -->
+<div id="rejectBlogModal" style="display:none; position:fixed; inset:0;
+     background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center;">
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                padding:28px; width:100%; max-width:440px; margin:16px;">
+        <h3 style="font-weight:800; margin:0 0 16px;">Reject Post</h3>
+        <form method="post" id="rejectBlogForm">
+            {% csrf_token %}
+            <div class="field-wrap" style="margin-bottom:16px;">
+                <textarea name="rejection_note" placeholder=" " rows="3"></textarea>
+                <label>Reason (shown to vet)</label>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-outlined"
+                        onclick="closeRejectBlogModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">Confirm Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openRejectBlogModal(postId, postTitle) {
+    document.getElementById('rejectBlogForm').action = `/dashboard/blog/${postId}/reject/`;
+    document.getElementById('rejectBlogModal').style.display = 'flex';
+}
+function closeRejectBlogModal() {
+    document.getElementById('rejectBlogModal').style.display = 'none';
+}
+</script>
+{% endblock %}

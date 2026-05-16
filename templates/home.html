@@ -3,6 +3,23 @@
 {% block title %}Home — VetProject{% endblock %}
 
 {% block content %}
+    {% if not site_settings.booking_enabled %}
+    <div class="alert alert-warning"
+        style="margin-bottom:24px; border-radius:var(--md-shape-lg);">
+        <span class="ms sm filled">warning</span>
+        <div>
+            <strong>Service temporarily unavailable.</strong>
+            {{ site_settings.service_off_message }}
+            {% if site_settings.service_off_from and site_settings.service_off_until %}
+                <br>
+                <span style="font-size:0.85rem;">
+                    {{ site_settings.service_off_from|date:"M d" }} —
+                    {{ site_settings.service_off_until|date:"M d, Y" }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 <div class="text-center py-20">
     <h1 class="text-4xl font-bold text-blue-600 mb-4">VetProject is running</h1>
     <p class="text-gray-600 text-lg">Django + Tailwind + Supabase connected successfully.</p>

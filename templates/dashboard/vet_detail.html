@@ -1,0 +1,248 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Vet Detail — VetProject Admin{% endblock %}
+{% block page_title %}Vet Profile{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom:16px;">
+    <a href="{% url 'dashboard:vet_list' %}" class="btn btn-outlined btn-sm">
+        <span class="ms sm">arrow_back</span> Back to Vets
+    </a>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 2fr; gap:20px;">
+
+    <!-- Left: Profile card -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <div class="admin-card" style="text-align:center;">
+            <div style="width:72px; height:72px; border-radius:var(--md-shape-full);
+                        background:var(--md-primary-container); color:var(--md-on-primary-container);
+                        display:flex; align-items:center; justify-content:center;
+                        font-weight:800; font-size:1.6rem; margin:0 auto 12px;">
+                {{ vet.user.first_name|first|upper }}
+            </div>
+            <div style="font-weight:800; font-size:1.1rem;">
+                Dr. {{ vet.user.get_full_name }}
+            </div>
+            <div style="color:var(--md-on-surface-variant); font-size:0.85rem; margin-top:4px;">
+                {{ vet.specializations|default:"General Practice" }}
+            </div>
+            <div style="margin-top:12px;">
+                {% if vet.application_status == 'approved' %}
+                    <span class="status-chip chip-green">Approved</span>
+                {% elif vet.application_status == 'pending' %}
+                    <span class="status-chip chip-yellow">Pending</span>
+                {% else %}
+                    <span class="status-chip chip-red">Rejected</span>
+                {% endif %}
+                {% if vet.is_active %}
+                    <span class="status-chip chip-blue" style="margin-left:4px;">Active</span>
+                {% else %}
+                    <span class="status-chip chip-gray" style="margin-left:4px;">Inactive</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <div style="font-weight:700; margin-bottom:12px;">Contact</div>
+            <div style="font-size:0.875rem; display:flex; flex-direction:column; gap:8px;">
+                <div>
+                    <span style="color:var(--md-on-surface-variant);">Email</span><br>
+                    <strong>{{ vet.user.email }}</strong>
+                </div>
+                <div>
+                    <span style="color:var(--md-on-surface-variant);">Phone</span><br>
+                    <strong>{{ vet.user.phone_number|default:"—" }}</strong>
+                </div>
+                <div>
+                    <span style="color:var(--md-on-surface-variant);">BVC No.</span><br>
+                    <strong>{{ vet.bvc_registration_number|default:"—" }}</strong>
+                </div>
+                <div>
+                    <span style="color:var(--md-on-surface-variant);">Experience</span><br>
+                    <strong>{{ vet.years_of_experience }} years</strong>
+                </div>
+                <div>
+                    <span style="color:var(--md-on-surface-variant);">Consultation Fee</span><br>
+                    <strong>৳{{ vet.consultation_fee }}</strong>
+                </div>
+                <div>
+                    <span style="color:var(--md-on-surface-variant);">Applied</span><br>
+                    <strong>{{ vet.created_at|date:"M d, Y" }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="admin-card">
+            <div style="font-weight:700; margin-bottom:12px;">Actions</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                {% if vet.application_status == 'pending' %}
+                    <form method="post" action="{% url 'dashboard:approve_vet' vet.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm"
+                                style="width:100%; background:#DCFCE7; color:#166534;">
+                            <span class="ms sm filled">check_circle</span> Approve Application
+                        </button>
+                    </form>
+                    <button class="btn btn-sm btn-danger" style="width:100%;"
+                            onclick="openRejectModal({{ vet.id }}, '{{ vet.user.get_full_name }}')">
+                        <span class="ms sm filled">cancel</span> Reject Application
+                    </button>
+                {% endif %}
+                {% if vet.application_status == 'approved' %}
+                    <form method="post" action="{% url 'dashboard:toggle_vet' vet.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outlined" style="width:100%;">
+                            {% if vet.is_active %}
+                                <span class="ms sm">pause</span> Deactivate Vet
+                            {% else %}
+                                <span class="ms sm">play_arrow</span> Activate Vet
+                            {% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right: Details -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <div class="admin-card">
+            <div style="font-weight:700; margin-bottom:8px;">Education</div>
+            <p style="white-space:pre-line; color:var(--md-on-surface-variant);
+                      font-size:0.875rem; margin:0;">
+                {{ vet.education|default:"Not provided" }}
+            </p>
+        </div>
+
+        <div class="admin-card">
+            <div style="font-weight:700; margin-bottom:8px;">Professional Bio</div>
+            <p style="color:var(--md-on-surface-variant); font-size:0.875rem; margin:0; line-height:1.6;">
+                {{ vet.bio|default:"Not provided" }}
+            </p>
+        </div>
+
+        {% if vet.rejection_reason %}
+        <div class="alert alert-error">
+            <span class="ms sm filled">error</span>
+            <div>
+                <strong>Rejection reason:</strong><br>
+                {{ vet.rejection_reason }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent consultations -->
+        <div class="admin-table-wrap">
+            <div class="admin-table-header">
+                <span class="admin-table-title">Recent Consultations</span>
+            </div>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Pet</th>
+                        <th>Owner</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in consultations %}
+                    <tr>
+                        <td style="font-weight:700;">{{ appt.pet.name }}</td>
+                        <td style="font-size:0.85rem;">
+                            {{ appt.user.get_full_name|default:appt.user.username }}
+                        </td>
+                        <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                            {{ appt.date|date:"M d, Y" }}
+                        </td>
+                        <td>
+                            <span class="status-chip
+                                {% if appt.status == 'completed' %}chip-green
+                                {% elif appt.status == 'confirmed' %}chip-blue
+                                {% elif appt.status == 'cancelled' %}chip-red
+                                {% else %}chip-yellow{% endif %}">
+                                {{ appt.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">
+                        <div class="empty-state" style="padding:20px;">
+                            <p>No consultations yet.</p>
+                        </div>
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Reviews -->
+        {% if reviews %}
+        <div class="admin-card">
+            <div style="font-weight:700; margin-bottom:12px;">Recent Reviews</div>
+            {% for review in reviews %}
+            <div style="padding:12px 0; border-bottom:1px solid var(--md-outline-variant);">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <strong style="font-size:0.875rem;">
+                        {{ review.reviewer.get_full_name|default:review.reviewer.username }}
+                    </strong>
+                    <span class="status-chip chip-yellow" style="font-size:0.75rem;">
+                        {{ review.rating }}★
+                    </span>
+                    <span style="font-size:0.78rem; color:var(--md-on-surface-variant); margin-left:auto;">
+                        {{ review.created_at|date:"M d" }}
+                    </span>
+                </div>
+                {% if review.comment %}
+                    <p style="font-size:0.85rem; color:var(--md-on-surface-variant);
+                              margin:0; line-height:1.5;">
+                        {{ review.comment }}
+                    </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- Reject modal -->
+<div id="rejectModal" style="display:none; position:fixed; inset:0;
+     background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center;">
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                padding:28px; width:100%; max-width:440px; margin:16px;">
+        <h3 style="font-weight:800; margin:0 0 16px;">Reject Application</h3>
+        <form method="post" id="rejectForm">
+            {% csrf_token %}
+            <div class="field-wrap" style="margin-bottom:16px;">
+                <textarea name="reason" placeholder=" " rows="3"></textarea>
+                <label>Reason for rejection (optional)</label>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-outlined"
+                        onclick="closeRejectModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">Confirm Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openRejectModal(vetId, vetName) {
+    document.getElementById('rejectForm').action = `/dashboard/vets/${vetId}/reject/`;
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+}
+</script>
+{% endblock %}

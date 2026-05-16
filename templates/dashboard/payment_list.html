@@ -1,0 +1,168 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Payments — VetProject Admin{% endblock %}
+{% block page_title %}Payment Management{% endblock %}
+
+{% block content %}
+
+<!-- Stats row -->
+<div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
+    <div class="stat-card" style="flex:1; min-width:160px;">
+        <div class="stat-card__icon" style="background:#FEF9C3;">
+            <span class="ms filled" style="color:#CA8A04;">pending</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ pending_count }}</div>
+            <div class="stat-card__label">Pending Verification</div>
+        </div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:160px;">
+        <div class="stat-card__icon" style="background:#DCFCE7;">
+            <span class="ms filled" style="color:#16A34A;">verified</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ verified_count }}</div>
+            <div class="stat-card__label">Verified</div>
+        </div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:160px;">
+        <div class="stat-card__icon" style="background:var(--md-error-container);">
+            <span class="ms filled" style="color:var(--md-error);">error</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ failed_count }}</div>
+            <div class="stat-card__label">Failed / Wrong TrxID</div>
+        </div>
+    </div>
+</div>
+
+<!-- bKash verification tool -->
+<div class="admin-card" style="margin-bottom:20px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+        <div style="width:36px; height:36px; border-radius:var(--md-shape-md);
+                    background:#E8F5E9; display:flex; align-items:center; justify-content:center;">
+            <span class="ms filled" style="color:#2E7D32; font-size:20px;">sms</span>
+        </div>
+        <div>
+            <div style="font-weight:800; font-size:1rem;">bKash SMS Verification</div>
+            <div style="font-size:0.8rem; color:var(--md-on-surface-variant); font-weight:600;">
+                Paste the bKash confirmation SMS you received to verify a payment
+            </div>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'dashboard:verify_payment' %}">
+        {% csrf_token %}
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+            <div class="field-wrap" style="flex:1;">
+                <textarea name="sms_text" placeholder=" " rows="3"></textarea>
+                <label>Paste bKash SMS here</label>
+            </div>
+            <button type="submit" class="btn btn-filled" style="flex-shrink:0; margin-top:4px;">
+                <span class="ms sm">search</span>
+                Verify
+            </button>
+        </div>
+    </form>
+
+    <div class="alert alert-info" style="margin-top:12px; margin-bottom:0;">
+        <span class="ms sm filled">info</span>
+        <div style="font-size:0.82rem;">
+            Expected format:
+            <em>"You have received Tk 300.00 from 01700933125. Fee Tk 0.00.
+            Balance Tk 398.81. TrxID DE96117110 at 09/05/2026 09:13."</em>
+        </div>
+    </div>
+</div>
+
+<!-- Filter tabs -->
+<div style="display:flex; gap:4px; margin-bottom:16px;
+            background:var(--md-surface); border-radius:var(--md-shape-full);
+            padding:4px; width:fit-content; box-shadow:var(--md-elev-1);">
+    {% for value, label in status_choices %}
+        <a href="?status={{ value }}"
+           style="padding:7px 16px; border-radius:var(--md-shape-full); font-weight:700;
+                  font-size:0.82rem; text-decoration:none; transition:background 0.2s;
+                  {% if status_filter == value %}background:var(--md-primary); color:#fff;
+                  {% else %}color:var(--md-on-surface-variant);{% endif %}">
+            {{ label }}
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Payments table -->
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">
+            {{ status_filter|title }} Payments
+        </span>
+        <span style="font-size:0.85rem; color:var(--md-on-surface-variant); font-weight:600;">
+            {{ payments.count }} record{{ payments.count|pluralize }}
+        </span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>User / Pet</th>
+                <th>Vet</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>bKash No.</th>
+                <th>TrxID</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>
+                    <div style="font-weight:700;">
+                        {{ payment.appointment.user.get_full_name|default:payment.appointment.user.username }}
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                        {{ payment.appointment.pet.name }}
+                    </div>
+                </td>
+                <td style="font-size:0.85rem;">{{ payment.appointment.vet }}</td>
+                <td>
+                    <span class="status-chip
+                        {% if payment.payment_type == 'booking' %}chip-blue
+                        {% else %}chip-green{% endif %}">
+                        {{ payment.get_payment_type_display }}
+                    </span>
+                </td>
+                <td style="font-weight:700;">৳{{ payment.amount }}</td>
+                <td style="font-size:0.85rem; font-family:monospace;">
+                    {{ payment.bkash_number }}
+                </td>
+                <td style="font-size:0.82rem; font-family:monospace; color:var(--md-on-surface-variant);">
+                    {{ payment.transaction_id }}
+                </td>
+                <td style="font-size:0.8rem; color:var(--md-on-surface-variant);">
+                    {{ payment.created_at|date:"M d, H:i" }}
+                </td>
+                <td>
+                    <span class="status-chip
+                        {% if payment.status == 'verified' %}chip-green
+                        {% elif payment.status == 'pending' %}chip-yellow
+                        {% elif payment.status == 'refunded' %}chip-blue
+                        {% else %}chip-red{% endif %}">
+                        {{ payment.get_status_display }}
+                    </span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">
+                    <div class="empty-state">
+                        <span class="ms filled">payments</span>
+                        <p>No {{ status_filter }} payments found.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

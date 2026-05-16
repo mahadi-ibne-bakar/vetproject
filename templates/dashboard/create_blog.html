@@ -1,0 +1,51 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Write Post — VetProject Admin{% endblock %}
+{% block page_title %}Write New Blog Post{% endblock %}
+
+{% block content %}
+
+<div style="max-width:800px;">
+    <div style="margin-bottom:16px;">
+        <a href="{% url 'dashboard:blog_list' %}" class="btn btn-outlined btn-sm">
+            <span class="ms sm">arrow_back</span> Back to Blog
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="text" name="title" placeholder=" " required>
+                        <label>Post Title</label>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="field-wrap">
+                        <textarea name="content" placeholder=" " rows="16"
+                                  required></textarea>
+                        <label>Content</label>
+                    </div>
+                    <p class="field-hint">
+                        Write in plain text. Published immediately upon saving.
+                    </p>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <a href="{% url 'dashboard:blog_list' %}" class="btn btn-outlined">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-filled">
+                        <span class="ms sm">publish</span> Publish Post
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

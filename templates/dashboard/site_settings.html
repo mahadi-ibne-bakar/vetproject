@@ -1,0 +1,192 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Site Settings — VetProject Admin{% endblock %}
+{% block page_title %}Site Settings{% endblock %}
+
+{% block content %}
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <!-- Booking toggle -->
+    <div class="admin-card">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:6px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">toggle_on</span>
+            Booking System
+        </div>
+        <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                  margin:0 0 16px; font-weight:600;">
+            When disabled, users cannot book new appointments.
+            Existing confirmed appointments are not affected.
+        </p>
+
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+            <div style="width:56px; height:56px; border-radius:var(--md-shape-full);
+                        display:flex; align-items:center; justify-content:center;
+                        {% if settings.booking_enabled %}background:#DCFCE7;{% else %}background:var(--md-error-container);{% endif %}">
+                <span class="ms lg filled"
+                      style="{% if settings.booking_enabled %}color:#16A34A;{% else %}color:var(--md-error);{% endif %}">
+                    {% if settings.booking_enabled %}check_circle{% else %}cancel{% endif %}
+                </span>
+            </div>
+            <div>
+                <div style="font-weight:800; font-size:1.1rem;">
+                    Booking is currently
+                    {% if settings.booking_enabled %}
+                        <span style="color:#16A34A;">ENABLED</span>
+                    {% else %}
+                        <span style="color:var(--md-error);">DISABLED</span>
+                    {% endif %}
+                </div>
+                <div style="font-size:0.82rem; color:var(--md-on-surface-variant); font-weight:600;">
+                    {% if settings.booking_enabled %}
+                        Users can book appointments normally.
+                    {% else %}
+                        No new bookings can be made.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_booking">
+            <button type="submit" class="btn {% if settings.booking_enabled %}btn-danger{% else %}btn-filled{% endif %}"
+                    style="width:100%;"
+                    onclick="return confirm('{% if settings.booking_enabled %}Disable the booking system?{% else %}Enable the booking system?{% endif %}')">
+                <span class="ms sm">{% if settings.booking_enabled %}pause_circle{% else %}play_circle{% endif %}</span>
+                {% if settings.booking_enabled %}Disable Booking{% else %}Enable Booking{% endif %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Fee settings -->
+    <div class="admin-card">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:6px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">payments</span>
+            Fee Settings
+        </div>
+        <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                  margin:0 0 16px; font-weight:600;">
+            Changes apply to all new bookings immediately.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_fees">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="number" name="booking_fee" placeholder=" "
+                               value="{{ settings.booking_fee }}" min="0">
+                        <label>Booking Fee (৳)</label>
+                    </div>
+                    <p class="field-hint">Upfront fee paid by user to confirm booking</p>
+                </div>
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="number" name="cancellation_deduction" placeholder=" "
+                               value="{{ settings.cancellation_deduction }}" min="0">
+                        <label>Cancellation Deduction (৳)</label>
+                    </div>
+                    <p class="field-hint">Deducted from booking fee on cancellation</p>
+                </div>
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="number" name="slot_duration_minutes" placeholder=" "
+                               value="{{ settings.slot_duration_minutes }}" min="5" max="120">
+                        <label>Slot Duration (minutes)</label>
+                    </div>
+                    <p class="field-hint">Length of each consultation slot</p>
+                </div>
+
+                <button type="submit" class="btn btn-filled" style="width:100%;">
+                    <span class="ms sm">save</span> Save Fee Settings
+                </button>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- Service off message -->
+    <div class="admin-card" style="grid-column: 1 / -1;">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:6px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">announcement</span>
+            Service Downtime Message
+        </div>
+        <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                  margin:0 0 16px; font-weight:600;">
+            This message is shown on the homepage when booking is disabled.
+            Optionally set a date range so users know when service resumes.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_message">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+
+                <div>
+                    <div class="field-wrap">
+                        <textarea name="service_off_message" placeholder=" "
+                                  rows="3">{{ settings.service_off_message }}</textarea>
+                        <label>Message shown to users</label>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div>
+                        <div class="field-wrap">
+                            <input type="date" name="service_off_from" placeholder=" "
+                                   value="{{ settings.service_off_from|date:'Y-m-d'|default:'' }}">
+                            <label>Downtime From (optional)</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-wrap">
+                            <input type="date" name="service_off_until" placeholder=" "
+                                   value="{{ settings.service_off_until|date:'Y-m-d'|default:'' }}">
+                            <label>Downtime Until (optional)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-filled"
+                        style="width:fit-content;">
+                    <span class="ms sm">save</span> Save Message
+                </button>
+
+            </div>
+        </form>
+
+        <!-- Preview -->
+        {% if not settings.booking_enabled %}
+        <div style="margin-top:16px; padding-top:16px;
+                    border-top:1px solid var(--md-outline-variant);">
+            <div style="font-size:0.8rem; font-weight:700;
+                        color:var(--md-on-surface-variant); margin-bottom:8px;">
+                PREVIEW — shown on homepage now:
+            </div>
+            <div class="alert alert-warning">
+                <span class="ms sm filled">warning</span>
+                <div>
+                    {{ settings.service_off_message }}
+                    {% if settings.service_off_from and settings.service_off_until %}
+                        <br>
+                        <span style="font-size:0.85rem;">
+                            {{ settings.service_off_from|date:"M d" }} —
+                            {{ settings.service_off_until|date:"M d, Y" }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

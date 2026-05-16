@@ -1,0 +1,188 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Meet Links — VetProject Admin{% endblock %}
+{% block page_title %}Google Meet Link Pool{% endblock %}
+
+{% block content %}
+
+<!-- Stats -->
+<div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
+    <div class="stat-card" style="flex:1; min-width:150px;">
+        <div class="stat-card__icon" style="background:#DBEAFE;">
+            <span class="ms filled" style="color:#1D4ED8;">videocam</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ total_count }}</div>
+            <div class="stat-card__label">Total Links</div>
+        </div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:150px;">
+        <div class="stat-card__icon" style="background:#DCFCE7;">
+            <span class="ms filled" style="color:#16A34A;">check_circle</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ available_count }}</div>
+            <div class="stat-card__label">Available</div>
+        </div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:150px;">
+        <div class="stat-card__icon" style="background:#FEF9C3;">
+            <span class="ms filled" style="color:#CA8A04;">meeting_room</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ in_use_count }}</div>
+            <div class="stat-card__label">Currently In Use</div>
+        </div>
+    </div>
+</div>
+
+{% if available_count == 0 and total_count > 0 %}
+<div class="alert alert-warning" style="margin-bottom:20px;">
+    <span class="ms sm filled">warning</span>
+    <strong>All Meet links are currently in use.</strong>
+    Add more links below so new consultations can be assigned a meeting room.
+</div>
+{% endif %}
+
+{% if total_count == 0 %}
+<div class="alert alert-error" style="margin-bottom:20px;">
+    <span class="ms sm filled">error</span>
+    <strong>No Meet links in the pool.</strong>
+    Users cannot book consultations until at least one link is added.
+</div>
+{% endif %}
+
+<!-- Add new link -->
+<div class="admin-card" style="margin-bottom:20px;">
+    <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                display:flex; align-items:center; gap:8px;">
+        <span class="ms sm filled" style="color:var(--md-primary);">add_circle</span>
+        Add New Meet Link
+    </div>
+
+    <form method="post" action="{% url 'dashboard:add_meet_link' %}">
+        {% csrf_token %}
+        <div style="display:grid; grid-template-columns:2fr 1fr auto; gap:12px; align-items:flex-start;">
+            <div>
+                <div class="field-wrap">
+                    <input type="url" name="url" placeholder=" ">
+                    <label>Google Meet URL</label>
+                </div>
+                <p class="field-hint">e.g. https://meet.google.com/abc-defg-hij</p>
+            </div>
+            <div class="field-wrap">
+                <input type="text" name="notes" placeholder=" ">
+                <label>Label (optional)</label>
+            </div>
+            <button type="submit" class="btn btn-filled" style="margin-top:4px; flex-shrink:0;">
+                <span class="ms sm">add</span> Add Link
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Links table -->
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">All Meet Links</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Meet Link</th>
+                <th>Label</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+                <th>Added</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for link in links %}
+            <tr>
+                <td>
+                    <a href="{{ link.url }}" target="_blank"
+                       style="color:var(--md-primary); font-size:0.85rem;
+                              text-decoration:none; font-weight:600;
+                              display:flex; align-items:center; gap:4px;">
+                        <span class="ms sm">open_in_new</span>
+                        {{ link.url|truncatechars:45 }}
+                    </a>
+                </td>
+                <td style="font-size:0.875rem; color:var(--md-on-surface-variant);">
+                    {{ link.notes|default:"—" }}
+                </td>
+                <td>
+                    {% if link.is_in_use %}
+                        <span class="status-chip chip-yellow">In Use</span>
+                    {% else %}
+                        <span class="status-chip chip-green">Available</span>
+                    {% endif %}
+                </td>
+                <td style="font-size:0.82rem;">
+                    {% if link.is_in_use %}
+                        {% with appt=link.appointments.filter %}
+                            {% for appt in link.appointments.all %}
+                                {% if appt.status == 'confirmed' or appt.status == 'in_progress' %}
+                                    <div style="font-weight:600;">{{ appt.pet.name }}</div>
+                                    <div style="color:var(--md-on-surface-variant);">
+                                        {{ appt.date|date:"M d" }} {{ appt.start_time|time:"H:i" }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endwith %}
+                    {% else %}
+                        <span style="color:var(--md-on-surface-variant);">—</span>
+                    {% endif %}
+                </td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ link.added_at|date:"M d, Y" }}
+                </td>
+                <td>
+                    {% if not link.is_in_use %}
+                        <form method="post"
+                              action="{% url 'dashboard:delete_meet_link' link.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Remove this Meet link?')">
+                                <span class="ms sm">delete</span> Remove
+                            </button>
+                        </form>
+                    {% else %}
+                        <span style="font-size:0.8rem; color:var(--md-on-surface-variant);
+                                     font-weight:600;">In use</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <span class="ms filled">videocam_off</span>
+                        <p>No Meet links added yet. Add one above.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Instructions -->
+<div class="admin-card" style="margin-top:20px;">
+    <div style="font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+        <span class="ms sm filled" style="color:var(--md-primary);">help</span>
+        How to create a reusable Google Meet link
+    </div>
+    <ol style="font-size:0.875rem; color:var(--md-on-surface-variant);
+               line-height:1.8; margin:0; padding-left:20px; font-weight:600;">
+        <li>Go to <a href="https://meet.google.com" target="_blank"
+                     style="color:var(--md-primary);">meet.google.com</a></li>
+        <li>Click <strong>New meeting</strong> → <strong>Create a meeting for later</strong></li>
+        <li>Copy the link shown (e.g. https://meet.google.com/abc-defg-hij)</li>
+        <li>Paste it above and click <strong>Add Link</strong></li>
+        <li>This link can be reused for multiple consultations over time</li>
+        <li>If a link stops working, remove it and add a fresh one</li>
+    </ol>
+</div>
+
+{% endblock %}

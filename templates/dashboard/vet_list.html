@@ -1,0 +1,278 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Vets — VetProject Admin{% endblock %}
+{% block page_title %}Vet Management{% endblock %}
+
+{% block content %}
+
+<!-- Tabs -->
+<div style="display:flex; gap:4px; margin-bottom:20px;
+            background:var(--md-surface); border-radius:var(--md-shape-full);
+            padding:4px; width:fit-content; box-shadow:var(--md-elev-1);">
+    <a href="?tab=pending"
+       style="padding:8px 20px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == 'pending' %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        Pending
+        {% if pending_count %}
+            <span style="background:{% if tab == 'pending' %}rgba(255,255,255,0.3){% else %}var(--md-secondary){% endif %};
+                         color:#fff; border-radius:999px; padding:1px 8px;
+                         font-size:0.75rem; margin-left:4px;">
+                {{ pending_count }}
+            </span>
+        {% endif %}
+    </a>
+    <a href="?tab=approved"
+       style="padding:8px 20px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == 'approved' %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        Approved ({{ approved_count }})
+    </a>
+    <a href="?tab=rejected"
+       style="padding:8px 20px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == 'rejected' %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        Rejected ({{ rejected_count }})
+    </a>
+</div>
+
+<!-- Pending tab -->
+{% if tab == 'pending' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Pending Applications</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>BVC No.</th>
+                <th>Experience</th>
+                <th>Specializations</th>
+                <th>Applied</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vp in pending %}
+            <tr>
+                <td>
+                    <div style="font-weight:700;">{{ vp.user.get_full_name }}</div>
+                    <a href="{% url 'dashboard:vet_detail' vp.id %}"
+                       style="font-size:0.78rem; color:var(--md-primary);">
+                       View full profile
+                    </a>
+                </td>
+                <td>
+                    <div style="font-size:0.85rem;">{{ vp.user.email }}</div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                        {{ vp.user.phone_number }}
+                    </div>
+                </td>
+                <td style="font-size:0.85rem;">{{ vp.bvc_registration_number|default:"—" }}</td>
+                <td style="font-size:0.85rem;">{{ vp.years_of_experience }} yrs</td>
+                <td style="font-size:0.82rem;">{{ vp.specializations|truncatechars:30|default:"—" }}</td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ vp.created_at|date:"M d, Y" }}
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <!-- Approve -->
+                        <form method="post" action="{% url 'dashboard:approve_vet' vp.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm"
+                                    style="background:#DCFCE7; color:#166534;"
+                                    onclick="return confirm('Approve Dr. {{ vp.user.get_full_name }}?')">
+                                <span class="ms sm filled">check_circle</span> Approve
+                            </button>
+                        </form>
+                        <!-- Reject -->
+                        <button class="btn btn-sm btn-danger"
+                                onclick="openRejectModal({{ vp.id }}, '{{ vp.user.get_full_name }}')">
+                            <span class="ms sm filled">cancel</span> Reject
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">
+                <div class="empty-state">
+                    <span class="ms filled">inbox</span>
+                    <p>No pending applications.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Approved tab -->
+{% if tab == 'approved' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Approved Vets</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Specializations</th>
+                <th>Consultations</th>
+                <th>Rating</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vp in approved %}
+            <tr>
+                <td>
+                    <div style="font-weight:700;">{{ vp.user.get_full_name }}</div>
+                    <a href="{% url 'dashboard:vet_detail' vp.id %}"
+                       style="font-size:0.78rem; color:var(--md-primary);">
+                       View profile
+                    </a>
+                </td>
+                <td style="font-size:0.85rem;">{{ vp.user.email }}</td>
+                <td style="font-size:0.82rem;">
+                    {{ vp.specializations|truncatechars:30|default:"—" }}
+                </td>
+                <td>
+                    <span class="status-chip chip-blue">{{ vp.total_consultations }}</span>
+                </td>
+                <td>
+                    {% if vp.average_rating %}
+                        <span class="status-chip chip-yellow">{{ vp.average_rating }}★</span>
+                    {% else %}
+                        <span style="color:var(--md-on-surface-variant); font-size:0.85rem;">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if vp.is_active %}
+                        <span class="status-chip chip-green">Active</span>
+                    {% else %}
+                        <span class="status-chip chip-red">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{% url 'dashboard:toggle_vet' vp.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outlined">
+                            {% if vp.is_active %}
+                                <span class="ms sm">pause</span> Deactivate
+                            {% else %}
+                                <span class="ms sm">play_arrow</span> Activate
+                            {% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">
+                <div class="empty-state">
+                    <span class="ms filled">stethoscope</span>
+                    <p>No approved vets yet.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Rejected tab -->
+{% if tab == 'rejected' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Rejected Applications</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Rejection Reason</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vp in rejected %}
+            <tr>
+                <td style="font-weight:700;">{{ vp.user.get_full_name }}</td>
+                <td style="font-size:0.85rem;">{{ vp.user.email }}</td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ vp.rejection_reason|default:"No reason given"|truncatechars:60 }}
+                </td>
+                <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
+                    {{ vp.updated_at|date:"M d, Y" }}
+                </td>
+                <td>
+                    <!-- Re-approve a rejected vet -->
+                    <form method="post" action="{% url 'dashboard:approve_vet' vp.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm"
+                                style="background:#DCFCE7; color:#166534;">
+                            <span class="ms sm filled">check_circle</span> Approve
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">
+                <div class="empty-state">
+                    <span class="ms filled">thumb_up</span>
+                    <p>No rejected applications.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Reject modal -->
+<div id="rejectModal" style="display:none; position:fixed; inset:0;
+     background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center;">
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                padding:28px; width:100%; max-width:440px; margin:16px;">
+        <h3 style="font-weight:800; margin:0 0 8px;">Reject Application</h3>
+        <p style="color:var(--md-on-surface-variant); font-size:0.9rem; margin:0 0 16px;">
+            Rejecting: <strong id="rejectVetName"></strong>
+        </p>
+        <form method="post" id="rejectForm">
+            {% csrf_token %}
+            <div class="field-wrap" style="margin-bottom:16px;">
+                <textarea name="reason" placeholder=" " rows="3"></textarea>
+                <label>Reason for rejection (optional)</label>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-outlined"
+                        onclick="closeRejectModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">
+                    <span class="ms sm">cancel</span> Confirm Reject
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openRejectModal(vetId, vetName) {
+    document.getElementById('rejectVetName').textContent = vetName;
+    document.getElementById('rejectForm').action = `/dashboard/vets/${vetId}/reject/`;
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+}
+</script>
+{% endblock %}
