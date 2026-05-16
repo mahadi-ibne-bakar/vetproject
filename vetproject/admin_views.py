@@ -250,18 +250,43 @@ def vet_list(request):
 
 @login_required_admin
 def vet_detail(request, vet_id):
+    from consultations.models import BlockedDate
     vet = get_object_or_404(VetProfile, id=vet_id)
+    today = timezone.localdate()
+
     consultations = Appointment.objects.filter(
         vet=vet
     ).select_related('user', 'pet').order_by('-created_at')[:10]
+
     reviews = Review.objects.filter(
         vet=vet, is_visible=True
     ).select_related('reviewer').order_by('-created_at')[:5]
+
+    recurring_windows = vet.availability_windows.filter(
+        is_recurring=True, is_active=True
+    ).order_by('day_of_week', 'start_time')
+
+    specific_windows = vet.availability_windows.filter(
+        is_recurring=False, is_active=True,
+        specific_date__gte=today,
+    ).order_by('specific_date')
+
+    blocked_dates = BlockedDate.objects.filter(
+        vet=vet, date__gte=today
+    ).order_by('date')
+
     ctx = {
         **admin_context(request),
         'vet': vet,
         'consultations': consultations,
         'reviews': reviews,
+        'recurring_windows': recurring_windows,
+        'specific_windows': specific_windows,
+        'blocked_dates': blocked_dates,
+        'day_names': [
+            'Monday','Tuesday','Wednesday',
+            'Thursday','Friday','Saturday','Sunday'
+        ],
     }
     return render(request, 'dashboard/vet_detail.html', ctx)
 
@@ -926,3 +951,91 @@ def remove_admin(request, user_id):
         except User.DoesNotExist:
             messages.error(request, "User not found.")
     return redirect('dashboard:admin_list')
+
+@login_required_admin
+def admin_add_availability(request, vet_id):
+    """
+    Admin adds a single availability window for a vet.
+    Simpler than the vet's own form — one window at a time,
+    admin picks recurring or specific date.
+    """
+    from consultations.models import VetAvailability, BlockedDate
+    from consultations.forms import BlockedDateForm
+
+    vet = get_object_or_404(VetProfile, id=vet_id)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'add_window':
+            is_recurring   = request.POST.get('is_recurring') == '1'
+            start_time     = request.POST.get('start_time')
+            end_time       = request.POST.get('end_time')
+            day_of_week    = request.POST.get('day_of_week')
+            specific_date  = request.POST.get('specific_date') or None
+            end_date       = request.POST.get('end_date') or None
+
+            if not start_time or not end_time:
+                messages.error(request, "Start and end time are required.")
+                return redirect('dashboard:vet_detail', vet_id=vet_id)
+
+            if start_time >= end_time:
+                messages.error(request, "End time must be after start time.")
+                return redirect('dashboard:vet_detail', vet_id=vet_id)
+
+            VetAvailability.objects.create(
+                vet=vet,
+                is_recurring=is_recurring,
+                day_of_week=int(day_of_week) if is_recurring and day_of_week else None,
+                specific_date=specific_date if not is_recurring else None,
+                start_time=start_time,
+                end_time=end_time,
+                end_date=end_date if is_recurring else None,
+                is_active=True,
+            )
+            messages.success(request, "Availability window added.")
+
+        elif action == 'block_date':
+            date_str = request.POST.get('block_date')
+            reason   = request.POST.get('block_reason', '')
+            if not date_str:
+                messages.error(request, "Please provide a date to block.")
+                return redirect('dashboard:vet_detail', vet_id=vet_id)
+            from datetime import date as date_cls
+            try:
+                block_date = date_cls.fromisoformat(date_str)
+                BlockedDate.objects.get_or_create(
+                    vet=vet,
+                    date=block_date,
+                    defaults={'reason': reason}
+                )
+                messages.success(request, f"{block_date} blocked for {vet}.")
+            except ValueError:
+                messages.error(request, "Invalid date format.")
+
+    return redirect('dashboard:vet_detail', vet_id=vet_id)
+
+
+@login_required_admin
+def admin_delete_availability(request, vet_id, window_id):
+    """Admin removes a single availability window."""
+    from consultations.models import VetAvailability
+    vet    = get_object_or_404(VetProfile, id=vet_id)
+    window = get_object_or_404(VetAvailability, id=window_id, vet=vet)
+    if request.method == 'POST':
+        window.delete()
+        messages.success(request, "Availability window removed.")
+    return redirect('dashboard:vet_detail', vet_id=vet_id)
+
+
+@login_required_admin
+def admin_delete_blocked(request, vet_id, blocked_id):
+    """Admin removes a blocked date."""
+    from consultations.models import BlockedDate
+    vet     = get_object_or_404(VetProfile, id=vet_id)
+    blocked = get_object_or_404(BlockedDate, id=blocked_id, vet=vet)
+    if request.method == 'POST':
+        date = blocked.date
+        blocked.delete()
+        messages.success(request, f"Block removed for {date}.")
+    return redirect('dashboard:vet_detail', vet_id=vet_id)

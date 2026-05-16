@@ -20,3 +20,9 @@ class PaymentAdmin(admin.ModelAdmin):
 @admin.register(Prescription)
 class PrescriptionAdmin(admin.ModelAdmin):
     list_display = ['appointment', 'created_at', 'updated_at']
+
+from .models import BlockedDate
+
+@admin.register(BlockedDate)
+class BlockedDateAdmin(admin.ModelAdmin):
+    list_display = ['vet', 'date', 'reason', 'created_at']

@@ -1,0 +1,374 @@
+{% extends 'vet/base_vet.html' %}
+{% block title %}My Availability — VetProject{% endblock %}
+{% block page_title %}My Availability{% endblock %}
+
+{% block content %}
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
+
+    <!-- Add recurring availability -->
+    <div class="vet-card">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:6px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">repeat</span>
+            Add Recurring Availability
+        </div>
+        <p style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                  font-weight:600; margin:0 0 16px;">
+            Repeats every week on selected days. All days get the same time windows.
+        </p>
+
+        <form method="post" action="{% url 'consultations:add_availability' %}">
+            {% csrf_token %}
+            <input type="hidden" name="availability_type" value="recurring">
+
+            <!-- Day checkboxes -->
+            <div style="margin-bottom:16px;">
+                <div style="font-size:0.8rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:8px;">
+                    REPEAT ON
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    {% for value, label in recurring_form.days.field.choices %}
+                    <label style="display:flex; align-items:center; gap:6px;
+                                  padding:6px 12px; border-radius:var(--md-shape-full);
+                                  border:1.5px solid var(--md-outline-variant);
+                                  cursor:pointer; font-size:0.82rem; font-weight:700;
+                                  transition:all 0.15s;"
+                           class="day-chip">
+                        <input type="checkbox" name="days" value="{{ value }}"
+                               style="display:none;">
+                        {{ label }}
+                    </label>
+                    {% endfor %}
+                </div>
+                {% if recurring_form.days.errors %}
+                    <p class="field-error">{{ recurring_form.days.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- End date -->
+            <div style="margin-bottom:16px;">
+                <div style="font-size:0.8rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:8px;">
+                    END DATE (OPTIONAL)
+                </div>
+                <div class="field-wrap">
+                    {{ recurring_form.end_date }}
+                    <label>No end date = runs indefinitely</label>
+                </div>
+            </div>
+
+            <!-- Time windows -->
+            <div style="font-size:0.8rem; font-weight:700;
+                        color:var(--md-on-surface-variant); margin-bottom:8px;">
+                TIME WINDOWS
+            </div>
+
+            {% for i in "123" %}
+            <div style="margin-bottom:12px;">
+                <div style="font-size:0.78rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:6px;">
+                    Window {{ i }}{% if i != "1" %} (optional){% endif %}
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div class="field-wrap">
+                        {% if i == "1" %}{{ recurring_form.window1_start }}
+                        {% elif i == "2" %}{{ recurring_form.window2_start }}
+                        {% else %}{{ recurring_form.window3_start }}{% endif %}
+                        <label>Start</label>
+                    </div>
+                    <div class="field-wrap">
+                        {% if i == "1" %}{{ recurring_form.window1_end }}
+                        {% elif i == "2" %}{{ recurring_form.window2_end }}
+                        {% else %}{{ recurring_form.window3_end }}{% endif %}
+                        <label>End</label>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if recurring_form.non_field_errors %}
+                <div class="alert alert-error" style="margin-bottom:12px;">
+                    <span class="ms sm filled">error</span>
+                    {{ recurring_form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-filled" style="width:100%; margin-top:4px;">
+                <span class="ms sm">add</span> Add Recurring Windows
+            </button>
+        </form>
+    </div>
+
+    <!-- Right column: specific date + blocked dates -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Add specific date -->
+        <div class="vet-card">
+            <div style="font-weight:800; font-size:1rem; margin-bottom:6px;
+                        display:flex; align-items:center; gap:8px;">
+                <span class="ms sm filled" style="color:var(--md-primary);">event</span>
+                Add One-Off Date
+            </div>
+            <p style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                      font-weight:600; margin:0 0 14px;">
+                Set availability for a specific date only.
+            </p>
+
+            <form method="post" action="{% url 'consultations:add_availability' %}">
+                {% csrf_token %}
+                <input type="hidden" name="availability_type" value="specific">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+
+                    <div class="field-wrap">
+                        {{ specific_form.specific_date }}
+                        <label>Date</label>
+                    </div>
+
+                    {% for i in "123" %}
+                    <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant); margin-bottom:6px;">
+                            Window {{ i }}{% if i != "1" %} (optional){% endif %}
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                            <div class="field-wrap">
+                                {% if i == "1" %}{{ specific_form.window1_start }}
+                                {% elif i == "2" %}{{ specific_form.window2_start }}
+                                {% else %}{{ specific_form.window3_start }}{% endif %}
+                                <label>Start</label>
+                            </div>
+                            <div class="field-wrap">
+                                {% if i == "1" %}{{ specific_form.window1_end }}
+                                {% elif i == "2" %}{{ specific_form.window2_end }}
+                                {% else %}{{ specific_form.window3_end }}{% endif %}
+                                <label>End</label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-tonal" style="width:100%;">
+                        <span class="ms sm">add</span> Add Date
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Block a date -->
+        <div class="vet-card">
+            <div style="font-weight:800; font-size:1rem; margin-bottom:6px;
+                        display:flex; align-items:center; gap:8px;">
+                <span class="ms sm filled" style="color:var(--md-error);">event_busy</span>
+                Block a Date
+            </div>
+            <p style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                      font-weight:600; margin:0 0 14px;">
+                Mark a day as completely unavailable. Overrides all windows.
+            </p>
+
+            <form method="post" action="{% url 'consultations:add_availability' %}">
+                {% csrf_token %}
+                <input type="hidden" name="availability_type" value="blocked">
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div class="field-wrap">
+                        {{ blocked_form.date }}
+                        <label>Date to block</label>
+                    </div>
+                    <div class="field-wrap">
+                        {{ blocked_form.reason }}
+                        <label>Reason (optional)</label>
+                    </div>
+                    <button type="submit" class="btn btn-danger" style="width:100%;">
+                        <span class="ms sm">block</span> Block This Date
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- Current recurring schedule -->
+<div class="vet-table-wrap" style="margin-bottom:20px;">
+    <div class="vet-table-header">
+        <span class="vet-table-title">
+            <span class="ms sm filled" style="color:var(--md-primary); margin-right:6px;">
+                repeat
+            </span>
+            Current Recurring Schedule
+        </span>
+    </div>
+
+    {% if days_with_names %}
+    <div style="padding:16px 20px;">
+        {% for day_num, day_name, windows in days_with_names %}
+            {% if windows %}
+            <div style="margin-bottom:16px; padding-bottom:16px;
+                        border-bottom:1px solid var(--md-outline-variant);">
+                <div style="font-weight:800; font-size:0.9rem; margin-bottom:8px;
+                            color:var(--md-on-surface);">
+                    {{ day_name }}
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    {% for window in windows %}
+                    <div style="display:flex; align-items:center; gap:8px;
+                                background:var(--md-primary-container);
+                                padding:6px 12px; border-radius:var(--md-shape-full);">
+                        <span style="font-weight:700; font-size:0.85rem;
+                                     color:var(--md-on-primary-container);">
+                            {{ window.start_time|time:"H:i" }} –
+                            {{ window.end_time|time:"H:i" }}
+                            {% if window.end_date %}
+                                <span style="font-size:0.75rem; opacity:0.8;">
+                                    until {{ window.end_date|date:"M d" }}
+                                </span>
+                            {% endif %}
+                        </span>
+                        <form method="post"
+                              action="{% url 'consultations:delete_availability' window.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="window">
+                            <button type="submit"
+                                    style="background:none; border:none; cursor:pointer;
+                                           color:var(--md-on-primary-container);
+                                           padding:0; display:flex;"
+                                    onclick="return confirm('Remove this window?')"
+                                    title="Remove">
+                                <span class="ms sm">close</span>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        {% if not recurring_windows %}
+        <div class="empty-state">
+            <span class="ms filled">calendar_off</span>
+            <p>No recurring schedule set yet.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Specific date windows -->
+{% if specific_windows %}
+<div class="vet-table-wrap" style="margin-bottom:20px;">
+    <div class="vet-table-header">
+        <span class="vet-table-title">One-Off Date Windows</span>
+    </div>
+    <table class="vet-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time Window</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for window in specific_windows %}
+            <tr>
+                <td style="font-weight:700;">
+                    {{ window.specific_date|date:"l, M d, Y" }}
+                </td>
+                <td>
+                    <span class="status-chip chip-blue">
+                        {{ window.start_time|time:"H:i" }} –
+                        {{ window.end_time|time:"H:i" }}
+                    </span>
+                </td>
+                <td>
+                    <form method="post"
+                          action="{% url 'consultations:delete_availability' window.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="window">
+                        <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Remove this window?')">
+                            <span class="ms sm">delete</span> Remove
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Blocked dates -->
+<div class="vet-table-wrap">
+    <div class="vet-table-header">
+        <span class="vet-table-title">
+            <span class="ms sm filled" style="color:var(--md-error); margin-right:6px;">
+                event_busy
+            </span>
+            Blocked Dates
+        </span>
+    </div>
+    <table class="vet-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for blocked in blocked_dates %}
+            <tr>
+                <td style="font-weight:700;">
+                    {{ blocked.date|date:"l, M d, Y" }}
+                </td>
+                <td style="font-size:0.875rem; color:var(--md-on-surface-variant);">
+                    {{ blocked.reason|default:"No reason given" }}
+                </td>
+                <td>
+                    <form method="post"
+                          action="{% url 'consultations:delete_availability' blocked.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="blocked">
+                        <button type="submit" class="btn btn-sm btn-outlined"
+                                onclick="return confirm('Remove this block?')">
+                            <span class="ms sm">lock_open</span> Unblock
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">
+                <div class="empty-state" style="padding:24px;">
+                    <span class="ms filled">event_available</span>
+                    <p>No dates blocked.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Day chip toggle styling
+    document.querySelectorAll('.day-chip').forEach(label => {
+        const checkbox = label.querySelector('input[type=checkbox]');
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+                label.style.background = 'var(--md-primary)';
+                label.style.color = '#fff';
+                label.style.borderColor = 'var(--md-primary)';
+            } else {
+                label.style.background = '';
+                label.style.color = '';
+                label.style.borderColor = 'var(--md-outline-variant)';
+            }
+        });
+    });
+</script>
+{% endblock %}

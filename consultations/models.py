@@ -55,19 +55,19 @@ class Pet(models.Model):
 class VetAvailability(models.Model):
     """
     Defines when a vet is available for consultations.
-    Can be recurring (same time every week on chosen days)
+    Can be recurring (same time every week on chosen days, with optional end date)
     or a one-off specific date.
-    Multiple windows per day are supported.
+    Multiple windows per day are supported — each window is a separate row.
     """
 
     class DayOfWeek(models.IntegerChoices):
-        MONDAY = 0, 'Monday'
-        TUESDAY = 1, 'Tuesday'
+        MONDAY    = 0, 'Monday'
+        TUESDAY   = 1, 'Tuesday'
         WEDNESDAY = 2, 'Wednesday'
-        THURSDAY = 3, 'Thursday'
-        FRIDAY = 4, 'Friday'
-        SATURDAY = 5, 'Saturday'
-        SUNDAY = 6, 'Sunday'
+        THURSDAY  = 3, 'Thursday'
+        FRIDAY    = 4, 'Friday'
+        SATURDAY  = 5, 'Saturday'
+        SUNDAY    = 6, 'Sunday'
 
     vet = models.ForeignKey(
         'accounts.VetProfile',
@@ -86,6 +86,11 @@ class VetAvailability(models.Model):
         null=True,
         help_text="Used when is_recurring is True",
     )
+    end_date = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Recurring availability stops after this date. Leave blank for indefinite.",
+    )
 
     # One-off availability
     specific_date = models.DateField(
@@ -95,21 +100,48 @@ class VetAvailability(models.Model):
     )
 
     start_time = models.TimeField()
-    end_time = models.TimeField()
-    is_active = models.BooleanField(default=True)
+    end_time   = models.TimeField()
+    is_active  = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         if self.is_recurring:
             day = self.get_day_of_week_display()
-            return f"{self.vet} — Every {day} {self.start_time}–{self.end_time}"
+            end = f" until {self.end_date}" if self.end_date else " (no end date)"
+            return f"{self.vet} — Every {day} {self.start_time}–{self.end_time}{end}"
         return f"{self.vet} — {self.specific_date} {self.start_time}–{self.end_time}"
 
     class Meta:
         ordering = ['day_of_week', 'start_time']
         verbose_name_plural = "Vet Availabilities"
 
+class BlockedDate(models.Model):
+    """
+    A specific date on which a vet is completely unavailable.
+    Overrides any recurring or specific-date availability windows for that day.
+    Used when a vet needs a day off without deleting their recurring schedule.
+    """
+    vet = models.ForeignKey(
+        'accounts.VetProfile',
+        on_delete=models.CASCADE,
+        related_name='blocked_dates',
+    )
+    date = models.DateField()
+    reason = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Optional note e.g. 'National holiday', 'Personal leave'",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['date']
+        unique_together = ['vet', 'date']
+        verbose_name = "Blocked Date"
+
+    def __str__(self):
+        return f"{self.vet} — Blocked {self.date}"
 
 class Appointment(models.Model):
     """

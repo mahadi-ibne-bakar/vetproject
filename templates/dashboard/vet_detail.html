@@ -209,6 +209,303 @@
         </div>
         {% endif %}
 
+        <!-- Availability management -->
+        <div class="admin-card">
+            <div style="font-weight:700; margin-bottom:16px;
+                        display:flex; align-items:center; gap:8px;
+                        padding-bottom:12px;
+                        border-bottom:1px solid var(--md-outline-variant);">
+                <span class="ms sm filled" style="color:var(--md-primary);">schedule</span>
+                Availability Schedule
+                <button onclick="toggleAvailForm()"
+                        class="btn btn-sm btn-tonal" style="margin-left:auto;">
+                    <span class="ms sm">add</span> Add Window
+                </button>
+            </div>
+
+            <!-- Add window form (hidden by default) -->
+            <div id="availForm" style="display:none; margin-bottom:16px;
+                                    padding:16px; background:var(--md-surface-1);
+                                    border-radius:var(--md-shape-md);">
+                <form method="post"
+                    action="{% url 'dashboard:admin_add_availability' vet.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_window">
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;
+                                margin-bottom:12px;">
+                        <div>
+                            <label style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        display:block; margin-bottom:4px;">TYPE</label>
+                            <select name="is_recurring" id="availType"
+                                    onchange="toggleAvailType()"
+                                    style="width:100%; padding:8px 12px;
+                                        border:1.5px solid var(--md-outline);
+                                        border-radius:var(--md-shape-sm);
+                                        font-family:'Nunito',sans-serif;
+                                        font-weight:600; font-size:0.875rem;
+                                        background:var(--md-surface);">
+                                <option value="1">Recurring (weekly)</option>
+                                <option value="0">Specific date</option>
+                            </select>
+                        </div>
+
+                        <div id="dayOfWeekField">
+                            <label style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        display:block; margin-bottom:4px;">DAY</label>
+                            <select name="day_of_week"
+                                    style="width:100%; padding:8px 12px;
+                                        border:1.5px solid var(--md-outline);
+                                        border-radius:var(--md-shape-sm);
+                                        font-family:'Nunito',sans-serif;
+                                        font-weight:600; font-size:0.875rem;
+                                        background:var(--md-surface);">
+                                <option value="0">Monday</option>
+                                <option value="1">Tuesday</option>
+                                <option value="2">Wednesday</option>
+                                <option value="3">Thursday</option>
+                                <option value="4">Friday</option>
+                                <option value="5">Saturday</option>
+                                <option value="6">Sunday</option>
+                            </select>
+                        </div>
+
+                        <div id="specificDateField" style="display:none;">
+                            <label style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        display:block; margin-bottom:4px;">DATE</label>
+                            <input type="date" name="specific_date"
+                                style="width:100%; padding:8px 12px;
+                                        border:1.5px solid var(--md-outline);
+                                        border-radius:var(--md-shape-sm);
+                                        font-family:'Nunito',sans-serif;
+                                        font-weight:600; font-size:0.875rem;
+                                        background:var(--md-surface);">
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr;
+                                gap:10px; margin-bottom:12px;">
+                        <div>
+                            <label style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        display:block; margin-bottom:4px;">START TIME</label>
+                            <input type="time" name="start_time"
+                                style="width:100%; padding:8px 12px;
+                                        border:1.5px solid var(--md-outline);
+                                        border-radius:var(--md-shape-sm);
+                                        font-family:'Nunito',sans-serif;
+                                        font-weight:600; font-size:0.875rem;
+                                        background:var(--md-surface);">
+                        </div>
+                        <div>
+                            <label style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        display:block; margin-bottom:4px;">END TIME</label>
+                            <input type="time" name="end_time"
+                                style="width:100%; padding:8px 12px;
+                                        border:1.5px solid var(--md-outline);
+                                        border-radius:var(--md-shape-sm);
+                                        font-family:'Nunito',sans-serif;
+                                        font-weight:600; font-size:0.875rem;
+                                        background:var(--md-surface);">
+                        </div>
+                        <div id="endDateField">
+                            <label style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        display:block; margin-bottom:4px;">
+                                END DATE (optional)
+                            </label>
+                            <input type="date" name="end_date"
+                                style="width:100%; padding:8px 12px;
+                                        border:1.5px solid var(--md-outline);
+                                        border-radius:var(--md-shape-sm);
+                                        font-family:'Nunito',sans-serif;
+                                        font-weight:600; font-size:0.875rem;
+                                        background:var(--md-surface);">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px;">
+                        <button type="submit" class="btn btn-sm btn-filled">
+                            <span class="ms sm">save</span> Save Window
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outlined"
+                                onclick="toggleAvailForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Block date form -->
+            <div id="blockForm" style="display:none; margin-bottom:16px;
+                                    padding:16px; background:#FFF8F6;
+                                    border-radius:var(--md-shape-md);
+                                    border-left:3px solid var(--md-error);">
+                <form method="post"
+                    action="{% url 'dashboard:admin_add_availability' vet.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="block_date">
+                    <div style="display:grid; grid-template-columns:1fr 2fr; gap:10px;
+                                margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-error); display:block;
+                                        margin-bottom:4px;">DATE TO BLOCK</label>
+                            <input type="date" name="block_date"
+                                style="width:100%; padding:8px 12px;
+                                        border:1.5px solid var(--md-error);
+                                        border-radius:var(--md-shape-sm);
+                                        font-family:'Nunito',sans-serif;
+                                        font-weight:600; font-size:0.875rem;
+                                        background:var(--md-surface);">
+                        </div>
+                        <div>
+                            <label style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        display:block; margin-bottom:4px;">
+                                REASON (optional)
+                            </label>
+                            <input type="text" name="block_reason"
+                                placeholder="e.g. Personal leave"
+                                style="width:100%; padding:8px 12px;
+                                        border:1.5px solid var(--md-outline);
+                                        border-radius:var(--md-shape-sm);
+                                        font-family:'Nunito',sans-serif;
+                                        font-weight:600; font-size:0.875rem;
+                                        background:var(--md-surface);">
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <span class="ms sm">block</span> Block Date
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outlined"
+                                onclick="toggleBlockForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Recurring windows -->
+            {% if recurring_windows %}
+            <div style="margin-bottom:14px;">
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:8px;
+                            letter-spacing:0.5px;">RECURRING WINDOWS</div>
+                {% for w in recurring_windows %}
+                <div style="display:flex; align-items:center; gap:10px;
+                            margin-bottom:6px; padding:8px 12px;
+                            background:var(--md-primary-container);
+                            border-radius:var(--md-shape-md);">
+                    <span style="font-weight:700; font-size:0.875rem;
+                                color:var(--md-on-primary-container); flex:1;">
+                        {% with day_index=w.day_of_week %}
+                            {% for name in day_names %}
+                                {% if forloop.counter0 == day_index %}{{ name }}{% endif %}
+                            {% endfor %}
+                        {% endwith %}
+                        — {{ w.start_time|time:"H:i" }} – {{ w.end_time|time:"H:i" }}
+                        {% if w.end_date %}
+                            <span style="font-size:0.75rem; opacity:0.75;">
+                                until {{ w.end_date|date:"M d, Y" }}
+                            </span>
+                        {% endif %}
+                    </span>
+                    <form method="post"
+                        action="{% url 'dashboard:admin_delete_availability' vet.id w.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm"
+                                style="background:rgba(0,0,0,0.1);
+                                    color:var(--md-on-primary-container);"
+                                onclick="return confirm('Remove this window?')">
+                            <span class="ms sm">close</span>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Specific date windows -->
+            {% if specific_windows %}
+            <div style="margin-bottom:14px;">
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:8px;
+                            letter-spacing:0.5px;">ONE-OFF DATE WINDOWS</div>
+                {% for w in specific_windows %}
+                <div style="display:flex; align-items:center; gap:10px;
+                            margin-bottom:6px; padding:8px 12px;
+                            background:#DBEAFE; border-radius:var(--md-shape-md);">
+                    <span style="font-weight:700; font-size:0.875rem;
+                                color:#1E40AF; flex:1;">
+                        {{ w.specific_date|date:"M d, Y" }}
+                        — {{ w.start_time|time:"H:i" }} – {{ w.end_time|time:"H:i" }}
+                    </span>
+                    <form method="post"
+                        action="{% url 'dashboard:admin_delete_availability' vet.id w.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm"
+                                style="background:rgba(0,0,0,0.1); color:#1E40AF;"
+                                onclick="return confirm('Remove this window?')">
+                            <span class="ms sm">close</span>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Blocked dates -->
+            {% if blocked_dates %}
+            <div style="margin-bottom:14px;">
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-error); margin-bottom:8px;
+                            letter-spacing:0.5px;">BLOCKED DATES</div>
+                {% for b in blocked_dates %}
+                <div style="display:flex; align-items:center; gap:10px;
+                            margin-bottom:6px; padding:8px 12px;
+                            background:var(--md-error-container);
+                            border-radius:var(--md-shape-md);">
+                    <span style="font-weight:700; font-size:0.875rem;
+                                color:var(--md-error); flex:1;">
+                        {{ b.date|date:"M d, Y" }}
+                        {% if b.reason %}
+                            <span style="font-weight:500; opacity:0.8;">
+                                — {{ b.reason }}
+                            </span>
+                        {% endif %}
+                    </span>
+                    <form method="post"
+                        action="{% url 'dashboard:admin_delete_blocked' vet.id b.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm"
+                                style="background:rgba(0,0,0,0.1);
+                                    color:var(--md-error);"
+                                onclick="return confirm('Remove this block?')">
+                            <span class="ms sm">lock_open</span>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if not recurring_windows and not specific_windows and not blocked_dates %}
+                <p style="color:var(--md-on-surface-variant); font-size:0.875rem;
+                        font-weight:600;">No availability set for this vet.</p>
+            {% endif %}
+
+            <!-- Block date button -->
+            <div style="margin-top:12px; padding-top:12px;
+                        border-top:1px solid var(--md-outline-variant);">
+                <button onclick="toggleBlockForm()" class="btn btn-sm btn-danger">
+                    <span class="ms sm">event_busy</span> Block a Date
+                </button>
+            </div>
+
+        </div>
+
     </div>
 </div>
 
@@ -243,6 +540,25 @@ function openRejectModal(vetId, vetName) {
 }
 function closeRejectModal() {
     document.getElementById('rejectModal').style.display = 'none';
+}
+function toggleAvailForm() {
+    const form = document.getElementById('availForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    // Close block form if open
+    document.getElementById('blockForm').style.display = 'none';
+}
+function toggleBlockForm() {
+    const form = document.getElementById('blockForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    // Close avail form if open
+    document.getElementById('availForm').style.display = 'none';
+}
+function toggleAvailType() {
+    const val = document.getElementById('availType').value;
+    const isRecurring = val === '1';
+    document.getElementById('dayOfWeekField').style.display = isRecurring ? 'block' : 'none';
+    document.getElementById('specificDateField').style.display = isRecurring ? 'none' : 'block';
+    document.getElementById('endDateField').style.display = isRecurring ? 'block' : 'none';
 }
 </script>
 {% endblock %}

@@ -1,0 +1,525 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Vet Dashboard — VetProject{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    {% tailwind_css %}
+
+    <style>
+        :root {
+            --md-primary:              #2D6A4F;
+            --md-on-primary:           #FFFFFF;
+            --md-primary-container:    #B7E4C7;
+            --md-on-primary-container: #0A3D27;
+            --md-secondary:            #C75E3A;
+            --md-surface:              #FFFDF7;
+            --md-surface-variant:      #F4F0E8;
+            --md-surface-1:            #F3EFE5;
+            --md-surface-2:            #EDE9DE;
+            --md-on-surface:           #1C1B19;
+            --md-on-surface-variant:   #4A4741;
+            --md-outline:              #7C7870;
+            --md-outline-variant:      #CCC8BF;
+            --md-background:           #FFFDF7;
+            --md-error:                #BA1A1A;
+            --md-error-container:      #FFDAD6;
+            --md-shape-sm:   8px;
+            --md-shape-md:   12px;
+            --md-shape-lg:   16px;
+            --md-shape-xl:   28px;
+            --md-shape-full: 9999px;
+            --md-elev-1: 0 1px 2px rgba(0,0,0,.08), 0 1px 3px 1px rgba(0,0,0,.06);
+            --md-elev-2: 0 1px 2px rgba(0,0,0,.1),  0 2px 6px 2px rgba(0,0,0,.08);
+            --md-elev-3: 0 4px 8px 3px rgba(0,0,0,.09), 0 1px 3px rgba(0,0,0,.1);
+
+            --vet-sidebar-bg:     #0F2318;
+            --vet-sidebar-text:   #90C4A4;
+            --vet-sidebar-hover:  #1A3526;
+            --vet-sidebar-active: #2D6A4F;
+            --vet-sidebar-width:  230px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #EEF0E8;
+            color: var(--md-on-surface);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── Sidebar ───────────────────────────────────────────── */
+        .vet-sidebar {
+            width: var(--vet-sidebar-width);
+            background: var(--vet-sidebar-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 50;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .vet-sidebar__logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 16px;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            margin-bottom: 8px;
+        }
+
+        .vet-sidebar__logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--md-primary);
+            border-radius: var(--md-shape-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .vet-sidebar__name {
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 0.9rem;
+            line-height: 1.2;
+        }
+
+        .vet-sidebar__role {
+            color: var(--vet-sidebar-text);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-section {
+            padding: 4px 8px;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-section__label {
+            color: rgba(144, 196, 164, 0.45);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 8px 8px 4px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--md-shape-md);
+            text-decoration: none;
+            color: var(--vet-sidebar-text);
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: background 0.15s, color 0.15s;
+            margin-bottom: 2px;
+        }
+        .sidebar-link:hover  { background: var(--vet-sidebar-hover); color: #fff; }
+        .sidebar-link.active { background: var(--vet-sidebar-active); color: #fff; }
+        .sidebar-link .ms    { font-size: 20px; opacity: 0.8; flex-shrink: 0; }
+        .sidebar-link.active .ms { opacity: 1; }
+
+        .sidebar-badge {
+            margin-left: auto;
+            background: var(--md-secondary);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 1px 7px;
+            border-radius: var(--md-shape-full);
+        }
+
+        .vet-sidebar__footer {
+            margin-top: auto;
+            padding: 12px 8px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+
+        /* ── Main ──────────────────────────────────────────────── */
+        .vet-main {
+            margin-left: var(--vet-sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .vet-topbar {
+            background: var(--md-surface);
+            box-shadow: var(--md-elev-1);
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .vet-topbar__title {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--md-on-surface);
+            flex: 1;
+        }
+
+        .vet-content { padding: 24px; flex: 1; }
+
+        /* ── Shared components ─────────────────────────────────── */
+        .stat-card {
+            background: var(--md-surface);
+            border-radius: var(--md-shape-lg);
+            padding: 20px;
+            box-shadow: var(--md-elev-1);
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .stat-card__icon {
+            width: 44px; height: 44px;
+            border-radius: var(--md-shape-md);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-card__value {
+            font-size: 1.8rem; font-weight: 800; line-height: 1;
+        }
+
+        .stat-card__label {
+            font-size: 0.8rem; font-weight: 600;
+            color: var(--md-on-surface-variant); margin-top: 4px;
+        }
+
+        .vet-card {
+            background: var(--md-surface);
+            border-radius: var(--md-shape-lg);
+            box-shadow: var(--md-elev-1);
+            padding: 20px;
+        }
+
+        .vet-table-wrap {
+            background: var(--md-surface);
+            border-radius: var(--md-shape-lg);
+            box-shadow: var(--md-elev-1);
+            overflow: hidden;
+        }
+
+        .vet-table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--md-outline-variant);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .vet-table-title { font-weight: 800; font-size: 1rem; }
+
+        table.vet-table { width: 100%; border-collapse: collapse; }
+
+        table.vet-table th {
+            text-align: left;
+            padding: 10px 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--md-on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--md-surface-1);
+            border-bottom: 1px solid var(--md-outline-variant);
+        }
+
+        table.vet-table td {
+            padding: 12px 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--md-on-surface);
+            border-bottom: 1px solid var(--md-outline-variant);
+            vertical-align: middle;
+        }
+
+        table.vet-table tr:last-child td { border-bottom: none; }
+        table.vet-table tbody tr:hover { background: var(--md-surface-1); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: var(--md-shape-full);
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: box-shadow 0.2s, background 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-filled  { background: var(--md-primary); color: #fff; }
+        .btn-filled:hover { box-shadow: var(--md-elev-2); }
+        .btn-tonal   { background: var(--md-primary-container); color: var(--md-on-primary-container); }
+        .btn-outlined { background: transparent; color: var(--md-primary); border: 1.5px solid var(--md-outline); }
+        .btn-danger  { background: var(--md-error-container); color: var(--md-error); }
+        .btn-danger:hover { background: var(--md-error); color: #fff; }
+        .btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+        .btn-lg { padding: 12px 28px; font-size: 0.95rem; }
+
+        .status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: var(--md-shape-full);
+            font-size: 0.75rem; font-weight: 700;
+        }
+        .chip-green  { background: #DCFCE7; color: #166534; }
+        .chip-yellow { background: #FEF9C3; color: #854D0E; }
+        .chip-red    { background: var(--md-error-container); color: var(--md-error); }
+        .chip-gray   { background: var(--md-surface-variant); color: var(--md-on-surface-variant); }
+        .chip-blue   { background: #DBEAFE; color: #1E40AF; }
+
+        .alert {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px; border-radius: var(--md-shape-md);
+            font-weight: 600; font-size: 0.875rem; margin-bottom: 12px;
+        }
+        .alert-success { background: #ECFDF5; color: #065F46; border-left: 4px solid #059669; }
+        .alert-error   { background: var(--md-error-container); color: #7F1D1D; border-left: 4px solid var(--md-error); }
+        .alert-info    { background: var(--md-primary-container); color: var(--md-on-primary-container); border-left: 4px solid var(--md-primary); }
+        .alert-warning { background: #FFFBEB; color: #78350F; border-left: 4px solid #F59E0B; }
+
+        .field-wrap { position: relative; width: 100%; }
+
+        .field-wrap input,
+        .field-wrap textarea,
+        .field-wrap select {
+            width: 100%;
+            background: var(--md-surface-variant);
+            border: none;
+            border-bottom: 2px solid var(--md-outline);
+            border-radius: var(--md-shape-sm) var(--md-shape-sm) 0 0;
+            padding: 20px 16px 8px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--md-on-surface);
+            outline: none;
+            transition: border-color 0.2s;
+            appearance: none;
+        }
+
+        .field-wrap input:focus,
+        .field-wrap textarea:focus,
+        .field-wrap select:focus {
+            border-bottom-color: var(--md-primary);
+            background: var(--md-surface-2);
+        }
+
+        .field-wrap label {
+            position: absolute;
+            left: 16px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem; font-weight: 500;
+            color: var(--md-on-surface-variant);
+            pointer-events: none;
+            transition: all 0.15s ease;
+        }
+
+        .field-wrap textarea ~ label { top: 20px; transform: none; }
+
+        .field-wrap input:focus ~ label,
+        .field-wrap input:not(:placeholder-shown) ~ label,
+        .field-wrap textarea:focus ~ label,
+        .field-wrap textarea:not(:placeholder-shown) ~ label,
+        .field-wrap select:focus ~ label,
+        .field-wrap select:valid ~ label {
+            top: 8px; transform: none;
+            font-size: 0.7rem; color: var(--md-primary); font-weight: 700;
+        }
+
+        .field-error { font-size: 0.75rem; color: var(--md-error); margin-top: 4px; padding-left: 16px; font-weight: 600; }
+        .field-hint  { font-size: 0.75rem; color: var(--md-on-surface-variant); margin-top: 4px; padding-left: 16px; }
+
+        .empty-state { text-align: center; padding: 40px 24px; color: var(--md-on-surface-variant); }
+        .empty-state .ms { font-size: 44px; opacity: 0.3; display: block; margin-bottom: 10px; }
+        .empty-state p { font-weight: 600; font-size: 0.9rem; }
+
+        .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal; font-style: normal;
+            font-size: 24px; line-height: 1;
+            display: inline-block; white-space: nowrap;
+            direction: ltr; -webkit-font-smoothing: antialiased;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle; user-select: none;
+        }
+        .ms.filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .ms.sm { font-size: 18px; }
+        .ms.lg { font-size: 28px; }
+
+        @media (max-width: 768px) {
+            .vet-sidebar { transform: translateX(-100%); }
+            .vet-sidebar.open { transform: translateX(0); }
+            .vet-main { margin-left: 0; }
+            .vet-content { padding: 16px; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<!-- Sidebar -->
+<aside class="vet-sidebar" id="vetSidebar">
+
+    <a href="{% url 'consultations:vet_dashboard' %}" class="vet-sidebar__logo">
+        <div class="vet-sidebar__logo-icon">
+            <span class="ms filled" style="font-size:18px; color:#fff;">stethoscope</span>
+        </div>
+        <div>
+            <div class="vet-sidebar__name">
+                Dr. {{ request.user.last_name|default:request.user.username }}
+            </div>
+            <div class="vet-sidebar__role">Veterinarian</div>
+        </div>
+    </a>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section__label">Overview</div>
+        <a href="{% url 'consultations:vet_dashboard' %}"
+           class="sidebar-link {% if request.resolver_match.url_name == 'vet_dashboard' %}active{% endif %}">
+            <span class="ms filled">dashboard</span> Dashboard
+        </a>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section__label">Consultations</div>
+        <a href="{% url 'consultations:vet_appointments' %}"
+           class="sidebar-link {% if 'vet_appointment' in request.resolver_match.url_name %}active{% endif %}">
+            <span class="ms filled">calendar_month</span> My Appointments
+            {% if upcoming_count %}
+                <span class="sidebar-badge">{{ upcoming_count }}</span>
+            {% endif %}
+        </a>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section__label">Schedule</div>
+        <a href="{% url 'consultations:vet_availability' %}"
+           class="sidebar-link {% if 'availability' in request.resolver_match.url_name %}active{% endif %}">
+            <span class="ms filled">schedule</span> My Availability
+        </a>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section__label">Profile & Content</div>
+        <a href="{% url 'consultations:vet_edit_profile' %}"
+           class="sidebar-link {% if request.resolver_match.url_name == 'vet_edit_profile' %}active{% endif %}">
+            <span class="ms filled">manage_accounts</span> Edit Profile
+        </a>
+        <a href="{% url 'blog:submit_blog_post' %}"
+           class="sidebar-link {% if 'blog' in request.resolver_match.url_name %}active{% endif %}">
+            <span class="ms filled">edit_note</span> Write Blog Post
+        </a>
+        <a href="{% url 'blog:my_blog_posts' %}"
+           class="sidebar-link">
+            <span class="ms filled">article</span> My Posts
+        </a>
+    </div>
+
+    <div class="vet-sidebar__footer">
+        <a href="{% url 'core:home' %}" class="sidebar-link">
+            <span class="ms sm">open_in_new</span> View Site
+        </a>
+        <a href="{% url 'accounts:logout' %}" class="sidebar-link"
+           style="color:#F87171;">
+            <span class="ms sm">logout</span> Sign Out
+        </a>
+    </div>
+
+</aside>
+
+<!-- Main -->
+<div class="vet-main">
+
+    <div class="vet-topbar">
+        <button onclick="toggleVetSidebar()"
+                style="background:none; border:none; cursor:pointer; display:none;"
+                id="vetSidebarToggle">
+            <span class="ms">menu</span>
+        </button>
+        <div class="vet-topbar__title">{% block page_title %}Dashboard{% endblock %}</div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert
+                    {% if message.tags == 'error' %}alert-error
+                    {% elif message.tags == 'success' %}alert-success
+                    {% elif message.tags == 'warning' %}alert-warning
+                    {% else %}alert-info{% endif %}"
+                    style="margin:0; padding:6px 12px; font-size:0.8rem;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div style="display:flex; align-items:center; gap:8px; font-weight:600;
+                    font-size:0.875rem; color:var(--md-on-surface-variant);">
+            <div style="width:32px; height:32px; border-radius:var(--md-shape-full);
+                        background:var(--md-primary); color:#fff;
+                        display:flex; align-items:center; justify-content:center;
+                        font-weight:800; font-size:0.8rem;">
+                {{ request.user.first_name|first|upper }}
+            </div>
+            Dr. {{ request.user.get_full_name|default:request.user.username }}
+        </div>
+    </div>
+
+    <div class="vet-content">
+        {% block content %}{% endblock %}
+    </div>
+
+</div>
+
+<script>
+    function toggleVetSidebar() {
+        document.getElementById('vetSidebar').classList.toggle('open');
+    }
+    if (window.innerWidth <= 768) {
+        document.getElementById('vetSidebarToggle').style.display = 'flex';
+    }
+    window.addEventListener('resize', () => {
+        const btn = document.getElementById('vetSidebarToggle');
+        btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

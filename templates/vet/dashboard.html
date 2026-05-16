@@ -1,0 +1,254 @@
+{% extends 'vet/base_vet.html' %}
+{% block title %}Dashboard — VetProject{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Greeting -->
+<div style="margin-bottom:24px;">
+    <h2 style="font-size:1.4rem; font-weight:800; margin:0 0 4px;">
+        Good
+        {% now "H" as current_hour %}
+        {% if current_hour < "12" %}morning{% elif current_hour < "17" %}afternoon{% else %}evening{% endif %},
+        Dr. {{ request.user.last_name|default:request.user.first_name }} 👋
+    </h2>
+    <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0; font-size:0.9rem;">
+        {{ today|date:"l, F j, Y" }}
+    </p>
+</div>
+
+<!-- Stats row -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+            gap:16px; margin-bottom:24px;">
+
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:var(--md-primary-container);">
+            <span class="ms filled" style="color:var(--md-primary);">calendar_today</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ todays_appointments.count }}</div>
+            <div class="stat-card__label">Today's Appointments</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#DBEAFE;">
+            <span class="ms filled" style="color:#1D4ED8;">event_upcoming</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ upcoming_count }}</div>
+            <div class="stat-card__label">Upcoming (7 days)</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#DCFCE7;">
+            <span class="ms filled" style="color:#16A34A;">check_circle</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ total_consultations }}</div>
+            <div class="stat-card__label">Completed Total</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#FEF9C3;">
+            <span class="ms filled" style="color:#CA8A04;">star</span>
+        </div>
+        <div>
+            <div class="stat-card__value">
+                {% if avg_rating %}{{ avg_rating }}★{% else %}—{% endif %}
+            </div>
+            <div class="stat-card__label">Average Rating</div>
+        </div>
+    </div>
+
+    {% if pending_prescriptions %}
+    <div class="stat-card" style="border-left:3px solid var(--md-secondary);">
+        <div class="stat-card__icon" style="background:var(--md-error-container);">
+            <span class="ms filled" style="color:var(--md-error);">prescription</span>
+        </div>
+        <div>
+            <div class="stat-card__value" style="color:var(--md-error);">
+                {{ pending_prescriptions }}
+            </div>
+            <div class="stat-card__label">Pending Prescriptions</div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Today's appointments -->
+<div class="vet-table-wrap" style="margin-bottom:20px;">
+    <div class="vet-table-header">
+        <span class="vet-table-title">
+            <span class="ms sm filled" style="color:var(--md-primary); margin-right:6px;">
+                today
+            </span>
+            Today's Appointments
+        </span>
+        <a href="{% url 'consultations:vet_appointments' %}" class="btn btn-sm btn-tonal">
+            View all
+        </a>
+    </div>
+    <table class="vet-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Pet</th>
+                <th>Owner</th>
+                <th>Complaint</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in todays_appointments %}
+            <tr>
+                <td style="font-weight:700; color:var(--md-primary);">
+                    {{ appt.start_time|time:"H:i" }} – {{ appt.end_time|time:"H:i" }}
+                </td>
+                <td>
+                    <div style="font-weight:700;">{{ appt.pet.name }}</div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                        {{ appt.pet.get_species_display }}
+                    </div>
+                </td>
+                <td style="font-size:0.875rem;">
+                    {{ appt.user.get_full_name|default:appt.user.username }}
+                </td>
+                <td>
+                    <span class="status-chip chip-blue">
+                        {{ appt.get_primary_complaint_display }}
+                    </span>
+                </td>
+                <td>
+                    <span class="status-chip
+                        {% if appt.status == 'in_progress' %}chip-yellow
+                        {% else %}chip-green{% endif %}">
+                        {{ appt.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'consultations:vet_appointment_detail' appt.id %}"
+                       class="btn btn-sm btn-filled">
+                        <span class="ms sm">open_in_new</span> Open
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state">
+                    <span class="ms filled">event_available</span>
+                    <p>No appointments scheduled for today.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Bottom two columns -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <!-- Upcoming this week -->
+    <div class="vet-table-wrap">
+        <div class="vet-table-header">
+            <span class="vet-table-title">Upcoming This Week</span>
+        </div>
+        <table class="vet-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Pet / Owner</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in upcoming_appointments %}
+                <tr>
+                    <td>
+                        <div style="font-weight:700;">
+                            {{ appt.date|date:"M d" }}
+                        </div>
+                        <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                            {{ appt.start_time|time:"H:i" }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight:700;">{{ appt.pet.name }}</div>
+                        <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                            {{ appt.user.get_full_name|default:appt.user.username }}
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{% url 'consultations:vet_appointment_detail' appt.id %}"
+                           class="btn btn-sm btn-outlined">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3">
+                    <div class="empty-state" style="padding:24px;">
+                        <span class="ms filled">event_note</span>
+                        <p>No upcoming appointments this week.</p>
+                    </div>
+                </td></tr>
+                {% endfor %}
+        </tbody>
+        </table>
+    </div>
+
+    <!-- Recent completed -->
+    <div class="vet-table-wrap">
+        <div class="vet-table-header">
+            <span class="vet-table-title">Recently Completed</span>
+        </div>
+        <table class="vet-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Pet / Owner</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in recent_completed %}
+                <tr>
+                    <td style="font-size:0.85rem; color:var(--md-on-surface-variant);">
+                        {{ appt.date|date:"M d" }}
+                    </td>
+                    <td>
+                        <div style="font-weight:700;">{{ appt.pet.name }}</div>
+                        <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                            {{ appt.user.get_full_name|default:appt.user.username }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if appt.feedback_rating %}
+                            <span class="status-chip chip-yellow">
+                                {{ appt.feedback_rating }}★
+                            </span>
+                        {% else %}
+                            <span style="color:var(--md-on-surface-variant);
+                                         font-size:0.82rem;">No rating</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3">
+                    <div class="empty-state" style="padding:24px;">
+                        <span class="ms filled">history</span>
+                        <p>No completed consultations yet.</p>
+                    </div>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

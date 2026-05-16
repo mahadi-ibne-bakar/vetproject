@@ -1,0 +1,232 @@
+{% extends 'vet/base_vet.html' %}
+{% block title %}Edit Profile — VetProject{% endblock %}
+{% block page_title %}Edit My Profile{% endblock %}
+
+{% block content %}
+<div style="max-width:700px;">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert
+                {% if message.tags == 'error' %}alert-error
+                {% else %}alert-success{% endif %}"
+                style="margin-bottom:16px;">
+                <span class="ms sm filled">
+                    {% if message.tags == 'error' %}error{% else %}check_circle{% endif %}
+                </span>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- Personal info -->
+            <div class="vet-card">
+                <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                            display:flex; align-items:center; gap:8px;
+                            padding-bottom:12px;
+                            border-bottom:1px solid var(--md-outline-variant);">
+                    <span class="ms sm filled" style="color:var(--md-primary);">person</span>
+                    Personal Information
+                </div>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <div class="field-wrap">
+                                {{ form.first_name }}
+                                <label>First name</label>
+                            </div>
+                            {% if form.first_name.errors %}
+                                <p class="field-error">{{ form.first_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="field-wrap">
+                                {{ form.last_name }}
+                                <label>Last name</label>
+                            </div>
+                            {% if form.last_name.errors %}
+                                <p class="field-error">{{ form.last_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.phone_number }}
+                            <label>Phone number</label>
+                        </div>
+                        {% if form.phone_number.errors %}
+                            <p class="field-error">{{ form.phone_number.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional info -->
+            <div class="vet-card">
+                <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                            display:flex; align-items:center; gap:8px;
+                            padding-bottom:12px;
+                            border-bottom:1px solid var(--md-outline-variant);">
+                    <span class="ms sm filled" style="color:var(--md-primary);">badge</span>
+                    Professional Information
+                </div>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.bvc_registration_number }}
+                            <label>BVC Registration Number</label>
+                        </div>
+                        {% if form.bvc_registration_number.errors %}
+                            <p class="field-error">
+                                {{ form.bvc_registration_number.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <div class="field-wrap">
+                                {{ form.years_of_experience }}
+                                <label>Years of Experience</label>
+                            </div>
+                            {% if form.years_of_experience.errors %}
+                                <p class="field-error">
+                                    {{ form.years_of_experience.errors.0 }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="field-wrap">
+                                {{ form.specializations }}
+                                <label>Specializations</label>
+                            </div>
+                            <p class="field-hint">e.g. Cats, Dogs, Dermatology</p>
+                            {% if form.specializations.errors %}
+                                <p class="field-error">
+                                    {{ form.specializations.errors.0 }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.education }}
+                            <label>Education</label>
+                        </div>
+                        <p class="field-hint">
+                            e.g. DVM, Bangladesh Agricultural University, 2018
+                        </p>
+                        {% if form.education.errors %}
+                            <p class="field-error">{{ form.education.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.bio }}
+                            <label>Professional Bio</label>
+                        </div>
+                        {% if form.bio.errors %}
+                            <p class="field-error">{{ form.bio.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Profile photo -->
+            <div class="vet-card">
+                <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                            display:flex; align-items:center; gap:8px;
+                            padding-bottom:12px;
+                            border-bottom:1px solid var(--md-outline-variant);">
+                    <span class="ms sm filled" style="color:var(--md-primary);">
+                        photo_camera
+                    </span>
+                    Profile Photo
+                </div>
+
+                {% if vet_profile.profile_photo %}
+                    <div style="margin-bottom:12px;">
+                        <img src="{{ vet_profile.profile_photo.url }}"
+                             alt="Current profile photo"
+                             style="width:80px; height:80px; border-radius:var(--md-shape-full);
+                                    object-fit:cover; border:3px solid var(--md-primary-container);">
+                    </div>
+                {% endif %}
+
+                <div style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                            font-weight:600; margin-bottom:8px;">
+                    {{ form.profile_photo.label }}
+                </div>
+                {{ form.profile_photo }}
+                <p class="field-hint">JPG or PNG. Shown on your public profile.</p>
+                {% if form.profile_photo.errors %}
+                    <p class="field-error">{{ form.profile_photo.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Read-only info -->
+            <div class="vet-card" style="background:var(--md-surface-1);">
+                <div style="font-weight:700; font-size:0.875rem; margin-bottom:12px;
+                            color:var(--md-on-surface-variant);">
+                    Account Information (read-only)
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;
+                            font-size:0.875rem;">
+                    <div>
+                        <span style="color:var(--md-on-surface-variant);">Email</span><br>
+                        <strong>{{ request.user.email }}</strong>
+                    </div>
+                    <div>
+                        <span style="color:var(--md-on-surface-variant);">
+                            Consultation Fee
+                        </span><br>
+                        <strong>৳{{ vet_profile.consultation_fee }}</strong>
+                        <span style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                            (set by admin)
+                        </span>
+                    </div>
+                    <div>
+                        <span style="color:var(--md-on-surface-variant);">Status</span><br>
+                        {% if vet_profile.is_active %}
+                            <span class="status-chip chip-green">Active</span>
+                        {% else %}
+                            <span class="status-chip chip-red">Inactive</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span style="color:var(--md-on-surface-variant);">Member since</span><br>
+                        <strong>{{ request.user.date_joined|date:"M d, Y" }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    <span class="ms sm filled">error</span>
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <a href="{% url 'consultations:vet_dashboard' %}"
+                   class="btn btn-outlined">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-filled">
+                    <span class="ms sm">save</span> Save Changes
+                </button>
+            </div>
+
+        </div>
+    </form>
+
+</div>
+{% endblock %}

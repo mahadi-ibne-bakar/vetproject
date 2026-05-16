@@ -57,4 +57,9 @@ urlpatterns = [
     path('admins/', admin_views.admin_list, name='admin_list'),
     path('admins/add/', admin_views.add_admin, name='add_admin'),
     path('admins/<int:user_id>/remove/', admin_views.remove_admin, name='remove_admin'),
+
+    # Vet availability admin overrides
+    path('vets/<int:vet_id>/availability/add/', admin_views.admin_add_availability, name='admin_add_availability'),
+    path('vets/<int:vet_id>/availability/<int:window_id>/delete/', admin_views.admin_delete_availability, name='admin_delete_availability'),
+    path('vets/<int:vet_id>/blocked/<int:blocked_id>/delete/', admin_views.admin_delete_blocked, name='admin_delete_blocked'),
 ]
