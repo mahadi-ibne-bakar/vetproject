@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Pay Booking Fee — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:520px; margin:0 auto;">
+
+    <!-- Appointment summary -->
+    <div style="background:var(--md-primary-container);
+                border-radius:var(--md-shape-xl); padding:20px 24px;
+                margin-bottom:20px; display:flex; align-items:center; gap:16px;">
+        {% if vet.profile_photo %}
+            <img src="{{ vet.profile_photo.url }}"
+                 style="width:52px; height:52px;
+                        border-radius:var(--md-shape-full);
+                        object-fit:cover; flex-shrink:0;">
+        {% else %}
+            <div style="width:52px; height:52px;
+                        border-radius:var(--md-shape-full);
+                        background:var(--md-primary); color:#fff;
+                        display:flex; align-items:center; justify-content:center;
+                        font-weight:800; font-size:1.1rem; flex-shrink:0;">
+                {{ vet.user.first_name|first|upper }}
+            </div>
+        {% endif %}
+        <div style="flex:1;">
+            <div style="font-weight:800; font-size:1rem;
+                        color:var(--md-on-primary-container);">
+                Dr. {{ vet.user.get_full_name }}
+            </div>
+            <div style="font-size:0.82rem; font-weight:600;
+                        color:var(--md-primary); margin-top:2px;">
+                {{ appointment.date|date:"l, M d, Y" }}
+                at {{ appointment.start_time|time:"H:i" }}
+            </div>
+        </div>
+        <div style="font-weight:800; font-size:1.1rem;
+                    color:var(--md-on-primary-container);">
+            ৳{{ booking_fee }}
+        </div>
+    </div>
+
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:28px;">
+
+        <h1 style="font-size:1.4rem; font-weight:800; margin:0 0 6px;">
+            Pay Booking Fee
+        </h1>
+        <p style="color:var(--md-on-surface-variant); font-weight:600;
+                  font-size:0.9rem; margin:0 0 24px;">
+            Send ৳{{ booking_fee }} via bKash to confirm your appointment.
+        </p>
+
+        <!-- bKash instructions -->
+        <div style="background:#E8F5E9; border-radius:var(--md-shape-lg);
+                    padding:20px; margin-bottom:24px;">
+            <div style="font-weight:800; font-size:0.95rem; margin-bottom:14px;
+                        display:flex; align-items:center; gap:8px; color:#1B5E20;">
+                <span class="ms sm filled">phone_android</span>
+                How to pay via bKash
+            </div>
+            <ol style="margin:0; padding-left:20px; display:flex;
+                       flex-direction:column; gap:8px;">
+                <li style="font-size:0.875rem; font-weight:600; color:#2E7D32;">
+                    Open your bKash app or dial
+                    <strong>*247#</strong>
+                </li>
+                <li style="font-size:0.875rem; font-weight:600; color:#2E7D32;">
+                    Select <strong>Send Money</strong>
+                    (NOT "Payment" — use Send Money)
+                </li>
+                <li style="font-size:0.875rem; font-weight:600; color:#2E7D32;">
+                    Send exactly
+                    <strong style="font-size:1rem; color:#1B5E20;">
+                        ৳{{ booking_fee }}
+                    </strong>
+                    to this number:
+                </li>
+            </ol>
+
+            <!-- Merchant number display -->
+            <div style="background:#fff; border-radius:var(--md-shape-md);
+                        padding:14px 16px; margin-top:14px; text-align:center;
+                        border:2px solid #4CAF50;">
+                {% if bkash_merchant_number %}
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:#388E3C; margin-bottom:4px;">
+                        SEND TO THIS NUMBER
+                    </div>
+                    <div style="font-size:1.6rem; font-weight:800;
+                                color:#1B5E20; letter-spacing:2px;">
+                        {{ bkash_merchant_number }}
+                    </div>
+                {% else %}
+                    <div style="color:#388E3C; font-weight:600; font-size:0.9rem;">
+                        Contact support for the bKash number.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-top:12px; padding:10px 14px;
+                        background:rgba(255,152,0,0.15);
+                        border-radius:var(--md-shape-md);">
+                <p style="font-size:0.82rem; font-weight:700;
+                           color:#E65100; margin:0;">
+                    ⚠️ Use <strong>Send Money</strong>, not the Payment option.
+                    Keep the transaction ID from the confirmation SMS.
+                </p>
+            </div>
+        </div>
+
+        <!-- Payment form -->
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="tel" name="bkash_number"
+                               placeholder=" " maxlength="11">
+                        <label>Your bKash number</label>
+                    </div>
+                    <p class="field-hint">
+                        The number you sent the payment from
+                    </p>
+                </div>
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="text" name="transaction_id"
+                               placeholder=" " maxlength="12"
+                               style="text-transform:uppercase;"
+                               oninput="this.value=this.value.toUpperCase()">
+                        <label>Transaction ID (TrxID)</label>
+                    </div>
+                    <p class="field-hint">
+                        Found in the bKash confirmation SMS
+                        e.g. <strong>DE96117110</strong>
+                    </p>
+                </div>
+
+                <div class="alert alert-info" style="margin:0;">
+                    <span class="ms sm filled">info</span>
+                    <span style="font-size:0.85rem;">
+                        Your booking will be confirmed once we verify the payment.
+                        This usually takes a few minutes.
+                    </span>
+                </div>
+
+                <button type="submit" class="btn btn-filled btn-lg"
+                        style="width:100%;">
+                    <span class="ms sm">check_circle</span>
+                    Submit Payment
+                </button>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

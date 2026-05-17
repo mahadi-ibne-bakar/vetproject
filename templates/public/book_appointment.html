@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% block title %}Book with Dr. {{ vet.user.get_full_name }} — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:680px; margin:0 auto;">
+
+    <!-- Back link -->
+    <a href="{% url 'consultations:vet_detail' vet.id %}?date={{ date_str }}"
+       style="display:inline-flex; align-items:center; gap:6px;
+              color:var(--md-on-surface-variant); text-decoration:none;
+              font-weight:700; font-size:0.875rem; margin-bottom:20px;">
+        <span class="ms sm">arrow_back</span> Back
+    </a>
+
+    <!-- Appointment summary card -->
+    <div style="background:var(--md-primary-container);
+                border-radius:var(--md-shape-xl); padding:20px 24px;
+                margin-bottom:20px; display:flex; align-items:center; gap:16px;">
+        {% if vet.profile_photo %}
+            <img src="{{ vet.profile_photo.url }}"
+                 style="width:56px; height:56px; border-radius:var(--md-shape-full);
+                        object-fit:cover; border:3px solid var(--md-primary);
+                        flex-shrink:0;">
+        {% else %}
+            <div style="width:56px; height:56px; border-radius:var(--md-shape-full);
+                        background:var(--md-primary); color:#fff;
+                        display:flex; align-items:center; justify-content:center;
+                        font-weight:800; font-size:1.2rem; flex-shrink:0;">
+                {{ vet.user.first_name|first|upper }}
+            </div>
+        {% endif %}
+        <div style="flex:1;">
+            <div style="font-weight:800; font-size:1.05rem;
+                        color:var(--md-on-primary-container);">
+                Dr. {{ vet.user.get_full_name }}
+            </div>
+            <div style="font-size:0.875rem; font-weight:600;
+                        color:var(--md-primary); margin-top:2px;">
+                {{ vet.specializations|default:"General Practice" }}
+            </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0;">
+            <div style="font-weight:800; font-size:1rem;
+                        color:var(--md-on-primary-container);">
+                {{ selected_date|date:"M d, Y" }}
+            </div>
+            <div style="font-size:0.875rem; font-weight:700;
+                        color:var(--md-primary);">
+                {{ start_str }} – {{ end_str }}
+            </div>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <!-- Pet selection -->
+            <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                        box-shadow:var(--md-elev-1); padding:24px;">
+                <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                            display:flex; align-items:center; gap:8px;">
+                    <span class="ms sm filled"
+                          style="color:var(--md-primary);">pets</span>
+                    Which pet is this for?
+                    <a href="{% url 'consultations:add_pet' %}?next={{ request.get_full_path }}&context=booking"
+                       style="margin-left:auto; font-size:0.82rem; font-weight:700;
+                              color:var(--md-primary); text-decoration:none;
+                              display:flex; align-items:center; gap:4px;">
+                        <span class="ms sm">add</span> Add new pet
+                    </a>
+                </div>
+
+                <div style="display:grid;
+                            grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+                            gap:10px;"
+                     id="petGrid">
+                    {% for pet in user_pets %}
+                    <label style="border:2px solid var(--md-outline-variant);
+                                  border-radius:var(--md-shape-lg); padding:14px 12px;
+                                  cursor:pointer; text-align:center;
+                                  transition:all 0.15s;"
+                           class="pet-card">
+                        <input type="radio" name="pet_id" value="{{ pet.id }}"
+                               style="display:none;"
+                               {% if forloop.first %}checked{% endif %}>
+                        <div style="font-size:2rem; margin-bottom:6px;">
+                            {% if pet.species == 'cat' %}🐱
+                            {% elif pet.species == 'dog' %}🐶
+                            {% else %}🐾{% endif %}
+                        </div>
+                        <div style="font-weight:800; font-size:0.9rem;">
+                            {{ pet.name }}
+                        </div>
+                        <div style="font-size:0.75rem; font-weight:600;
+                                    color:var(--md-on-surface-variant); margin-top:2px;">
+                            {{ pet.get_species_display }}
+                            {% if pet.breed %} · {{ pet.breed }}{% endif %}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Pre-consultation form -->
+            <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                        box-shadow:var(--md-elev-1); padding:24px;">
+                <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                            display:flex; align-items:center; gap:8px;">
+                    <span class="ms sm filled"
+                          style="color:var(--md-primary);">medical_information</span>
+                    What's the issue?
+                </div>
+
+                <!-- Primary complaint -->
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        PRIMARY COMPLAINT <span style="color:var(--md-error);">*</span>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        {% for value, label in complaint_choices %}
+                        <label style="display:flex; align-items:center; gap:6px;
+                                      padding:7px 14px;
+                                      border-radius:var(--md-shape-full);
+                                      border:1.5px solid var(--md-outline-variant);
+                                      cursor:pointer; font-size:0.85rem;
+                                      font-weight:700; transition:all 0.15s;"
+                               class="complaint-chip">
+                            <input type="radio" name="primary_complaint"
+                                   value="{{ value }}" style="display:none;"
+                                   {% if forloop.first %}checked{% endif %}>
+                            {{ label }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        DESCRIBE THE ISSUE
+                        <span style="color:var(--md-error);">*</span>
+                    </div>
+                    <div class="field-wrap">
+                        <textarea name="complaint_description"
+                                  placeholder=" " rows="4"
+                                  required></textarea>
+                        <label>Describe what you've noticed...</label>
+                    </div>
+                </div>
+
+                <!-- Symptom photo (optional) -->
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        SYMPTOM PHOTO
+                        <span style="font-weight:500; opacity:0.7;">(optional)</span>
+                    </div>
+                    <input type="file" name="symptom_photo"
+                           accept="image/*"
+                           style="font-family:'Nunito',sans-serif;
+                                  font-size:0.875rem; font-weight:600;">
+                    <p class="field-hint" style="margin-top:6px;">
+                        Upload a photo of the symptom to help the vet.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Payment summary -->
+            <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                        box-shadow:var(--md-elev-1); padding:20px 24px;">
+                <div style="font-weight:800; font-size:1rem; margin-bottom:14px;
+                            display:flex; align-items:center; gap:8px;">
+                    <span class="ms sm filled"
+                          style="color:var(--md-primary);">payments</span>
+                    Payment Summary
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;
+                            font-size:0.9rem;">
+                    <div style="display:flex; justify-content:space-between;
+                                font-weight:600; color:var(--md-on-surface-variant);">
+                        <span>Booking fee (pay now via bKash)</span>
+                        <span style="font-weight:800;
+                                     color:var(--md-on-surface);">৳50</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;
+                                font-weight:600; color:var(--md-on-surface-variant);">
+                        <span>Consultation fee (pay after session)</span>
+                        <span style="font-weight:800;
+                                     color:var(--md-on-surface);">
+                            ৳{{ vet.consultation_fee }}
+                        </span>
+                    </div>
+                    <div style="height:1px; background:var(--md-outline-variant);
+                                margin:4px 0;"></div>
+                    <div style="display:flex; justify-content:space-between;
+                                font-weight:800; font-size:1rem;">
+                        <span>Total</span>
+                        <span style="color:var(--md-primary);">
+                            ৳{{ vet.consultation_fee|add:50 }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-filled btn-lg"
+                    style="width:100%;">
+                <span class="ms">arrow_forward</span>
+                Continue to Payment
+            </button>
+
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Pet card selection highlight
+    document.querySelectorAll('.pet-card').forEach(card => {
+        const radio = card.querySelector('input[type=radio]');
+
+        function updateStyle() {
+            if (radio.checked) {
+                card.style.borderColor = 'var(--md-primary)';
+                card.style.background  = 'var(--md-primary-container)';
+            } else {
+                card.style.borderColor = 'var(--md-outline-variant)';
+                card.style.background  = '';
+            }
+        }
+
+        // Set initial state
+        updateStyle();
+
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.pet-card').forEach(c => {
+                c.style.borderColor = 'var(--md-outline-variant)';
+                c.style.background  = '';
+            });
+            radio.checked = true;
+            updateStyle();
+        });
+    });
+
+    // Complaint chip selection highlight
+    document.querySelectorAll('.complaint-chip').forEach(chip => {
+        const radio = chip.querySelector('input[type=radio]');
+
+        function updateChip() {
+            if (radio.checked) {
+                chip.style.background   = 'var(--md-primary)';
+                chip.style.color        = '#fff';
+                chip.style.borderColor  = 'var(--md-primary)';
+            } else {
+                chip.style.background   = '';
+                chip.style.color        = '';
+                chip.style.borderColor  = 'var(--md-outline-variant)';
+            }
+        }
+
+        updateChip();
+
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.complaint-chip').forEach(c => {
+                c.style.background  = '';
+                c.style.color       = '';
+                c.style.borderColor = 'var(--md-outline-variant)';
+            });
+            radio.checked = true;
+            updateChip();
+        });
+    });
+</script>
+{% endblock %}

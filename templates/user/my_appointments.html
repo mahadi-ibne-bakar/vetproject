@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}My Appointments — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:900px; margin:0 auto;">
+
+    <div style="margin-bottom:24px;">
+        <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 4px;">
+            My Appointments
+        </h1>
+    </div>
+
+    <!-- Awaiting payment banner -->
+    {% if awaiting_payment %}
+    <div class="alert alert-warning" style="margin-bottom:20px;">
+        <span class="ms sm filled">payments</span>
+        <div>
+            <strong>{{ awaiting_count }} appointment{{ awaiting_count|pluralize }}
+            awaiting payment.</strong>
+            Pay the consultation fee to unlock your prescription.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Tabs -->
+    <div style="display:flex; gap:4px; margin-bottom:20px;
+                background:var(--md-surface); border-radius:var(--md-shape-full);
+                padding:4px; width:fit-content; box-shadow:var(--md-elev-1);">
+        <a href="?tab=upcoming"
+           style="padding:8px 20px; border-radius:var(--md-shape-full);
+                  font-weight:700; font-size:0.875rem; text-decoration:none;
+                  transition:background 0.2s;
+                  {% if tab == 'upcoming' %}background:var(--md-primary); color:#fff;
+                  {% else %}color:var(--md-on-surface-variant);{% endif %}">
+            Upcoming
+            {% if upcoming_count %}
+                <span style="background:{% if tab == 'upcoming' %}rgba(255,255,255,0.3)
+                             {% else %}var(--md-secondary){% endif %};
+                             color:#fff; border-radius:999px;
+                             padding:1px 8px; font-size:0.75rem; margin-left:4px;">
+                    {{ upcoming_count }}
+                </span>
+            {% endif %}
+        </a>
+        <a href="?tab=awaiting"
+           style="padding:8px 20px; border-radius:var(--md-shape-full);
+                  font-weight:700; font-size:0.875rem; text-decoration:none;
+                  transition:background 0.2s;
+                  {% if tab == 'awaiting' %}background:var(--md-primary); color:#fff;
+                  {% else %}color:var(--md-on-surface-variant);{% endif %}">
+            Pay Now
+            {% if awaiting_count %}
+                <span style="background:{% if tab == 'awaiting' %}rgba(255,255,255,0.3)
+                             {% else %}var(--md-secondary){% endif %};
+                             color:#fff; border-radius:999px;
+                             padding:1px 8px; font-size:0.75rem; margin-left:4px;">
+                    {{ awaiting_count }}
+                </span>
+            {% endif %}
+        </a>
+        <a href="?tab=past"
+           style="padding:8px 20px; border-radius:var(--md-shape-full);
+                  font-weight:700; font-size:0.875rem; text-decoration:none;
+                  transition:background 0.2s;
+                  {% if tab == 'past' %}background:var(--md-primary); color:#fff;
+                  {% else %}color:var(--md-on-surface-variant);{% endif %}">
+            Past ({{ past_count }})
+        </a>
+    </div>
+
+    <!-- Upcoming tab -->
+    {% if tab == 'upcoming' %}
+        {% for appt in upcoming %}
+        {% include 'user/_appointment_card.html' with appt=appt %}
+        {% empty %}
+        <div style="text-align:center; padding:60px 24px;
+                    background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1);">
+            <span class="ms lg filled"
+                  style="color:var(--md-outline); display:block; margin-bottom:16px;">
+                calendar_month
+            </span>
+            <h2 style="font-weight:800; margin:0 0 8px;">No upcoming appointments</h2>
+            <p style="color:var(--md-on-surface-variant); font-weight:600;
+                      margin:0 0 20px;">
+                Book a consultation with one of our vets.
+            </p>
+            <a href="{% url 'consultations:book_by_time' %}"
+               class="btn btn-filled">
+                <span class="ms sm">add</span> Book Appointment
+            </a>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Pay now tab -->
+    {% if tab == 'awaiting' %}
+        {% for appt in awaiting_payment %}
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); padding:20px 24px;
+                    margin-bottom:16px; display:flex; align-items:center; gap:16px;
+                    border-left:4px solid #F59E0B;">
+            <div style="flex:1;">
+                <div style="font-weight:800; font-size:1rem;">
+                    Dr. {{ appt.vet.user.get_full_name }}
+                </div>
+                <div style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                            font-weight:600; margin-top:3px;">
+                    {{ appt.pet.name }} · {{ appt.date|date:"M d, Y" }}
+                    at {{ appt.start_time|time:"H:i" }}
+                </div>
+            </div>
+            <a href="{% url 'consultations:submit_second_payment' appt.id %}"
+               class="btn btn-filled"
+               style="background:#F59E0B; flex-shrink:0;">
+                <span class="ms sm">payments</span>
+                Pay ৳{{ appt.vet.consultation_fee }}
+            </a>
+            <a href="{% url 'consultations:appointment_detail' appt.id %}"
+               class="btn btn-outlined btn-sm" style="flex-shrink:0;">
+                Details
+            </a>
+        </div>
+        {% empty %}
+        <div style="text-align:center; padding:40px;
+                    background:var(--md-surface); border-radius:var(--md-shape-xl);">
+            <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0;">
+                No pending payments.
+            </p>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Past tab -->
+    {% if tab == 'past' %}
+        {% for appt in past %}
+        {% include 'user/_appointment_card.html' with appt=appt %}
+        {% empty %}
+        <div style="text-align:center; padding:40px;
+                    background:var(--md-surface); border-radius:var(--md-shape-xl);">
+            <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0;">
+                No past appointments yet.
+            </p>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}My Pets — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:800px; margin:0 auto;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between;
+                margin-bottom:24px;">
+        <div>
+            <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 4px;">
+                My Pets
+            </h1>
+            <p style="color:var(--md-on-surface-variant); font-weight:600;
+                      font-size:0.9rem; margin:0;">
+                {{ pets.count }} pet{{ pets.count|pluralize }} registered
+            </p>
+        </div>
+        <a href="{% url 'consultations:add_pet' %}" class="btn btn-filled">
+            <span class="ms sm">add</span> Add Pet
+        </a>
+    </div>
+
+    {% if pets %}
+    <div style="display:grid;
+                grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
+                gap:16px;">
+        {% for pet in pets %}
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); overflow:hidden;">
+
+            <div style="background:var(--md-primary-container); padding:20px;
+                        text-align:center;">
+                {% if pet.photo %}
+                    <img src="{{ pet.photo.url }}"
+                         style="width:72px; height:72px;
+                                border-radius:var(--md-shape-full);
+                                object-fit:cover;
+                                border:3px solid var(--md-primary);
+                                margin-bottom:10px;">
+                {% else %}
+                    <div style="font-size:3.5rem; margin-bottom:8px; line-height:1;">
+                        {% if pet.species == 'cat' %}🐱
+                        {% elif pet.species == 'dog' %}🐶
+                        {% else %}🐾{% endif %}
+                    </div>
+                {% endif %}
+                <div style="font-weight:800; font-size:1.1rem;
+                            color:var(--md-on-primary-container);">
+                    {{ pet.name }}
+                </div>
+                <div style="font-size:0.82rem; font-weight:600;
+                            color:var(--md-primary); margin-top:3px;">
+                    {{ pet.get_species_display }}
+                    {% if pet.breed %} · {{ pet.breed }}{% endif %}
+                </div>
+            </div>
+
+            <div style="padding:14px 16px;">
+                <div style="display:flex; gap:12px; flex-wrap:wrap;
+                            font-size:0.82rem; font-weight:600;
+                            color:var(--md-on-surface-variant);
+                            margin-bottom:14px;">
+                    {% if pet.age_years or pet.age_months %}
+                    <span style="display:flex; align-items:center; gap:4px;">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary);">cake</span>
+                        {% if pet.age_years %}{{ pet.age_years }}yr{% endif %}
+                        {% if pet.age_months %}{{ pet.age_months }}mo{% endif %}
+                    </span>
+                    {% endif %}
+                    {% if pet.weight_kg %}
+                    <span style="display:flex; align-items:center; gap:4px;">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary);">monitor_weight</span>
+                        {{ pet.weight_kg }}kg
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                    <a href="{% url 'consultations:edit_pet' pet.id %}"
+                       class="btn btn-tonal btn-sm" style="flex:1; text-decoration:none;">
+                        <span class="ms sm">edit</span> Edit
+                    </a>
+                    <form method="post"
+                          action="{% url 'consultations:delete_pet' pet.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Remove {{ pet.name }}?')">
+                            <span class="ms sm">delete</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div style="text-align:center; padding:60px 24px;
+                background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1);">
+        <div style="font-size:4rem; margin-bottom:16px;">🐾</div>
+        <h2 style="font-weight:800; margin:0 0 8px;">No pets yet</h2>
+        <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0 0 20px;">
+            Add your first pet to start booking consultations.
+        </p>
+        <a href="{% url 'consultations:add_pet' %}" class="btn btn-filled">
+            <span class="ms sm">add</span> Add Your First Pet
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

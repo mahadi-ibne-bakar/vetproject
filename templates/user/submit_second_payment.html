@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Pay Consultation Fee — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:520px; margin:0 auto;">
+
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:28px;">
+
+        <div style="text-align:center; margin-bottom:24px;">
+            <div style="width:56px; height:56px; background:var(--md-primary-container);
+                        border-radius:var(--md-shape-full);
+                        display:flex; align-items:center; justify-content:center;
+                        margin:0 auto 14px;">
+                <span class="ms lg filled" style="color:var(--md-primary);">
+                    payments
+                </span>
+            </div>
+            <h1 style="font-size:1.4rem; font-weight:800; margin:0 0 6px;">
+                Pay Consultation Fee
+            </h1>
+            <p style="color:var(--md-on-surface-variant); font-weight:600;
+                      font-size:0.9rem; margin:0;">
+                Your consultation with
+                <strong>Dr. {{ appointment.vet.user.get_full_name }}</strong>
+                is complete. Please pay the consultation fee to
+                download your prescription.
+            </p>
+        </div>
+
+        <!-- Amount display -->
+        <div style="background:var(--md-primary-container);
+                    border-radius:var(--md-shape-lg); padding:16px;
+                    text-align:center; margin-bottom:20px;">
+            <div style="font-size:0.82rem; font-weight:700;
+                        color:var(--md-on-primary-container); margin-bottom:4px;">
+                AMOUNT TO PAY
+            </div>
+            <div style="font-size:2rem; font-weight:800; color:var(--md-primary);">
+                ৳{{ consultation_fee }}
+            </div>
+            {% if bkash_merchant_number %}
+            <div style="font-size:0.875rem; font-weight:700;
+                        color:var(--md-on-primary-container); margin-top:8px;">
+                Send to: <strong>{{ bkash_merchant_number }}</strong>
+                via bKash Send Money
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="tel" name="bkash_number"
+                               placeholder=" " maxlength="11">
+                        <label>Your bKash number</label>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="text" name="transaction_id"
+                               placeholder=" " maxlength="12"
+                               oninput="this.value=this.value.toUpperCase()">
+                        <label>Transaction ID (TrxID)</label>
+                    </div>
+                    <p class="field-hint">
+                        From your bKash confirmation SMS
+                    </p>
+                </div>
+
+                <button type="submit" class="btn btn-filled btn-lg"
+                        style="width:100%;">
+                    <span class="ms sm">check_circle</span>
+                    Submit Payment
+                </button>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

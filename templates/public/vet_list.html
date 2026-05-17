@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block title %}Our Vets — VetProject{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="margin-bottom:28px;">
+    <h1 style="font-size:1.8rem; font-weight:800; margin:0 0 6px;">
+        Our Veterinarians
+    </h1>
+    <p style="color:var(--md-on-surface-variant); font-weight:600;
+              font-size:0.95rem; margin:0;">
+        {{ total_count }} certified vet{{ total_count|pluralize }} available
+    </p>
+</div>
+
+<!-- Search and filter bar -->
+<div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+            box-shadow:var(--md-elev-1); padding:16px 20px; margin-bottom:24px;">
+    <form method="get" style="display:flex; gap:12px; align-items:flex-start;
+                              flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px; position:relative;">
+            <span class="ms sm" style="position:absolute; left:12px; top:50%;
+                                       transform:translateY(-50%);
+                                       color:var(--md-on-surface-variant);">
+                search
+            </span>
+            <input type="text" name="search" value="{{ search }}"
+                   placeholder="Search by name or specialty..."
+                   style="width:100%; padding:10px 12px 10px 40px;
+                          border:1.5px solid var(--md-outline-variant);
+                          border-radius:var(--md-shape-full);
+                          font-family:'Nunito',sans-serif; font-weight:600;
+                          font-size:0.9rem; background:var(--md-surface-variant);
+                          outline:none; color:var(--md-on-surface);">
+        </div>
+        <button type="submit" class="btn btn-filled" style="flex-shrink:0;">
+            <span class="ms sm">search</span> Search
+        </button>
+        {% if search or specialty_filter %}
+            <a href="{% url 'consultations:vet_list' %}"
+               class="btn btn-outlined" style="flex-shrink:0;">
+                Clear
+            </a>
+        {% endif %}
+    </form>
+
+    {% if all_specializations %}
+    <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">
+        <a href="{% url 'consultations:vet_list' %}"
+           style="padding:5px 14px; border-radius:var(--md-shape-full);
+                  font-size:0.82rem; font-weight:700; text-decoration:none;
+                  {% if not specialty_filter %}background:var(--md-primary); color:#fff;
+                  {% else %}background:var(--md-surface-variant);
+                  color:var(--md-on-surface-variant);{% endif %}">
+            All
+        </a>
+        {% for spec in all_specializations %}
+        <a href="?specialty={{ spec }}"
+           style="padding:5px 14px; border-radius:var(--md-shape-full);
+                  font-size:0.82rem; font-weight:700; text-decoration:none;
+                  {% if specialty_filter == spec %}
+                      background:var(--md-primary); color:#fff;
+                  {% else %}
+                      background:var(--md-surface-variant);
+                      color:var(--md-on-surface-variant);
+                  {% endif %}">
+            {{ spec }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Vet cards grid -->
+{% if vets %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+            gap:20px;">
+    {% for vet in vets %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); overflow:hidden;
+                transition:box-shadow 0.2s; cursor:pointer;"
+         onmouseover="this.style.boxShadow='var(--md-elev-3)'"
+         onmouseout="this.style.boxShadow='var(--md-elev-1)'">
+
+        <!-- Card header -->
+        <div style="background:var(--md-primary-container); padding:24px 20px 16px;
+                    display:flex; align-items:center; gap:16px;">
+            {% if vet.profile_photo %}
+                <img src="{{ vet.profile_photo.url }}" alt="{{ vet }}"
+                     style="width:64px; height:64px; border-radius:var(--md-shape-full);
+                            object-fit:cover;
+                            border:3px solid var(--md-on-primary-container);">
+            {% else %}
+                <div style="width:64px; height:64px; border-radius:var(--md-shape-full);
+                            background:var(--md-primary); color:#fff;
+                            display:flex; align-items:center; justify-content:center;
+                            font-weight:800; font-size:1.4rem; flex-shrink:0;">
+                    {{ vet.user.first_name|first|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <div style="font-weight:800; font-size:1.05rem;
+                            color:var(--md-on-primary-container);">
+                    Dr. {{ vet.user.get_full_name }}
+                </div>
+                <div style="font-size:0.82rem; font-weight:600;
+                            color:var(--md-primary); margin-top:3px;">
+                    {{ vet.specializations|truncatechars:40|default:"General Practice" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card body -->
+        <div style="padding:16px 20px;">
+            <div style="display:flex; gap:16px; margin-bottom:12px;
+                        flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:5px;
+                            font-size:0.82rem; font-weight:600;
+                            color:var(--md-on-surface-variant);">
+                    <span class="ms sm filled" style="color:#CA8A04;">star</span>
+                    {% if vet.avg_rating %}
+                        {{ vet.avg_rating|floatformat:1 }}
+                        <span style="opacity:0.7;">({{ vet.review_count }})</span>
+                    {% else %}
+                        New
+                    {% endif %}
+                </div>
+                <div style="display:flex; align-items:center; gap:5px;
+                            font-size:0.82rem; font-weight:600;
+                            color:var(--md-on-surface-variant);">
+                    <span class="ms sm filled" style="color:var(--md-primary);">
+                        check_circle
+                    </span>
+                    {{ vet.consultation_count }} consultation{{ vet.consultation_count|pluralize }}
+                </div>
+                <div style="display:flex; align-items:center; gap:5px;
+                            font-size:0.82rem; font-weight:600;
+                            color:var(--md-on-surface-variant);">
+                    <span class="ms sm filled" style="color:var(--md-primary);">
+                        work
+                    </span>
+                    {{ vet.years_of_experience }} yr{{ vet.years_of_experience|pluralize }}
+                </div>
+            </div>
+
+            {% if vet.bio %}
+            <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                      font-weight:500; line-height:1.5; margin:0 0 14px;">
+                {{ vet.bio|truncatechars:100 }}
+            </p>
+            {% endif %}
+
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <span style="font-size:0.78rem; color:var(--md-on-surface-variant);
+                                 font-weight:600;">Consultation fee</span>
+                    <div style="font-weight:800; font-size:1rem;
+                                color:var(--md-primary);">
+                        ৳{{ vet.consultation_fee }}
+                    </div>
+                </div>
+                <a href="{% url 'consultations:vet_detail' vet.id %}"
+                   class="btn btn-filled"
+                   style="text-decoration:none;">
+                    <span class="ms sm">person</span> View Profile
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div style="text-align:center; padding:60px 24px;">
+    <span class="ms lg filled"
+          style="color:var(--md-outline); display:block; margin-bottom:16px;">
+        stethoscope
+    </span>
+    <h2 style="font-weight:800; margin:0 0 8px;">No vets found</h2>
+    <p style="color:var(--md-on-surface-variant); font-weight:600;">
+        {% if search or specialty_filter %}
+            Try a different search or filter.
+        {% else %}
+            No vets are currently available. Check back soon.
+        {% endif %}
+    </p>
+    {% if search or specialty_filter %}
+        <a href="{% url 'consultations:vet_list' %}"
+           class="btn btn-tonal" style="margin-top:16px;">
+            View all vets
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

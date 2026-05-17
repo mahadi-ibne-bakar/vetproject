@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{ pet.name }} — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:520px; margin:0 auto;">
+
+    <a href="{% url 'consultations:my_pets' %}"
+       style="display:inline-flex; align-items:center; gap:6px;
+              color:var(--md-on-surface-variant); text-decoration:none;
+              font-weight:700; font-size:0.875rem; margin-bottom:20px;">
+        <span class="ms sm">arrow_back</span> Back to My Pets
+    </a>
+
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:32px;">
+
+        <div style="text-align:center; margin-bottom:24px;">
+            <div style="font-size:3rem; margin-bottom:8px;">
+                {% if pet.species == 'cat' %}🐱
+                {% elif pet.species == 'dog' %}🐶
+                {% else %}🐾{% endif %}
+            </div>
+            <h1 style="font-size:1.5rem; font-weight:800; margin:0;">
+                Edit {{ pet.name }}
+            </h1>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <div class="field-wrap">
+                        {{ form.name }}
+                        <label>Pet's name</label>
+                    </div>
+                    {% if form.name.errors %}
+                        <p class="field-error">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        SPECIES
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        {% for value, label in form.species.field.choices %}
+                        <label style="flex:1; border:2px solid var(--md-outline-variant);
+                                      border-radius:var(--md-shape-lg); padding:12px;
+                                      cursor:pointer; text-align:center;
+                                      font-weight:700; font-size:0.875rem;
+                                      transition:all 0.15s;"
+                               class="species-chip">
+                            <input type="radio" name="species" value="{{ value }}"
+                                   style="display:none;"
+                                   {% if form.species.value == value %}checked{% endif %}>
+                            <div style="font-size:1.8rem; margin-bottom:4px;">
+                                {% if value == 'cat' %}🐱
+                                {% elif value == 'dog' %}🐶
+                                {% else %}🐾{% endif %}
+                            </div>
+                            {{ label }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="field-wrap">
+                        {{ form.breed }}
+                        <label>Breed (optional)</label>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.age_years }}
+                            <label>Age (years)</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.age_months }}
+                            <label>Age (months)</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.weight_kg }}
+                            <label>Weight (kg)</label>
+                        </div>
+                    </div>
+                </div>
+
+                {% if pet.photo %}
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:6px;">
+                        CURRENT PHOTO
+                    </div>
+                    <img src="{{ pet.photo.url }}"
+                         style="width:64px; height:64px;
+                                border-radius:var(--md-shape-full);
+                                object-fit:cover;">
+                </div>
+                {% endif %}
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:6px;">
+                        {% if pet.photo %}CHANGE PHOTO{% else %}ADD PHOTO{% endif %}
+                        (optional)
+                    </div>
+                    {{ form.photo }}
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <a href="{% url 'consultations:my_pets' %}"
+                       class="btn btn-outlined">Cancel</a>
+                    <button type="submit" class="btn btn-filled">
+                        <span class="ms sm">save</span> Save Changes
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const chips = document.querySelectorAll('.species-chip');
+    chips.forEach(chip => {
+        const radio = chip.querySelector('input[type=radio]');
+        function update() {
+            chips.forEach(c => {
+                c.style.borderColor = 'var(--md-outline-variant)';
+                c.style.background  = '';
+            });
+            if (radio.checked) {
+                chip.style.borderColor = 'var(--md-primary)';
+                chip.style.background  = 'var(--md-primary-container)';
+            }
+        }
+        chip.addEventListener('click', () => { radio.checked = true; update(); });
+        if (radio.checked) update();
+    });
+</script>
+{% endblock %}

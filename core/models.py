@@ -44,6 +44,12 @@ class SiteSettings(models.Model):
         default=10,
         help_text="Amount deducted from refund on cancellation in BDT",
     )
+    bkash_merchant_number = models.CharField(
+        max_length=20,
+        blank=True,
+        default='',
+        help_text="Your bKash merchant/personal number shown to users for payment",
+    )
 
     updated_at = models.DateTimeField(auto_now=True)
 

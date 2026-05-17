@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% block title %}Dr. {{ vet.user.get_full_name }} — VetProject{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom:16px;">
+    <a href="{% url 'consultations:vet_list' %}"
+       style="display:inline-flex; align-items:center; gap:6px;
+              color:var(--md-on-surface-variant); text-decoration:none;
+              font-weight:700; font-size:0.875rem;">
+        <span class="ms sm">arrow_back</span> Back to Vets
+    </a>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 2fr; gap:24px;
+            align-items:start;">
+
+    <!-- Left: Profile card + booking widget -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Profile card -->
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); overflow:hidden;">
+            <div style="background:var(--md-primary-container); padding:28px 20px;
+                        text-align:center;">
+                {% if vet.profile_photo %}
+                    <img src="{{ vet.profile_photo.url }}"
+                         alt="Dr. {{ vet.user.get_full_name }}"
+                         style="width:88px; height:88px;
+                                border-radius:var(--md-shape-full);
+                                object-fit:cover;
+                                border:4px solid var(--md-primary);
+                                margin-bottom:12px;">
+                {% else %}
+                    <div style="width:88px; height:88px;
+                                border-radius:var(--md-shape-full);
+                                background:var(--md-primary); color:#fff;
+                                display:flex; align-items:center;
+                                justify-content:center; font-weight:800;
+                                font-size:2rem; margin:0 auto 12px;">
+                        {{ vet.user.first_name|first|upper }}
+                    </div>
+                {% endif %}
+                <div style="font-weight:800; font-size:1.2rem;
+                            color:var(--md-on-primary-container);">
+                    Dr. {{ vet.user.get_full_name }}
+                </div>
+                <div style="font-size:0.875rem; color:var(--md-primary);
+                            font-weight:600; margin-top:4px;">
+                    {{ vet.specializations|default:"General Practice" }}
+                </div>
+            </div>
+
+            <div style="padding:16px 20px;">
+                <div style="display:flex; justify-content:space-around;
+                            padding:12px 0; border-bottom:1px solid var(--md-outline-variant);
+                            margin-bottom:14px;">
+                    <div style="text-align:center;">
+                        <div style="font-weight:800; font-size:1.2rem;
+                                    color:var(--md-primary);">
+                            {% if avg_rating %}{{ avg_rating }}★{% else %}—{% endif %}
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--md-on-surface-variant);
+                                    font-weight:600;">Rating</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-weight:800; font-size:1.2rem;
+                                    color:var(--md-primary);">
+                            {{ vet.total_consultations }}
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--md-on-surface-variant);
+                                    font-weight:600;">Consultations</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-weight:800; font-size:1.2rem;
+                                    color:var(--md-primary);">
+                            {{ vet.years_of_experience }}yr
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--md-on-surface-variant);
+                                    font-weight:600;">Experience</div>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;
+                            font-size:0.875rem;">
+                    <div style="display:flex; align-items:flex-start; gap:8px;">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary); flex-shrink:0;">
+                            school
+                        </span>
+                        <span style="font-weight:600; white-space:pre-line;
+                                     color:var(--md-on-surface-variant);">
+                            {{ vet.education|default:"—" }}
+                        </span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary); flex-shrink:0;">
+                            badge
+                        </span>
+                        <span style="font-weight:600;
+                                     color:var(--md-on-surface-variant);">
+                            BVC: {{ vet.bvc_registration_number|default:"—" }}
+                        </span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary); flex-shrink:0;">
+                            payments
+                        </span>
+                        <div>
+                            <span style="font-weight:800; color:var(--md-on-surface);">
+                                ৳{{ vet.consultation_fee }}
+                            </span>
+                            <span style="font-weight:600;
+                                         color:var(--md-on-surface-variant);">
+                                consultation fee
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking widget -->
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); padding:20px;">
+            <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                        display:flex; align-items:center; gap:8px;">
+                <span class="ms sm filled"
+                      style="color:var(--md-primary);">calendar_month</span>
+                Book a Consultation
+            </div>
+
+            {% if available_dates %}
+                <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                           font-weight:600; margin:0 0 14px;">
+                    Select an available date:
+                </p>
+
+                <!-- Date picker -->
+                <div style="display:flex; gap:8px; align-items:flex-end; margin-bottom:14px;">
+                    <div class="field-wrap" style="flex:1;">
+                        <input type="date" id="bookingDate"
+                            value="{% now 'Y-m-d' %}"
+                            min="{% now 'Y-m-d' %}"
+                            placeholder=" "
+                            style="width:100%; padding:20px 16px 8px;
+                                    background:var(--md-surface-variant);
+                                    border:none; border-bottom:2px solid var(--md-outline);
+                                    border-radius:var(--md-shape-sm) var(--md-shape-sm) 0 0;
+                                    font-family:'Nunito',sans-serif; font-weight:600;
+                                    font-size:0.95rem; outline:none;">
+                        <label style="position:absolute; left:16px; top:8px;
+                                    font-size:0.7rem; font-weight:700;
+                                    color:var(--md-primary);">Select date</label>
+                    </div>
+                    <button type="button" onclick="setToday()"
+                            class="btn btn-tonal btn-sm" style="flex-shrink:0; margin-bottom:2px;">
+                        <span class="ms sm">today</span> Today
+                    </button>
+                </div>
+
+                <!-- Slot picker -->
+                <div id="slotContainer" style="display:none; margin-bottom:14px;">
+                    <p style="font-size:0.8rem; font-weight:700;
+                              color:var(--md-on-surface-variant); margin:0 0 8px;">
+                        AVAILABLE SLOTS
+                    </p>
+                    <div id="slotGrid" style="display:flex; flex-wrap:wrap; gap:8px;">
+                    </div>
+                </div>
+
+                <div id="slotLoading" style="display:none; text-align:center;
+                                             padding:12px; color:var(--md-on-surface-variant);
+                                             font-size:0.875rem; font-weight:600;">
+                    <span class="ms sm">hourglass_empty</span> Loading slots...
+                </div>
+
+                <div id="noSlotsMsg" style="display:none;">
+                    <div class="alert alert-warning" style="margin:0;">
+                        <span class="ms sm filled">event_busy</span>
+                        No available slots on this date.
+                    </div>
+                </div>
+
+                <!-- Proceed button -->
+                <a id="proceedBtn" href="#"
+                   style="display:none; width:100%;"
+                   class="btn btn-filled">
+                    <span class="ms sm">arrow_forward</span>
+                    Proceed to Book
+                </a>
+
+                <div style="margin-top:12px;" class="alert alert-info">
+                    <span class="ms sm filled">info</span>
+                    <span style="font-size:0.82rem;">
+                        Booking fee: <strong>৳50</strong> upfront.
+                        Consultation fee: <strong>৳{{ vet.consultation_fee }}</strong>
+                        after the session.
+                    </span>
+                </div>
+
+            {% else %}
+                <div class="alert alert-warning" style="margin:0;">
+                    <span class="ms sm filled">event_busy</span>
+                    This vet has no available slots in the next 30 days.
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Right: Bio + Reviews -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <!-- Bio -->
+        {% if vet.bio %}
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); padding:24px;">
+            <div style="font-weight:800; font-size:1rem; margin-bottom:12px;
+                        display:flex; align-items:center; gap:8px;">
+                <span class="ms sm filled"
+                      style="color:var(--md-primary);">person</span>
+                About Dr. {{ vet.user.first_name }}
+            </div>
+            <p style="font-size:0.95rem; line-height:1.7;
+                      color:var(--md-on-surface-variant); font-weight:500; margin:0;">
+                {{ vet.bio }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Reviews -->
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); padding:24px;">
+            <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                        display:flex; align-items:center; gap:8px;">
+                <span class="ms sm filled" style="color:#CA8A04;">star</span>
+                Patient Reviews
+                {% if avg_rating %}
+                    <span style="font-size:0.875rem; font-weight:700;
+                                 color:var(--md-on-surface-variant);">
+                        {{ avg_rating }}★ ({{ reviews|length }})
+                    </span>
+                {% endif %}
+            </div>
+
+            {% for review in reviews %}
+            <div style="padding:14px 0; border-bottom:1px solid var(--md-outline-variant);">
+                <div style="display:flex; align-items:center;
+                            justify-content:space-between; margin-bottom:6px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="width:32px; height:32px;
+                                    border-radius:var(--md-shape-full);
+                                    background:var(--md-primary-container);
+                                    color:var(--md-on-primary-container);
+                                    display:flex; align-items:center;
+                                    justify-content:center;
+                                    font-weight:800; font-size:0.82rem;">
+                            {{ review.reviewer.first_name|first|upper }}
+                        </div>
+                        <span style="font-weight:700; font-size:0.875rem;">
+                            {{ review.reviewer.get_full_name|default:review.reviewer.username }}
+                        </span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.82rem; font-weight:700;
+                                     color:#CA8A04;">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                        <span style="font-size:0.78rem;
+                                     color:var(--md-on-surface-variant);
+                                     font-weight:600;">
+                            {{ review.created_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+                </div>
+                {% if review.comment %}
+                <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                          font-weight:500; line-height:1.5; margin:0;">
+                    {{ review.comment }}
+                </p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div style="text-align:center; padding:32px;
+                        color:var(--md-on-surface-variant);">
+                <span class="ms lg filled"
+                      style="display:block; margin-bottom:10px; opacity:0.3;">
+                    rate_review
+                </span>
+                <p style="font-weight:600; margin:0;">No reviews yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const availableDates = {{ available_dates_json|safe }};
+    const vetId = {{ vet.id }};
+    let selectedSlot = null;
+
+    const dateInput    = document.getElementById('bookingDate');
+    const slotContainer = document.getElementById('slotContainer');
+    const slotGrid     = document.getElementById('slotGrid');
+    const slotLoading  = document.getElementById('slotLoading');
+    const noSlotsMsg   = document.getElementById('noSlotsMsg');
+    const proceedBtn   = document.getElementById('proceedBtn');
+
+    if (dateInput) {
+        // Disable unavailable dates
+        dateInput.addEventListener('input', function() {
+            const selected = this.value;
+            if (!selected) return;
+
+            if (!availableDates.includes(selected)) {
+                noSlotsMsg.style.display = 'block';
+                slotContainer.style.display = 'none';
+                proceedBtn.style.display = 'none';
+                return;
+            }
+
+            fetchSlots(selected);
+        });
+    }
+
+    function fetchSlots(dateStr) {
+        slotLoading.style.display = 'block';
+        slotContainer.style.display = 'none';
+        noSlotsMsg.style.display = 'none';
+        proceedBtn.style.display = 'none';
+        selectedSlot = null;
+
+        fetch(`/consultations/book/${vetId}/slots/?date=${dateStr}`)
+            .then(r => r.json())
+            .then(data => {
+                slotLoading.style.display = 'none';
+                if (!data.slots || data.slots.length === 0) {
+                    noSlotsMsg.style.display = 'block';
+                    return;
+                }
+                renderSlots(data.slots, dateStr);
+            })
+            .catch(() => {
+                slotLoading.style.display = 'none';
+                noSlotsMsg.style.display = 'block';
+            });
+    }
+
+    function renderSlots(slots, dateStr) {
+        slotGrid.innerHTML = '';
+        slots.forEach(slot => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = slot.label;
+            btn.dataset.start = slot.start_str;
+            btn.dataset.end   = slot.end_str;
+            btn.style.cssText = `
+                padding: 7px 14px;
+                border-radius: var(--md-shape-full);
+                border: 1.5px solid var(--md-outline-variant);
+                background: var(--md-surface);
+                font-family: 'Nunito', sans-serif;
+                font-weight: 700; font-size: 0.82rem;
+                cursor: pointer; transition: all 0.15s;
+                color: var(--md-on-surface);
+            `;
+            btn.addEventListener('click', () => selectSlot(btn, dateStr, slot));
+            slotGrid.appendChild(btn);
+        });
+        slotContainer.style.display = 'block';
+    }
+
+    function selectSlot(btn, dateStr, slot) {
+        // Deselect all
+        slotGrid.querySelectorAll('button').forEach(b => {
+            b.style.background = 'var(--md-surface)';
+            b.style.color = 'var(--md-on-surface)';
+            b.style.borderColor = 'var(--md-outline-variant)';
+        });
+        // Select this one
+        btn.style.background = 'var(--md-primary)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--md-primary)';
+
+        selectedSlot = { date: dateStr, start: slot.start_str, end: slot.end_str };
+
+        // Update proceed button
+        proceedBtn.href = `/consultations/book/${vetId}/` +
+            `?date=${dateStr}&start=${slot.start_str}&end=${slot.end_str}`;
+        proceedBtn.style.display = 'flex';
+    }
+
+    function setToday() {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+        dateInput.dispatchEvent(new Event('input'));
+    }
+
+    // Auto-trigger slot loading on page load with today's date
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        if (dateInput && availableDates.includes(today)) {
+            fetchSlots(today);
+        }
+    });
+
+</script>
+{% endblock %}

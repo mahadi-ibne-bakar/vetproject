@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Payment Submitted — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:480px; margin:0 auto; padding:24px 0;">
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:36px; text-align:center;">
+
+        <div style="width:72px; height:72px; background:#DCFCE7;
+                    border-radius:var(--md-shape-full);
+                    display:flex; align-items:center; justify-content:center;
+                    margin:0 auto 20px;">
+            <span class="ms lg filled" style="color:#16A34A;">
+                hourglass_top
+            </span>
+        </div>
+
+        <h1 style="font-size:1.5rem; font-weight:800; margin:0 0 10px;">
+            Payment Submitted!
+        </h1>
+        <p style="color:var(--md-on-surface-variant); font-weight:600;
+                  font-size:0.9rem; line-height:1.6; margin:0 0 24px;">
+            We've received your payment details and are verifying them.
+            Your appointment with
+            <strong>Dr. {{ appointment.vet.user.get_full_name }}</strong>
+            on <strong>{{ appointment.date|date:"M d, Y" }}</strong>
+            at <strong>{{ appointment.start_time|time:"H:i" }}</strong>
+            will be confirmed shortly.
+        </p>
+
+        <div class="alert alert-info" style="text-align:left; margin-bottom:24px;">
+            <span class="ms sm filled">info</span>
+            <div style="font-size:0.85rem;">
+                Verification usually takes a few minutes.
+                You'll be able to see your Google Meet link
+                once confirmed.
+            </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <a href="{% url 'consultations:my_appointments' %}"
+               class="btn btn-filled" style="width:100%;">
+                <span class="ms sm">calendar_month</span>
+                View My Appointments
+            </a>
+            <a href="{% url 'core:home' %}"
+               class="btn btn-outlined" style="width:100%;">
+                Back to Home
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

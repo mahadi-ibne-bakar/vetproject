@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}
+    {% if in_booking %}Tell us about your pet{% else %}Add Pet{% endif %}
+    — VetProject
+{% endblock %}
+
+{% block content %}
+<div style="max-width:520px; margin:0 auto;">
+
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:32px;">
+
+        <!-- Header changes based on context -->
+        <div style="text-align:center; margin-bottom:28px;">
+            <div style="font-size:3rem; margin-bottom:12px;">🐾</div>
+            {% if in_booking %}
+                <h1 style="font-size:1.5rem; font-weight:800; margin:0 0 8px;">
+                    First, tell us about your pet
+                </h1>
+                <p style="color:var(--md-on-surface-variant); font-weight:600;
+                          font-size:0.9rem; margin:0;">
+                    Add your pet's details and we'll take you straight
+                    back to complete your booking.
+                </p>
+            {% else %}
+                <h1 style="font-size:1.5rem; font-weight:800; margin:0 0 8px;">
+                    Add a New Pet
+                </h1>
+                <p style="color:var(--md-on-surface-variant); font-weight:600;
+                          font-size:0.9rem; margin:0;">
+                    Tell us about your furry friend.
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Booking progress indicator -->
+        {% if in_booking %}
+        <div class="alert alert-info" style="margin-bottom:20px;">
+            <span class="ms sm filled">info</span>
+            <span style="font-size:0.85rem;">
+                Your appointment slot is reserved while you fill this in.
+            </span>
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+            <input type="hidden" name="context"
+                   value="{% if in_booking %}booking{% endif %}">
+
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <div class="field-wrap">
+                        {{ form.name }}
+                        <label>Pet's name</label>
+                    </div>
+                    {% if form.name.errors %}
+                        <p class="field-error">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant);
+                                margin-bottom:8px;">
+                        SPECIES <span style="color:var(--md-error);">*</span>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        {% for value, label in form.species.field.choices %}
+                        <label style="flex:1; border:2px solid var(--md-outline-variant);
+                                      border-radius:var(--md-shape-lg); padding:12px;
+                                      cursor:pointer; text-align:center;
+                                      font-weight:700; font-size:0.875rem;
+                                      transition:all 0.15s;"
+                               class="species-chip">
+                            <input type="radio" name="species" value="{{ value }}"
+                                   style="display:none;">
+                            <div style="font-size:1.8rem; margin-bottom:4px;">
+                                {% if value == 'cat' %}🐱
+                                {% elif value == 'dog' %}🐶
+                                {% else %}🐾{% endif %}
+                            </div>
+                            {{ label }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.species.errors %}
+                        <p class="field-error">{{ form.species.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <div class="field-wrap">
+                        {{ form.breed }}
+                        <label>Breed (optional)</label>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.age_years }}
+                            <label>Age (years)</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.age_months }}
+                            <label>Age (months)</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-wrap">
+                            {{ form.weight_kg }}
+                            <label>Weight (kg)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:6px;">
+                        PHOTO (optional)
+                    </div>
+                    {{ form.photo }}
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    <span class="ms sm filled">error</span>
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-filled btn-lg"
+                        style="width:100%; margin-top:4px;">
+                    {% if in_booking %}
+                        <span class="ms sm">arrow_forward</span>
+                        Save & Continue Booking
+                    {% else %}
+                        <span class="ms sm">check</span>
+                        Add Pet
+                    {% endif %}
+                </button>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Species chip highlight
+    const chips = document.querySelectorAll('.species-chip');
+    chips.forEach(chip => {
+        const radio = chip.querySelector('input[type=radio]');
+
+        function update() {
+            chips.forEach(c => {
+                c.style.borderColor = 'var(--md-outline-variant)';
+                c.style.background  = '';
+            });
+            if (radio.checked) {
+                chip.style.borderColor = 'var(--md-primary)';
+                chip.style.background  = 'var(--md-primary-container)';
+            }
+        }
+
+        chip.addEventListener('click', () => {
+            radio.checked = true;
+            update();
+        });
+
+        if (radio.checked) update();
+    });
+</script>
+{% endblock %}

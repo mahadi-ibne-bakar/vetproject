@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Reschedule Appointment — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:520px; margin:0 auto;">
+
+    <a href="{% url 'consultations:appointment_detail' appointment.id %}"
+       style="display:inline-flex; align-items:center; gap:6px;
+              color:var(--md-on-surface-variant); text-decoration:none;
+              font-weight:700; font-size:0.875rem; margin-bottom:20px;">
+        <span class="ms sm">arrow_back</span> Back
+    </a>
+
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:28px;">
+
+        <h1 style="font-size:1.4rem; font-weight:800; margin:0 0 6px;">
+            Reschedule Appointment
+        </h1>
+        <p style="color:var(--md-on-surface-variant); font-weight:600;
+                  font-size:0.9rem; margin:0 0 20px;">
+            Current: {{ appointment.date|date:"M d, Y" }}
+            at {{ appointment.start_time|time:"H:i" }}
+            with Dr. {{ appointment.vet.user.get_full_name }}
+        </p>
+
+        <div class="alert alert-warning" style="margin-bottom:20px;">
+            <span class="ms sm filled">warning</span>
+            You can only reschedule once. After rescheduling,
+            you'll need to cancel and rebook if needed.
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <div class="field-wrap">
+                        <input type="date" name="new_date" id="newDate"
+                               min="{{ today }}" placeholder=" ">
+                        <label>New date</label>
+                    </div>
+                </div>
+
+                <div id="newSlotContainer" style="display:none;">
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        AVAILABLE SLOTS
+                    </div>
+                    <div id="newSlotGrid"
+                         style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                    <input type="hidden" name="new_start" id="newStartInput">
+                    <input type="hidden" name="new_end" id="newEndInput">
+                </div>
+
+                <div id="noNewSlots" style="display:none;">
+                    <div class="alert alert-warning" style="margin:0;">
+                        <span class="ms sm filled">event_busy</span>
+                        No slots available on this date.
+                    </div>
+                </div>
+
+                <button type="submit" id="rescheduleBtn"
+                        class="btn btn-filled" style="display:none; width:100%;">
+                    <span class="ms sm">schedule</span> Confirm Reschedule
+                </button>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const vetId = {{ appointment.vet.id }};
+
+    document.getElementById('newDate').addEventListener('input', function() {
+        const date = this.value;
+        if (!date) return;
+
+        document.getElementById('newSlotContainer').style.display = 'none';
+        document.getElementById('noNewSlots').style.display = 'none';
+        document.getElementById('rescheduleBtn').style.display = 'none';
+
+        fetch(`/consultations/book/${vetId}/slots/?date=${date}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.slots || data.slots.length === 0) {
+                    document.getElementById('noNewSlots').style.display = 'block';
+                    return;
+                }
+                const grid = document.getElementById('newSlotGrid');
+                grid.innerHTML = '';
+                data.slots.forEach(slot => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = slot.label;
+                    btn.style.cssText = `
+                        padding:7px 14px; border-radius:var(--md-shape-full);
+                        border:1.5px solid var(--md-outline-variant);
+                        background:var(--md-surface); font-family:'Nunito',sans-serif;
+                        font-weight:700; font-size:0.82rem; cursor:pointer;
+                    `;
+                    btn.addEventListener('click', () => {
+                        grid.querySelectorAll('button').forEach(b => {
+                            b.style.background = 'var(--md-surface)';
+                            b.style.color = 'var(--md-on-surface)';
+                            b.style.borderColor = 'var(--md-outline-variant)';
+                        });
+                        btn.style.background = 'var(--md-primary)';
+                        btn.style.color = '#fff';
+                        btn.style.borderColor = 'var(--md-primary)';
+                        document.getElementById('newStartInput').value = slot.start_str;
+                        document.getElementById('newEndInput').value = slot.end_str;
+                        document.getElementById('rescheduleBtn').style.display = 'block';
+                    });
+                    grid.appendChild(btn);
+                });
+                document.getElementById('newSlotContainer').style.display = 'block';
+            });
+    });
+</script>
+{% endblock %}

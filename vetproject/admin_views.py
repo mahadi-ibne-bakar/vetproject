@@ -877,6 +877,9 @@ def site_settings(request):
                 settings.booking_fee = booking_fee
                 settings.cancellation_deduction = cancellation_deduction
                 settings.slot_duration_minutes = slot_duration
+                settings.bkash_merchant_number = request.POST.get(
+                    'bkash_merchant_number', ''
+                ).strip()
                 settings.save()
                 messages.success(request, "Fee settings updated.")
             except (ValueError, TypeError):

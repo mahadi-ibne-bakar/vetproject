@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% block title %}Appointment — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:720px; margin:0 auto;">
+
+    <a href="{% url 'consultations:my_appointments' %}"
+       style="display:inline-flex; align-items:center; gap:6px;
+              color:var(--md-on-surface-variant); text-decoration:none;
+              font-weight:700; font-size:0.875rem; margin-bottom:20px;">
+        <span class="ms sm">arrow_back</span> My Appointments
+    </a>
+
+    <!-- Header -->
+    <div style="background:var(--md-primary-container);
+                border-radius:var(--md-shape-xl); padding:24px;
+                margin-bottom:20px; display:flex; gap:16px; align-items:center;">
+        {% if appointment.vet.profile_photo %}
+            <img src="{{ appointment.vet.profile_photo.url }}"
+                 style="width:64px; height:64px; border-radius:var(--md-shape-full);
+                        object-fit:cover; flex-shrink:0;">
+        {% else %}
+            <div style="width:64px; height:64px; border-radius:var(--md-shape-full);
+                        background:var(--md-primary); color:#fff;
+                        display:flex; align-items:center; justify-content:center;
+                        font-weight:800; font-size:1.4rem; flex-shrink:0;">
+                {{ appointment.vet.user.first_name|first|upper }}
+            </div>
+        {% endif %}
+        <div style="flex:1;">
+            <div style="font-weight:800; font-size:1.15rem;
+                        color:var(--md-on-primary-container);">
+                Dr. {{ appointment.vet.user.get_full_name }}
+            </div>
+            <div style="font-size:0.875rem; font-weight:600;
+                        color:var(--md-primary); margin-top:3px;">
+                {{ appointment.date|date:"l, F j, Y" }}
+                · {{ appointment.start_time|time:"H:i" }}–{{ appointment.end_time|time:"H:i" }}
+            </div>
+            <div style="margin-top:8px;">
+                <span class="status-chip
+                    {% if appointment.status == 'confirmed' %}chip-green
+                    {% elif appointment.status == 'pending_payment' %}chip-yellow
+                    {% elif appointment.status == 'in_progress' %}chip-blue
+                    {% elif appointment.status == 'completed' %}chip-green
+                    {% elif appointment.status == 'cancelled' %}chip-red
+                    {% else %}chip-gray{% endif %}">
+                    {{ appointment.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;
+                margin-bottom:16px;">
+
+        <!-- Pet info -->
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); padding:20px;">
+            <div style="font-weight:800; margin-bottom:10px;
+                        display:flex; align-items:center; gap:6px;">
+                <span class="ms sm filled" style="color:var(--md-primary);">pets</span>
+                Pet
+            </div>
+            <div style="font-size:2rem; margin-bottom:6px;">
+                {% if appointment.pet.species == 'cat' %}🐱
+                {% elif appointment.pet.species == 'dog' %}🐶
+                {% else %}🐾{% endif %}
+            </div>
+            <div style="font-weight:800;">{{ appointment.pet.name }}</div>
+            <div style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                        font-weight:600; margin-top:2px;">
+                {{ appointment.pet.get_species_display }}
+                {% if appointment.pet.breed %} · {{ appointment.pet.breed }}{% endif %}
+            </div>
+        </div>
+
+        <!-- Complaint -->
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); padding:20px;">
+            <div style="font-weight:800; margin-bottom:10px;
+                        display:flex; align-items:center; gap:6px;">
+                <span class="ms sm filled"
+                      style="color:var(--md-primary);">medical_information</span>
+                Complaint
+            </div>
+            <span class="status-chip chip-blue" style="margin-bottom:8px;">
+                {{ appointment.get_primary_complaint_display }}
+            </span>
+            <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                      font-weight:500; line-height:1.5; margin:8px 0 0;">
+                {{ appointment.complaint_description }}
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Meet link (if confirmed) -->
+    {% if appointment.status == 'confirmed' and appointment.meet_link %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:20px; margin-bottom:16px;
+                border-left:4px solid var(--md-primary);">
+        <div style="font-weight:800; margin-bottom:10px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">videocam</span>
+            Google Meet Link
+        </div>
+        <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                  font-weight:600; margin:0 0 12px;">
+            Join at the scheduled time. No download needed — opens in your browser.
+        </p>
+        <a href="{{ appointment.meet_link.url }}" target="_blank"
+           class="btn btn-filled">
+            <span class="ms sm">videocam</span> Join Meeting
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Pending payment prompt -->
+    {% if appointment.status == 'pending_payment' %}
+    <div class="alert alert-warning" style="margin-bottom:16px;">
+        <span class="ms sm filled">payments</span>
+        <div>
+            <strong>Awaiting payment verification.</strong>
+            Your booking fee has been submitted and is being verified.
+            This usually takes a few minutes.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Second payment prompt -->
+    {% if appointment.status == 'awaiting_second_payment' %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:20px; margin-bottom:16px;
+                border-left:4px solid #F59E0B;">
+        <div style="font-weight:800; margin-bottom:8px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:#F59E0B;">payments</span>
+            Consultation Fee Due
+        </div>
+        <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                  font-weight:600; margin:0 0 12px;">
+            Pay ৳{{ appointment.vet.consultation_fee }} to unlock your prescription.
+        </p>
+        <a href="{% url 'consultations:submit_second_payment' appointment.id %}"
+           class="btn btn-filled" style="background:#F59E0B;">
+            <span class="ms sm">payments</span>
+            Pay ৳{{ appointment.vet.consultation_fee }}
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Prescription -->
+    {% if prescription %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; margin-bottom:12px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled"
+                  style="color:var(--md-primary);">prescription</span>
+            Prescription
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px;
+                    font-size:0.875rem;">
+            <div>
+                <div style="font-weight:700; color:var(--md-on-surface-variant);
+                            font-size:0.78rem; margin-bottom:4px;">MEDICATIONS</div>
+                <p style="white-space:pre-line; margin:0; font-weight:500;
+                           line-height:1.6;">{{ prescription.medications }}</p>
+            </div>
+            <div>
+                <div style="font-weight:700; color:var(--md-on-surface-variant);
+                            font-size:0.78rem; margin-bottom:4px;">
+                    DOSAGE INSTRUCTIONS
+                </div>
+                <p style="white-space:pre-line; margin:0; font-weight:500;
+                           line-height:1.6;">{{ prescription.dosage_instructions }}</p>
+            </div>
+            {% if prescription.follow_up_advice %}
+            <div>
+                <div style="font-weight:700; color:var(--md-on-surface-variant);
+                            font-size:0.78rem; margin-bottom:4px;">FOLLOW-UP ADVICE</div>
+                <p style="white-space:pre-line; margin:0; font-weight:500;
+                           line-height:1.6;">{{ prescription.follow_up_advice }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if prescription.pdf_file %}
+        <div style="margin-top:16px; padding-top:16px;
+                    border-top:1px solid var(--md-outline-variant);">
+            <a href="{% url 'consultations:download_prescription' appointment.id %}"
+               class="btn btn-tonal">
+                <span class="ms sm">download</span> Download PDF
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Payment history -->
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; margin-bottom:12px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">receipt</span>
+            Payment History
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            {% if booking_payment %}
+            <div style="display:flex; justify-content:space-between;
+                        align-items:center; padding:10px 14px;
+                        background:var(--md-surface-1);
+                        border-radius:var(--md-shape-md);">
+                <div>
+                    <div style="font-weight:700; font-size:0.875rem;">
+                        Booking Fee
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);
+                                font-weight:600;">
+                        TrxID: {{ booking_payment.transaction_id }}
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:800;">৳{{ booking_payment.amount }}</div>
+                    <span class="status-chip
+                        {% if booking_payment.status == 'verified' %}chip-green
+                        {% elif booking_payment.status == 'pending' %}chip-yellow
+                        {% else %}chip-red{% endif %}"
+                        style="font-size:0.72rem;">
+                        {{ booking_payment.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if consultation_payment %}
+            <div style="display:flex; justify-content:space-between;
+                        align-items:center; padding:10px 14px;
+                        background:var(--md-surface-1);
+                        border-radius:var(--md-shape-md);">
+                <div>
+                    <div style="font-weight:700; font-size:0.875rem;">
+                        Consultation Fee
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--md-on-surface-variant);
+                                font-weight:600;">
+                        TrxID: {{ consultation_payment.transaction_id }}
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:800;">
+                        ৳{{ consultation_payment.amount }}
+                    </div>
+                    <span class="status-chip
+                        {% if consultation_payment.status == 'verified' %}chip-green
+                        {% elif consultation_payment.status == 'pending' %}chip-yellow
+                        {% else %}chip-red{% endif %}"
+                        style="font-size:0.72rem;">
+                        {{ consultation_payment.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Cancel / Reschedule -->
+    {% if appointment.status in 'confirmed,rescheduled' %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; margin-bottom:12px;">Manage Appointment</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            {% if appointment.reschedule_count < 1 %}
+            <a href="{% url 'consultations:reschedule_appointment' appointment.id %}"
+               class="btn btn-tonal" style="text-decoration:none;">
+                <span class="ms sm">schedule</span> Reschedule
+            </a>
+            {% endif %}
+            <button onclick="document.getElementById('cancelForm').style.display='block'"
+                    class="btn btn-danger btn-sm">
+                <span class="ms sm">cancel</span> Cancel Appointment
+            </button>
+        </div>
+
+        <!-- Cancel form -->
+        <div id="cancelForm" style="display:none; margin-top:16px; padding:16px;
+                                    background:var(--md-error-container);
+                                    border-radius:var(--md-shape-md);">
+            <form method="post"
+                  action="{% url 'consultations:cancel_appointment' appointment.id %}">
+                {% csrf_token %}
+                <div class="field-wrap" style="margin-bottom:12px;">
+                    <textarea name="reason" placeholder=" " rows="2"></textarea>
+                    <label>Reason for cancellation (optional)</label>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Cancel this appointment?')">
+                        Confirm Cancel
+                    </button>
+                    <button type="button" class="btn btn-outlined btn-sm"
+                            onclick="document.getElementById('cancelForm').style.display='none'">
+                        Keep Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Feedback -->
+    {% if appointment.status == 'completed' %}
+    <div id="feedback" style="background:var(--md-surface);
+                border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:20px;">
+        <div style="font-weight:800; margin-bottom:12px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:#CA8A04;">star</span>
+            Rate Your Experience
+        </div>
+
+        {% if feedback_submitted %}
+        <div class="alert alert-success" style="margin:0;">
+            <span class="ms sm filled">check_circle</span>
+            Thank you! You rated this consultation
+            <strong>{{ appointment.feedback_rating }}★</strong>
+            {% if appointment.feedback_comment %}
+                — "{{ appointment.feedback_comment }}"
+            {% endif %}
+        </div>
+        {% else %}
+        <form method="post"
+              action="{% url 'consultations:submit_feedback' appointment.id %}">
+            {% csrf_token %}
+            <div style="margin-bottom:16px;">
+                <div style="font-size:0.8rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:8px;">
+                    YOUR RATING
+                </div>
+                <div style="display:flex; gap:8px;">
+                    {% for i in "12345" %}
+                    <label style="cursor:pointer;">
+                        <input type="radio" name="rating"
+                               value="{{ forloop.counter }}"
+                               style="display:none;"
+                               {% if forloop.counter == 5 %}checked{% endif %}>
+                        <span class="ms lg"
+                              style="color:#CA8A04; transition:transform 0.1s;"
+                              onmouseover="this.style.transform='scale(1.2)'"
+                              onmouseout="this.style.transform='scale(1)'">
+                            star
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="field-wrap" style="margin-bottom:14px;">
+                <textarea name="comment" placeholder=" " rows="3"></textarea>
+                <label>Share your experience (optional)</label>
+            </div>
+            <button type="submit" class="btn btn-filled">
+                <span class="ms sm">send</span> Submit Feedback
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -3,25 +3,126 @@
 {% block title %}Home — VetProject{% endblock %}
 
 {% block content %}
-    {% if not site_settings.booking_enabled %}
-    <div class="alert alert-warning"
-        style="margin-bottom:24px; border-radius:var(--md-shape-lg);">
-        <span class="ms sm filled">warning</span>
-        <div>
-            <strong>Service temporarily unavailable.</strong>
-            {{ site_settings.service_off_message }}
-            {% if site_settings.service_off_from and site_settings.service_off_until %}
-                <br>
-                <span style="font-size:0.85rem;">
-                    {{ site_settings.service_off_from|date:"M d" }} —
-                    {{ site_settings.service_off_until|date:"M d, Y" }}
-                </span>
+
+{% if not site_settings.booking_enabled %}
+<div class="alert alert-warning"
+     style="margin-bottom:24px; border-radius:var(--md-shape-lg);">
+    <span class="ms sm filled">warning</span>
+    <div>
+        <strong>Service temporarily unavailable.</strong>
+        {{ site_settings.service_off_message }}
+        {% if site_settings.service_off_from and site_settings.service_off_until %}
+            <br>
+            <span style="font-size:0.85rem;">
+                {{ site_settings.service_off_from|date:"M d" }} —
+                {{ site_settings.service_off_until|date:"M d, Y" }}
+            </span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Hero -->
+<div style="text-align:center; padding:60px 16px 48px;">
+    <div style="max-width:620px; margin:0 auto;">
+        <div style="display:inline-flex; align-items:center; gap:6px;
+                    background:var(--md-primary-container);
+                    color:var(--md-on-primary-container);
+                    padding:5px 14px; border-radius:var(--md-shape-full);
+                    font-size:0.82rem; font-weight:700; margin-bottom:20px;">
+            <span class="ms sm filled">verified</span>
+            Certified Vets Only
+        </div>
+        <h1 style="font-size:clamp(2rem,5vw,3rem); font-weight:800;
+                   color:var(--md-on-surface); line-height:1.2; margin:0 0 16px;">
+            Expert vet care,<br>
+            <span style="color:var(--md-primary);">from your home</span>
+        </h1>
+        <p style="font-size:1.05rem; color:var(--md-on-surface-variant);
+                  font-weight:500; line-height:1.6; margin:0 0 32px;">
+            Connect with certified veterinarians in Bangladesh via video call.
+            Get professional advice for your cats and dogs — quickly, affordably,
+            and without the trip to the clinic.
+        </p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            {% if site_settings.booking_enabled %}
+                <a href="{% url 'consultations:book_by_time' %}"
+                   class="btn btn-filled btn-lg ripple">
+                    <span class="ms">calendar_month</span>
+                    Book an Appointment
+                </a>
             {% endif %}
+            <a href="{% url 'consultations:vet_list' %}"
+               class="btn btn-tonal btn-lg ripple">
+                <span class="ms">stethoscope</span>
+                Browse Our Vets
+            </a>
         </div>
     </div>
-    {% endif %}
-<div class="text-center py-20">
-    <h1 class="text-4xl font-bold text-blue-600 mb-4">VetProject is running</h1>
-    <p class="text-gray-600 text-lg">Django + Tailwind + Supabase connected successfully.</p>
+
+    <!-- Stats row -->
+    <div style="display:flex; gap:16px; justify-content:center;
+                flex-wrap:wrap; margin-top:56px;">
+        <div style="background:var(--md-surface-1); border-radius:var(--md-shape-lg);
+                    padding:20px 28px; min-width:140px;
+                    box-shadow:var(--md-elev-1);">
+            <div style="font-size:1.8rem; font-weight:800;
+                        color:var(--md-primary);">{{ total_consultations }}</div>
+            <div style="font-size:0.85rem; font-weight:600;
+                        color:var(--md-on-surface-variant); margin-top:4px;">
+                Consultations
+            </div>
+        </div>
+        <div style="background:var(--md-surface-1); border-radius:var(--md-shape-lg);
+                    padding:20px 28px; min-width:140px;
+                    box-shadow:var(--md-elev-1);">
+            <div style="font-size:1.8rem; font-weight:800;
+                        color:var(--md-primary);">{{ total_users }}</div>
+            <div style="font-size:0.85rem; font-weight:600;
+                        color:var(--md-on-surface-variant); margin-top:4px;">
+                Pet Owners
+            </div>
+        </div>
+        <div style="background:var(--md-surface-1); border-radius:var(--md-shape-lg);
+                    padding:20px 28px; min-width:140px;
+                    box-shadow:var(--md-elev-1);">
+            <div style="font-size:1.8rem; font-weight:800;
+                        color:var(--md-primary);">{{ total_vets }}</div>
+            <div style="font-size:0.85rem; font-weight:600;
+                        color:var(--md-on-surface-variant); margin-top:4px;">
+                Certified Vets
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<!-- How it works -->
+<div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+            box-shadow:var(--md-elev-1); padding:40px 32px; margin-bottom:40px;">
+    <h2 style="font-size:1.4rem; font-weight:800; text-align:center;
+               margin:0 0 32px;">How it works</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+                gap:24px; text-align:center;">
+        {% for step in how_it_works %}
+        <div>
+            <div style="width:56px; height:56px; border-radius:var(--md-shape-lg);
+                        background:var(--md-primary-container);
+                        display:flex; align-items:center; justify-content:center;
+                        margin:0 auto 14px;">
+                <span class="ms lg filled"
+                      style="color:var(--md-primary);">{{ step.icon }}</span>
+            </div>
+            <div style="font-weight:800; font-size:0.95rem; margin-bottom:6px;">
+                {{ step.title }}
+            </div>
+            <div style="font-size:0.85rem; font-weight:500;
+                        color:var(--md-on-surface-variant); line-height:1.5;">
+                {{ step.description }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 {% endblock %}

@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% block title %}Book an Appointment — VetProject{% endblock %}
+
+{% block content %}
+
+<div style="max-width:900px; margin:0 auto;">
+
+    <div style="margin-bottom:24px;">
+        <h1 style="font-size:1.8rem; font-weight:800; margin:0 0 6px;">
+            Book an Appointment
+        </h1>
+        <p style="color:var(--md-on-surface-variant); font-weight:600;
+                  font-size:0.95rem; margin:0;">
+            Pick a date and time, then choose from available vets.
+        </p>
+    </div>
+
+    <!-- Step indicator -->
+    <div style="display:flex; align-items:center; gap:0;
+                margin-bottom:28px; overflow-x:auto;">
+        {% with step=1 %}
+        {% if selected_date %}{% with step=2 %}{% endwith %}{% endif %}
+        {% if selected_start %}{% with step=3 %}{% endwith %}{% endif %}
+        {% endwith %}
+
+        <div style="display:flex; align-items:center; gap:0; width:100%;">
+            <!-- Step 1 -->
+            <div style="display:flex; align-items:center; flex-direction:column;
+                        gap:4px; flex-shrink:0;">
+                <div style="width:36px; height:36px; border-radius:var(--md-shape-full);
+                            display:flex; align-items:center; justify-content:center;
+                            font-weight:800; font-size:0.9rem;
+                            {% if selected_date %}
+                                background:var(--md-primary); color:#fff;
+                            {% else %}
+                                background:var(--md-primary-container);
+                                color:var(--md-on-primary-container);
+                            {% endif %}">
+                    {% if selected_date %}
+                        <span class="ms sm filled">check</span>
+                    {% else %}1{% endif %}
+                </div>
+                <span style="font-size:0.75rem; font-weight:700;
+                             color:var(--md-on-surface-variant);">
+                    Date
+                </span>
+            </div>
+            <div style="flex:1; height:2px; background:{% if selected_date %}var(--md-primary){% else %}var(--md-outline-variant){% endif %}; margin-bottom:20px;"></div>
+
+            <!-- Step 2 -->
+            <div style="display:flex; align-items:center; flex-direction:column;
+                        gap:4px; flex-shrink:0;">
+                <div style="width:36px; height:36px; border-radius:var(--md-shape-full);
+                            display:flex; align-items:center; justify-content:center;
+                            font-weight:800; font-size:0.9rem;
+                            {% if selected_start %}
+                                background:var(--md-primary); color:#fff;
+                            {% elif selected_date %}
+                                background:var(--md-primary-container);
+                                color:var(--md-on-primary-container);
+                            {% else %}
+                                background:var(--md-surface-variant);
+                                color:var(--md-on-surface-variant);
+                            {% endif %}">
+                    {% if selected_start %}
+                        <span class="ms sm filled">check</span>
+                    {% else %}2{% endif %}
+                </div>
+                <span style="font-size:0.75rem; font-weight:700;
+                             color:var(--md-on-surface-variant);">
+                    Time
+                </span>
+            </div>
+            <div style="flex:1; height:2px; background:{% if selected_start %}var(--md-primary){% else %}var(--md-outline-variant){% endif %}; margin-bottom:20px;"></div>
+
+            <!-- Step 3 -->
+            <div style="display:flex; align-items:center; flex-direction:column;
+                        gap:4px; flex-shrink:0;">
+                <div style="width:36px; height:36px; border-radius:var(--md-shape-full);
+                            display:flex; align-items:center; justify-content:center;
+                            font-weight:800; font-size:0.9rem;
+                            {% if selected_start %}
+                                background:var(--md-primary-container);
+                                color:var(--md-on-primary-container);
+                            {% else %}
+                                background:var(--md-surface-variant);
+                                color:var(--md-on-surface-variant);
+                            {% endif %}">
+                    3
+                </div>
+                <span style="font-size:0.75rem; font-weight:700;
+                             color:var(--md-on-surface-variant);">
+                    Vet
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1: Date picker -->
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:24px; margin-bottom:20px;">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                calendar_month
+            </span>
+            Step 1 — Pick a Date
+        </div>
+        <form method="get" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+            <div style="flex:1; min-width:200px;">
+                <div class="field-wrap">
+                    <input type="date" name="date"
+                        value="{{ selected_date_str|default:today }}"
+                        min="{{ today }}"
+                        placeholder=" ">
+                    <label>Select date</label>
+                </div>
+            </div>
+            <a href="?date={{ today }}" class="btn btn-tonal" style="flex-shrink:0;">
+                <span class="ms sm">today</span> Today
+            </a>
+            <button type="submit" class="btn btn-filled" style="flex-shrink:0;">
+                <span class="ms sm">arrow_forward</span> See Available Slots
+            </button>
+        </form>
+    </div>
+
+    <!-- Step 2: Time slot picker -->
+    {% if selected_date and not selected_start %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:24px; margin-bottom:20px;">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:6px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                schedule
+            </span>
+            Step 2 — Pick a Time Slot
+        </div>
+        <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                  font-weight:600; margin:0 0 16px;">
+            {{ selected_date|date:"l, F j, Y" }}
+            — {{ available_slots|length }} slot{{ available_slots|length|pluralize }} available
+        </p>
+
+        {% if available_slots %}
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            {% for slot in available_slots %}
+            <a href="?date={{ selected_date_str }}&start={{ slot.start_str }}&end={{ slot.end_str }}"
+               style="padding:8px 16px; border-radius:var(--md-shape-full);
+                      border:1.5px solid var(--md-outline-variant);
+                      background:var(--md-surface); text-decoration:none;
+                      font-family:'Nunito',sans-serif; font-weight:700;
+                      font-size:0.85rem; color:var(--md-on-surface);
+                      transition:all 0.15s; display:flex; align-items:center; gap:6px;"
+               onmouseover="this.style.background='var(--md-primary)';
+                            this.style.color='#fff';
+                            this.style.borderColor='var(--md-primary)'"
+               onmouseout="this.style.background='var(--md-surface)';
+                           this.style.color='var(--md-on-surface)';
+                           this.style.borderColor='var(--md-outline-variant)'">
+                {{ slot.label }}
+                <span style="background:var(--md-primary-container);
+                             color:var(--md-on-primary-container);
+                             border-radius:var(--md-shape-full);
+                             padding:1px 8px; font-size:0.75rem;">
+                    {{ slot.vet_count }} vet{{ slot.vet_count|pluralize }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-warning" style="margin:0;">
+            <span class="ms sm filled">event_busy</span>
+            No vets are available on this date. Try a different date.
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Step 3: Choose a vet -->
+    {% if selected_start %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:24px; margin-bottom:20px;">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:6px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                stethoscope
+            </span>
+            Step 3 — Choose a Vet
+        </div>
+        <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                  font-weight:600; margin:0 0 16px;">
+            {{ selected_date|date:"l, F j" }}
+            at {{ selected_start }} – {{ selected_end }}
+            · {{ available_vets|length }} vet{{ available_vets|length|pluralize }} available
+            &nbsp;
+            <a href="?date={{ selected_date_str }}"
+               style="color:var(--md-primary); font-weight:700;">
+                Change time
+            </a>
+        </p>
+
+        {% if available_vets %}
+        <div style="display:grid;
+                    grid-template-columns:repeat(auto-fill, minmax(260px,1fr));
+                    gap:16px;">
+            {% for vet in available_vets %}
+            <div style="border:1.5px solid var(--md-outline-variant);
+                        border-radius:var(--md-shape-lg); padding:16px;
+                        display:flex; flex-direction:column; gap:10px;
+                        transition:border-color 0.2s, box-shadow 0.2s;"
+                 onmouseover="this.style.borderColor='var(--md-primary)';
+                              this.style.boxShadow='var(--md-elev-2)'"
+                 onmouseout="this.style.borderColor='var(--md-outline-variant)';
+                             this.style.boxShadow='none'">
+
+                <div style="display:flex; align-items:center; gap:12px;">
+                    {% if vet.profile_photo %}
+                        <img src="{{ vet.profile_photo.url }}"
+                             style="width:48px; height:48px;
+                                    border-radius:var(--md-shape-full);
+                                    object-fit:cover;">
+                    {% else %}
+                        <div style="width:48px; height:48px;
+                                    border-radius:var(--md-shape-full);
+                                    background:var(--md-primary-container);
+                                    color:var(--md-on-primary-container);
+                                    display:flex; align-items:center;
+                                    justify-content:center; font-weight:800;
+                                    font-size:1.1rem; flex-shrink:0;">
+                            {{ vet.user.first_name|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <div style="font-weight:800; font-size:0.95rem;">
+                            Dr. {{ vet.user.get_full_name }}
+                        </div>
+                        <div style="font-size:0.78rem; font-weight:600;
+                                     color:var(--md-primary);">
+                            {{ vet.specializations|truncatechars:30|default:"General" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            align-items:center;">
+                    <div>
+                        {% if vet.average_rating %}
+                            <span style="font-size:0.82rem; font-weight:700;
+                                         color:#CA8A04;">
+                                {{ vet.average_rating }}★
+                            </span>
+                        {% else %}
+                            <span style="font-size:0.82rem; font-weight:600;
+                                         color:var(--md-on-surface-variant);">New</span>
+                        {% endif %}
+                        <span style="font-size:0.8rem; font-weight:600;
+                                     color:var(--md-on-surface-variant);
+                                     margin-left:8px;">
+                            ৳{{ vet.consultation_fee }}
+                        </span>
+                    </div>
+                    <a href="{% url 'consultations:book_appointment' vet.id %}?date={{ selected_date_str }}&start={{ selected_start }}&end={{ selected_end }}"
+                       class="btn btn-filled btn-sm">
+                        Book
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-warning" style="margin:0;">
+            <span class="ms sm filled">event_busy</span>
+            No vets available for this time slot.
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
