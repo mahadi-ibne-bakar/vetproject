@@ -519,6 +519,35 @@
         }
         .ripple:hover::after { opacity: 0.08; }
         .ripple:active::after { opacity: 0.12; }
+
+
+        /* ── Mobile responsive fixes ──────────────────────────────── */
+        @media (max-width: 768px) {
+            .page-content {
+                padding: 16px 12px;
+            }
+            /* Footer columns stack on mobile */
+            footer [style*="grid-template-columns:2fr 1fr 1fr 1fr"] {
+                grid-template-columns: 1fr 1fr !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            footer [style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+            /* Booking form grids stack */
+            [style*="grid-template-columns:1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            [style*="grid-template-columns:2fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            [style*="grid-template-columns:1fr 2fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
     </style>
 
     {% block extra_css %}{% endblock %}

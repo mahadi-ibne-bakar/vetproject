@@ -470,11 +470,52 @@
         }
 
         /* ── Mobile: hide sidebar ────────────────────────────── */
-        @media (max-width: 768px) {
-            .admin-sidebar { transform: translateX(-100%); }
-            .admin-sidebar.open { transform: translateX(0); }
-            .admin-main { margin-left: 0; }
-            .admin-content { padding: 16px; }
+
+        @media (max-width: 900px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                box-shadow: none;
+            }
+            .admin-sidebar.open {
+                transform: translateX(0);
+                box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+            }
+            .admin-main {
+                margin-left: 0;
+            }
+            .admin-content {
+                padding: 12px;
+            }
+            .admin-topbar {
+                padding: 0 12px;
+            }
+            /* Stack grid layouts on mobile */
+            .admin-content [style*="grid-template-columns:1fr 1fr"],
+            .admin-content [style*="grid-template-columns: 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            .admin-content [style*="grid-template-columns:2fr 1fr"],
+            .admin-content [style*="grid-template-columns: 2fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            .admin-content [style*="grid-template-columns:1fr 2fr"],
+            .admin-content [style*="grid-template-columns: 1fr 2fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            /* Make tables scrollable on mobile */
+            .admin-table-wrap {
+                overflow-x: auto;
+            }
+            /* Stat cards single column on very small screens */
+        }
+
+        @media (max-width: 480px) {
+            .admin-content [style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+            .stat-card {
+                min-width: 0;
+            }
         }
 
         /* ── Empty state ─────────────────────────────────────── */
@@ -620,13 +661,21 @@
 
 </aside>
 
+<!-- Mobile backdrop -->
+<div id="adminBackdrop"
+     style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.5); z-index:49;"
+     onclick="toggleSidebar()">
+</div>
+
 <!-- ── Main ─────────────────────────────────────────────────────── -->
 <div class="admin-main">
 
     <!-- Top bar -->
     <div class="admin-topbar">
         <button onclick="toggleSidebar()"
-                style="background:none; border:none; cursor:pointer; display:none;"
+                style="background:none; border:none; cursor:pointer;
+                    padding:4px; border-radius:var(--md-shape-sm);"
                 id="sidebarToggle">
             <span class="ms">menu</span>
         </button>
@@ -662,17 +711,43 @@
 
 <script>
     function toggleSidebar() {
-        document.getElementById('adminSidebar').classList.toggle('open');
+        const sidebar   = document.getElementById('adminSidebar');
+        const backdrop  = document.getElementById('adminBackdrop');
+        const isOpen    = sidebar.classList.contains('open');
+        sidebar.classList.toggle('open');
+        backdrop.style.display = isOpen ? 'none' : 'block';
+        document.body.style.overflow = isOpen ? '' : 'hidden';
     }
 
-    // Show toggle button on mobile
-    if (window.innerWidth <= 768) {
-        document.getElementById('sidebarToggle').style.display = 'flex';
-    }
-    window.addEventListener('resize', () => {
-        const btn = document.getElementById('sidebarToggle');
-        btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+    document.addEventListener('click', function(e) {
+        const sidebar  = document.getElementById('adminSidebar');
+        const toggle   = document.getElementById('sidebarToggle');
+        const backdrop = document.getElementById('adminBackdrop');
+        if (sidebar.classList.contains('open') &&
+            !sidebar.contains(e.target) &&
+            !toggle.contains(e.target)) {
+            sidebar.classList.remove('open');
+            backdrop.style.display = 'none';
+            document.body.style.overflow = '';
+        }
     });
+
+    function checkSidebarVisibility() {
+        const btn      = document.getElementById('sidebarToggle');
+        const sidebar  = document.getElementById('adminSidebar');
+        const backdrop = document.getElementById('adminBackdrop');
+        if (window.innerWidth <= 900) {
+            btn.style.display = 'flex';
+        } else {
+            btn.style.display = 'none';
+            sidebar.classList.remove('open');
+            backdrop.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    checkSidebarVisibility();
+    window.addEventListener('resize', checkSidebarVisibility);
 </script>
 
 {% block extra_js %}{% endblock %}

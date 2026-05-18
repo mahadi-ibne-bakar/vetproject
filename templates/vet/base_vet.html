@@ -368,11 +368,47 @@
         .empty-state .ms { font-size: 44px; opacity: 0.3; display: block; margin-bottom: 10px; }
         .empty-state p { font-weight: 600; font-size: 0.9rem; }
 
-        @media (max-width: 768px) {
-            .vet-sidebar { transform: translateX(-100%); }
-            .vet-sidebar.open { transform: translateX(0); }
-            .vet-main { margin-left: 0; }
-            .vet-content { padding: 16px; }
+        @media (max-width: 900px) {
+            .vet-sidebar {
+                transform: translateX(-100%);
+                box-shadow: none;
+            }
+            .vet-sidebar.open {
+                transform: translateX(0);
+                box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+            }
+            .vet-main {
+                margin-left: 0;
+            }
+            .vet-content {
+                padding: 12px;
+            }
+            .vet-topbar {
+                padding: 0 12px;
+            }
+            /* Stack two-column grids */
+            .vet-content [style*="grid-template-columns:1fr 1fr"],
+            .vet-content [style*="grid-template-columns: 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            .vet-content [style*="grid-template-columns:2fr 1fr"],
+            .vet-content [style*="grid-template-columns: 2fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            .vet-content [style*="grid-template-columns:1fr 2fr"],
+            .vet-content [style*="grid-template-columns: 1fr 2fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            /* Tables scroll horizontally */
+            .vet-table-wrap {
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .vet-content [style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
 
@@ -451,12 +487,20 @@
 
 </aside>
 
+<!-- Mobile backdrop -->
+<div id="vetBackdrop"
+     style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.5); z-index:49;"
+     onclick="toggleVetSidebar()">
+</div>
+
 <!-- Main -->
 <div class="vet-main">
 
     <div class="vet-topbar">
         <button onclick="toggleVetSidebar()"
-                style="background:none; border:none; cursor:pointer; display:none;"
+                style="background:none; border:none; cursor:pointer;
+                    padding:4px; border-radius:var(--md-shape-sm);"
                 id="vetSidebarToggle">
             <span class="ms">menu</span>
         </button>
@@ -495,15 +539,43 @@
 
 <script>
     function toggleVetSidebar() {
-        document.getElementById('vetSidebar').classList.toggle('open');
+        const sidebar  = document.getElementById('vetSidebar');
+        const backdrop = document.getElementById('vetBackdrop');
+        const isOpen   = sidebar.classList.contains('open');
+        sidebar.classList.toggle('open');
+        backdrop.style.display = isOpen ? 'none' : 'block';
+        document.body.style.overflow = isOpen ? '' : 'hidden';
     }
-    if (window.innerWidth <= 768) {
-        document.getElementById('vetSidebarToggle').style.display = 'flex';
-    }
-    window.addEventListener('resize', () => {
-        const btn = document.getElementById('vetSidebarToggle');
-        btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+
+    document.addEventListener('click', function(e) {
+        const sidebar  = document.getElementById('vetSidebar');
+        const toggle   = document.getElementById('vetSidebarToggle');
+        const backdrop = document.getElementById('vetBackdrop');
+        if (sidebar.classList.contains('open') &&
+            !sidebar.contains(e.target) &&
+            !toggle.contains(e.target)) {
+            sidebar.classList.remove('open');
+            backdrop.style.display = 'none';
+            document.body.style.overflow = '';
+        }
     });
+
+    function checkVetSidebar() {
+        const btn      = document.getElementById('vetSidebarToggle');
+        const sidebar  = document.getElementById('vetSidebar');
+        const backdrop = document.getElementById('vetBackdrop');
+        if (window.innerWidth <= 900) {
+            btn.style.display = 'flex';
+        } else {
+            btn.style.display = 'none';
+            sidebar.classList.remove('open');
+            backdrop.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    checkVetSidebar();
+    window.addEventListener('resize', checkVetSidebar);
 </script>
 
 {% block extra_js %}{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Shop — Coming Soon — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:700px; margin:0 auto; padding:48px 16px;">
+
+    <!-- Main card -->
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-2); overflow:hidden;">
+
+        <!-- Top banner -->
+        <div style="background:var(--md-primary); padding:48px 32px;
+                    text-align:center; position:relative; overflow:hidden;">
+
+            <!-- Decorative circles -->
+            <div style="position:absolute; width:200px; height:200px;
+                        border-radius:50%; background:rgba(255,255,255,0.05);
+                        top:-60px; right:-40px;"></div>
+            <div style="position:absolute; width:150px; height:150px;
+                        border-radius:50%; background:rgba(255,255,255,0.05);
+                        bottom:-40px; left:-20px;"></div>
+
+            <div style="position:relative; z-index:1;">
+                <div style="font-size:3.5rem; margin-bottom:16px;">🛍️</div>
+                <h1 style="font-size:2rem; font-weight:800; color:#fff;
+                           margin:0 0 10px;">
+                    VetProject Shop
+                </h1>
+                <p style="color:var(--md-primary-container); font-weight:600;
+                          font-size:1rem; margin:0;">
+                    Something exciting is on its way
+                </p>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div style="padding:36px 40px; text-align:center;">
+
+            <div style="display:inline-flex; align-items:center; gap:6px;
+                        background:var(--md-primary-container);
+                        color:var(--md-on-primary-container);
+                        padding:5px 14px; border-radius:var(--md-shape-full);
+                        font-size:0.82rem; font-weight:700; margin-bottom:20px;">
+                <span class="ms sm filled">construction</span>
+                Under Development
+            </div>
+
+            <h2 style="font-size:1.3rem; font-weight:800;
+                       color:var(--md-on-surface); margin:0 0 12px;">
+                We're building something great
+            </h2>
+
+            <p style="font-size:0.95rem; color:var(--md-on-surface-variant);
+                      font-weight:500; line-height:1.7; margin:0 0 32px;
+                      max-width:480px; margin-left:auto; margin-right:auto;">
+                Our shop will bring you carefully selected pet care products —
+                food, accessories, medicines, and more — delivered right to
+                your door across Bangladesh.
+            </p>
+
+            <!-- Upcoming products teaser -->
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr);
+                        gap:16px; margin-bottom:32px;">
+                {% for item in coming_soon_items %}
+                <div style="background:var(--md-surface-1);
+                            border-radius:var(--md-shape-lg);
+                            padding:20px 14px; text-align:center;">
+                    <div style="font-size:2rem; margin-bottom:8px;">
+                        {{ item.emoji }}
+                    </div>
+                    <div style="font-weight:700; font-size:0.875rem;
+                                color:var(--md-on-surface); margin-bottom:4px;">
+                        {{ item.name }}
+                    </div>
+                    <div style="font-size:0.78rem; font-weight:600;
+                                color:var(--md-on-surface-variant);">
+                        {{ item.description }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Notify form -->
+            <div style="background:var(--md-surface-1);
+                        border-radius:var(--md-shape-lg); padding:24px;
+                        margin-bottom:28px;">
+                <div style="font-weight:800; font-size:0.95rem; margin-bottom:6px;">
+                    Get notified when we launch
+                </div>
+                <p style="font-size:0.85rem; color:var(--md-on-surface-variant);
+                           font-weight:600; margin:0 0 14px;">
+                    Be the first to know and get an exclusive
+                    launch discount.
+                </p>
+
+                {% if notify_submitted %}
+                <div class="alert alert-success" style="margin:0;">
+                    <span class="ms sm filled">check_circle</span>
+                    You're on the list! We'll notify you when the shop launches.
+                </div>
+                {% else %}
+                <form method="post"
+                      style="display:flex; gap:10px; flex-wrap:wrap;">
+                    {% csrf_token %}
+                    <div class="field-wrap" style="flex:1; min-width:200px;">
+                        <input type="email" name="notify_email"
+                               placeholder=" " required>
+                        <label>Your email address</label>
+                    </div>
+                    <button type="submit" class="btn btn-filled"
+                            style="flex-shrink:0;">
+                        <span class="ms sm">notifications</span>
+                        Notify Me
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Back links -->
+            <div style="display:flex; gap:12px; justify-content:center;
+                        flex-wrap:wrap;">
+                <a href="{% url 'consultations:book_by_time' %}"
+                   class="btn btn-filled" style="text-decoration:none;">
+                    <span class="ms sm">calendar_month</span>
+                    Book a Consultation
+                </a>
+                <a href="{% url 'core:home' %}"
+                   class="btn btn-outlined" style="text-decoration:none;">
+                    <span class="ms sm">home</span>
+                    Back to Home
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
