@@ -1,0 +1,106 @@
+{% extends 'vet/base_vet.html' %}
+{% block title %}My Blog Posts — VetProject{% endblock %}
+{% block page_title %}My Blog Posts{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+    <a href="{% url 'blog:submit_blog_post' %}" class="btn btn-filled">
+        <span class="ms sm">add</span> Write New Post
+    </a>
+</div>
+
+{% if posts %}
+<div style="display:flex; flex-direction:column; gap:14px;">
+    {% for post in posts %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:20px 24px;">
+
+        <div style="display:flex; align-items:flex-start;
+                    justify-content:space-between; gap:16px;">
+            <div style="flex:1;">
+                <div style="font-weight:800; font-size:1rem;
+                            margin-bottom:6px;">
+                    {{ post.title }}
+                </div>
+                <div style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                            font-weight:600; margin-bottom:10px;">
+                    {{ post.content|truncatechars:120 }}
+                </div>
+
+                <div style="display:flex; align-items:center; gap:10px;
+                            flex-wrap:wrap;">
+                    {% if post.status == 'published' %}
+                        <span class="status-chip chip-green">Published</span>
+                        <span style="font-size:0.78rem; font-weight:600;
+                                     color:var(--md-on-surface-variant);">
+                            {{ post.published_at|date:"M d, Y" }}
+                        </span>
+                        <span style="color:var(--md-outline);">·</span>
+                        <span style="display:inline-flex; align-items:center; gap:3px;
+                                    font-size:0.78rem; font-weight:600;
+                                    color:var(--md-on-surface-variant);">
+                            <span class="ms sm" style="font-size:14px;">visibility</span>
+                            {{ post.view_count }} view{{ post.view_count|pluralize }}
+                        </span>
+                        <a href="{% url 'blog:blog_post' post.slug %}"
+                           target="_blank"
+                           style="font-size:0.82rem; font-weight:700;
+                                  color:var(--md-primary); text-decoration:none;
+                                  display:flex; align-items:center; gap:4px;">
+                            <span class="ms sm">open_in_new</span> View live
+                        </a>
+                    {% elif post.status == 'pending' %}
+                        <span class="status-chip chip-yellow">Pending Review</span>
+                        <span style="font-size:0.78rem; font-weight:600;
+                                     color:var(--md-on-surface-variant);">
+                            Submitted {{ post.created_at|date:"M d, Y" }}
+                        </span>
+                    {% elif post.status == 'rejected' %}
+                        <span class="status-chip chip-red">Rejected</span>
+                        {% if post.rejection_note %}
+                        <span style="font-size:0.82rem; font-weight:600;
+                                     color:var(--md-error);">
+                            "{{ post.rejection_note|truncatechars:60 }}"
+                        </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="status-chip chip-gray">Draft</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-shrink:0;">
+                {% if post.status in 'draft,rejected' %}
+                <a href="{% url 'blog:edit_blog_post' post.id %}"
+                   class="btn btn-sm btn-tonal" style="text-decoration:none;">
+                    <span class="ms sm">edit</span> Edit & Resubmit
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div style="text-align:center; padding:60px 24px;
+            background:var(--md-surface); border-radius:var(--md-shape-xl);
+            box-shadow:var(--md-elev-1);">
+    <span class="ms lg filled"
+          style="color:var(--md-outline); display:block; margin-bottom:16px;">
+        edit_note
+    </span>
+    <h2 style="font-weight:800; margin:0 0 8px;">No posts yet</h2>
+    <p style="color:var(--md-on-surface-variant); font-weight:600;
+              margin:0 0 20px;">
+        Share your veterinary knowledge with pet owners.
+    </p>
+    <a href="{% url 'blog:submit_blog_post' %}" class="btn btn-filled">
+        <span class="ms sm">add</span> Write Your First Post
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

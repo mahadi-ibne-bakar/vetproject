@@ -1,0 +1,85 @@
+{% extends 'vet/base_vet.html' %}
+{% block title %}Edit Post — VetProject{% endblock %}
+{% block page_title %}Edit Blog Post{% endblock %}
+
+{% block content %}
+<div style="max-width:800px;">
+
+    <a href="{% url 'blog:my_blog_posts' %}"
+       style="display:inline-flex; align-items:center; gap:6px;
+              color:var(--md-on-surface-variant); text-decoration:none;
+              font-weight:700; font-size:0.875rem; margin-bottom:20px;">
+        <span class="ms sm">arrow_back</span> My Posts
+    </a>
+
+    {% if post.rejection_note %}
+    <div class="alert alert-error" style="margin-bottom:16px;">
+        <span class="ms sm filled">error</span>
+        <div>
+            <strong>Rejection reason:</strong>
+            {{ post.rejection_note }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="vet-card">
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        TITLE <span style="color:var(--md-error);">*</span>
+                    </div>
+                    <div class="field-wrap">
+                        <input type="text" name="title"
+                               value="{{ post.title }}"
+                               placeholder=" " maxlength="200">
+                        <label>Post title</label>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        CONTENT <span style="color:var(--md-error);">*</span>
+                    </div>
+                    <div class="field-wrap">
+                        <textarea name="content" placeholder=" "
+                                  rows="18" id="contentArea">{{ post.content }}</textarea>
+                        <label>Article content</label>
+                    </div>
+                    <p class="field-hint">
+                        <span id="wordCount">0</span> words
+                    </p>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <a href="{% url 'blog:my_blog_posts' %}"
+                       class="btn btn-outlined">Cancel</a>
+                    <button type="submit" class="btn btn-filled">
+                        <span class="ms sm">send</span>
+                        Save & Resubmit for Review
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const area    = document.getElementById('contentArea');
+    const counter = document.getElementById('wordCount');
+    function updateWordCount() {
+        const words = area.value.trim().split(/\s+/).filter(w => w.length > 0);
+        counter.textContent = words.length;
+    }
+    area.addEventListener('input', updateWordCount);
+    updateWordCount();
+</script>
+{% endblock %}

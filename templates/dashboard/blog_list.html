@@ -129,6 +129,7 @@
             <tr>
                 <th>Title</th>
                 <th>Author</th>
+                <th>Views</th>
                 <th>Published</th>
                 <th>Actions</th>
             </tr>
@@ -148,6 +149,7 @@
                 <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
                     {{ post.published_at|date:"M d, Y" }}
                 </td>
+                <td style="font-weight:700;">{{ post.view_count }}</td>
                 <td>
                     <div style="display:flex; gap:6px;">
                         <a href="{% url 'dashboard:blog_detail' post.id %}"

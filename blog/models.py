@@ -44,6 +44,10 @@ class BlogPost(models.Model):
         help_text="Admin's note to vet explaining why the post was rejected",
     )
     published_at = models.DateTimeField(blank=True, null=True)
+    view_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of times this post has been viewed",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

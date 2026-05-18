@@ -444,11 +444,11 @@
             <span class="ms filled">manage_accounts</span> Edit Profile
         </a>
         <a href="{% url 'blog:submit_blog_post' %}"
-           class="sidebar-link {% if 'blog' in request.resolver_match.url_name %}active{% endif %}">
+        class="sidebar-link {% if request.resolver_match.url_name == 'submit_blog_post' %}active{% endif %}">
             <span class="ms filled">edit_note</span> Write Blog Post
         </a>
         <a href="{% url 'blog:my_blog_posts' %}"
-           class="sidebar-link">
+        class="sidebar-link {% if request.resolver_match.url_name == 'my_blog_posts' or request.resolver_match.url_name == 'edit_blog_post' %}active{% endif %}">
             <span class="ms filled">article</span> My Posts
         </a>
     </div>

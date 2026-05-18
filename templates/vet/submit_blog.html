@@ -1,0 +1,89 @@
+{% extends 'vet/base_vet.html' %}
+{% block title %}Write Blog Post — VetProject{% endblock %}
+{% block page_title %}Write a Blog Post{% endblock %}
+
+{% block content %}
+<div style="max-width:800px;">
+
+    <div class="vet-card">
+
+        <p style="color:var(--md-on-surface-variant); font-size:0.9rem;
+                  font-weight:600; margin:0 0 20px; line-height:1.6;">
+            Share your veterinary knowledge with pet owners.
+            Your post will be reviewed by our team before publishing —
+            usually within 1–2 business days.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        TITLE <span style="color:var(--md-error);">*</span>
+                    </div>
+                    <div class="field-wrap">
+                        <input type="text" name="title"
+                               value="{{ title|default:'' }}"
+                               placeholder=" " maxlength="200">
+                        <label>e.g. How to care for your cat in summer</label>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        CONTENT <span style="color:var(--md-error);">*</span>
+                    </div>
+                    <div class="field-wrap">
+                        <textarea name="content" placeholder=" "
+                                  rows="18" id="contentArea">{{ content|default:'' }}</textarea>
+                        <label>Write your article here...</label>
+                    </div>
+                    <p class="field-hint">
+                        Write in plain text. Use blank lines to separate paragraphs.
+                        Approximately
+                        <span id="wordCount">0</span> words.
+                    </p>
+                </div>
+
+                <div class="alert alert-info" style="margin:0;">
+                    <span class="ms sm filled">info</span>
+                    <div style="font-size:0.85rem;">
+                        Your post will appear under your name once published.
+                        Keep content professional, accurate, and helpful for pet owners.
+                        Avoid medical claims that could be harmful if followed without
+                        professional guidance.
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <a href="{% url 'blog:my_blog_posts' %}"
+                       class="btn btn-outlined">Cancel</a>
+                    <button type="submit" class="btn btn-filled">
+                        <span class="ms sm">send</span> Submit for Review
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const area = document.getElementById('contentArea');
+    const counter = document.getElementById('wordCount');
+
+    function updateWordCount() {
+        const words = area.value.trim().split(/\s+/).filter(w => w.length > 0);
+        counter.textContent = words.length;
+    }
+
+    area.addEventListener('input', updateWordCount);
+    updateWordCount();
+</script>
+{% endblock %}
