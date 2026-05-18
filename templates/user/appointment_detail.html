@@ -156,46 +156,60 @@
                 box-shadow:var(--md-elev-1); padding:20px; margin-bottom:16px;">
         <div style="font-weight:800; margin-bottom:12px;
                     display:flex; align-items:center; gap:6px;">
-            <span class="ms sm filled"
-                  style="color:var(--md-primary);">prescription</span>
+            <span class="ms sm filled" style="color:var(--md-primary);">medication</span>
             Prescription
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:12px;
-                    font-size:0.875rem;">
-            <div>
-                <div style="font-weight:700; color:var(--md-on-surface-variant);
-                            font-size:0.78rem; margin-bottom:4px;">MEDICATIONS</div>
-                <p style="white-space:pre-line; margin:0; font-weight:500;
-                           line-height:1.6;">{{ prescription.medications }}</p>
-            </div>
-            <div>
-                <div style="font-weight:700; color:var(--md-on-surface-variant);
-                            font-size:0.78rem; margin-bottom:4px;">
-                    DOSAGE INSTRUCTIONS
+        {% if appointment.status == 'completed' and consultation_payment and consultation_payment.status == 'verified' %}
+            <!-- Payment verified — show full prescription access -->
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="alert alert-success" style="margin:0;">
+                    <span class="ms sm filled">check_circle</span>
+                    Your prescription is ready.
                 </div>
-                <p style="white-space:pre-line; margin:0; font-weight:500;
-                           line-height:1.6;">{{ prescription.dosage_instructions }}</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <a href="{% url 'consultations:view_prescription' appointment.id %}"
+                    class="btn btn-filled" style="text-decoration:none;">
+                        <span class="ms sm">visibility</span> View Prescription
+                    </a>
+                    <a href="{% url 'consultations:download_prescription' appointment.id %}"
+                    class="btn btn-tonal" style="text-decoration:none;">
+                        <span class="ms sm">download</span> Download PDF
+                    </a>
+                </div>
             </div>
-            {% if prescription.follow_up_advice %}
-            <div>
-                <div style="font-weight:700; color:var(--md-on-surface-variant);
-                            font-size:0.78rem; margin-bottom:4px;">FOLLOW-UP ADVICE</div>
-                <p style="white-space:pre-line; margin:0; font-weight:500;
-                           line-height:1.6;">{{ prescription.follow_up_advice }}</p>
-            </div>
-            {% endif %}
-        </div>
 
-        {% if prescription.pdf_file %}
-        <div style="margin-top:16px; padding-top:16px;
-                    border-top:1px solid var(--md-outline-variant);">
-            <a href="{% url 'consultations:download_prescription' appointment.id %}"
-               class="btn btn-tonal">
-                <span class="ms sm">download</span> Download PDF
-            </a>
-        </div>
+        {% elif consultation_payment and consultation_payment.status == 'pending' %}
+            <!-- Payment submitted but not yet verified -->
+            <div class="alert alert-warning" style="margin:0;">
+                <span class="ms sm filled">hourglass_top</span>
+                Your consultation payment is being verified.
+                Your prescription will be unlocked once verified — usually within a few minutes.
+            </div>
+
+        {% elif appointment.status == 'awaiting_second_payment' %}
+            <!-- No payment submitted yet -->
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="alert alert-info" style="margin:0;">
+                    <span class="ms sm filled">lock</span>
+                    Pay the consultation fee to unlock your prescription.
+                </div>
+                <a href="{% url 'consultations:submit_second_payment' appointment.id %}"
+                class="btn btn-filled"
+                style="background:#F59E0B; width:fit-content; text-decoration:none;">
+                    <span class="ms sm">payments</span>
+                    Pay ৳{{ appointment.vet.consultation_fee }} to Unlock
+                </a>
+            </div>
+
+        {% else %}
+            <!-- Fallback — prescription exists but payment situation unclear -->
+            <div class="alert alert-info" style="margin:0;">
+                <span class="ms sm filled">lock</span>
+                Your prescription will be available after payment verification.
+            </div>
         {% endif %}
+
     </div>
     {% endif %}
 

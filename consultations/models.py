@@ -246,6 +246,10 @@ class Appointment(models.Model):
         blank=True,
         related_name='rescheduled_to',
     )
+    reminder_sent = models.BooleanField(
+        default=False,
+        help_text="True once the 30-minute reminder email has been sent",
+    )
 
     # Cancellation
     cancellation_reason = models.TextField(blank=True)

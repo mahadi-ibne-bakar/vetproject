@@ -516,6 +516,9 @@ def verify_payment(request):
                         free_link.is_in_use = True
                         free_link.save()
                     appt.save()
+                    # Send confirmation emails to user and vet
+                    from consultations.emails import send_booking_confirmed
+                    send_booking_confirmed(appt)
 
             # If this was the consultation payment, mark as completed
             elif full_match.payment_type == 'consultation':
@@ -523,6 +526,9 @@ def verify_payment(request):
                 if appt.status == 'awaiting_second_payment':
                     appt.status = 'completed'
                     appt.save()
+                    # Send prescription ready email
+                    from consultations.emails import send_prescription_ready
+                    send_prescription_ready(appt)
 
             messages.success(
                 request,

@@ -1,0 +1,111 @@
+{% extends 'vet/base_vet.html' %}
+{% block title %}My Appointments — VetProject{% endblock %}
+{% block page_title %}My Appointments{% endblock %}
+
+{% block content %}
+
+<!-- Tabs -->
+<div style="display:flex; gap:4px; margin-bottom:20px;
+            background:var(--md-surface); border-radius:var(--md-shape-full);
+            padding:4px; width:fit-content; box-shadow:var(--md-elev-1);">
+
+    {% for value, label, count in tabs %}
+    <a href="?tab={{ value }}"
+       style="padding:8px 18px; border-radius:var(--md-shape-full); font-weight:700;
+              font-size:0.875rem; text-decoration:none; transition:background 0.2s;
+              {% if tab == value %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        {{ label }}
+        {% if count %}
+            <span style="background:{% if tab == value %}rgba(255,255,255,0.3)
+                         {% else %}var(--md-secondary){% endif %};
+                         color:#fff; border-radius:999px;
+                         padding:1px 7px; font-size:0.75rem; margin-left:4px;">
+                {{ count }}
+            </span>
+        {% endif %}
+    </a>
+    {% endfor %}
+
+</div>
+
+<!-- Today -->
+{% if tab == 'today' %}
+    {% if todays %}
+        {% for appt in todays %}
+        {% include 'vet/_vet_appointment_card.html' with appt=appt highlight=True %}
+        {% endfor %}
+    {% else %}
+    <div style="text-align:center; padding:60px 24px;
+                background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1);">
+        <span class="ms lg filled"
+              style="color:var(--md-outline); display:block; margin-bottom:14px;">
+            event_available
+        </span>
+        <h2 style="font-weight:800; margin:0 0 6px;">No appointments today</h2>
+        <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0;">
+            {{ today|date:"l, F j, Y" }}
+        </p>
+    </div>
+    {% endif %}
+{% endif %}
+
+<!-- Upcoming -->
+{% if tab == 'upcoming' %}
+    {% for appt in upcoming %}
+    {% include 'vet/_vet_appointment_card.html' with appt=appt %}
+    {% empty %}
+    <div style="text-align:center; padding:40px;
+                background:var(--md-surface); border-radius:var(--md-shape-xl);">
+        <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0;">
+            No upcoming appointments.
+        </p>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Awaiting payment -->
+{% if tab == 'awaiting' %}
+    {% for appt in awaiting %}
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:18px 20px;
+                margin-bottom:14px; border-left:4px solid #F59E0B;
+                display:flex; align-items:center; gap:14px;">
+        <div style="flex:1;">
+            <div style="font-weight:800;">{{ appt.pet.name }}</div>
+            <div style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                        font-weight:600;">
+                {{ appt.user.get_full_name|default:appt.user.username }}
+                · {{ appt.date|date:"M d" }} at {{ appt.start_time|time:"H:i" }}
+            </div>
+        </div>
+        <span class="status-chip chip-yellow">Awaiting Payment</span>
+        <a href="{% url 'consultations:vet_appointment_detail' appt.id %}"
+           class="btn btn-sm btn-outlined">Details</a>
+    </div>
+    {% empty %}
+    <div style="text-align:center; padding:40px;
+                background:var(--md-surface); border-radius:var(--md-shape-xl);">
+        <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0;">
+            No appointments awaiting payment.
+        </p>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Past -->
+{% if tab == 'past' %}
+    {% for appt in past %}
+    {% include 'vet/_vet_appointment_card.html' with appt=appt %}
+    {% empty %}
+    <div style="text-align:center; padding:40px;
+                background:var(--md-surface); border-radius:var(--md-shape-xl);">
+        <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0;">
+            No past appointments yet.
+        </p>
+    </div>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}

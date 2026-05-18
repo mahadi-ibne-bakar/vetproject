@@ -2,6 +2,9 @@ from django.shortcuts import render
 from core.models import SiteSettings
 from accounts.models import User, VetProfile
 from consultations.models import Appointment
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings as django_settings
 
 
 def home(request):
@@ -48,3 +51,51 @@ def about(request):
 
 def contact(request):
     return render(request, 'contact.html', {})
+
+
+@csrf_exempt
+def send_reminders_endpoint(request):
+    """
+    Protected endpoint called by cron-job.org every 5 minutes.
+    Sends 30-minute appointment reminders.
+    Protected by a secret key in the Authorization header or query param.
+    """
+    # Verify secret
+    secret = (
+        request.GET.get('secret') or
+        request.headers.get('X-Reminder-Secret', '')
+    )
+    if secret != django_settings.REMINDER_SECRET:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    from django.utils import timezone
+    from datetime import timedelta
+    from consultations.models import Appointment
+    from consultations.emails import send_appointment_reminder
+
+    now          = timezone.localtime()
+    today        = now.date()
+    window_start = (now + timedelta(minutes=25)).time()
+    window_end   = (now + timedelta(minutes=35)).time()
+
+    appointments = Appointment.objects.filter(
+        date=today,
+        status='confirmed',
+        reminder_sent=False,
+        start_time__gte=window_start,
+        start_time__lte=window_end,
+    ).select_related('user', 'vet__user', 'pet', 'meet_link')
+
+    sent = []
+    for appt in appointments:
+        send_appointment_reminder(appt)
+        appt.reminder_sent = True
+        appt.save(update_fields=['reminder_sent'])
+        sent.append(appt.id)
+
+    return JsonResponse({
+        'status': 'ok',
+        'reminders_sent': len(sent),
+        'appointment_ids': sent,
+        'checked_at': now.isoformat(),
+    })

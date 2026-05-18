@@ -1,0 +1,666 @@
+{% extends 'vet/base_vet.html' %}
+{% block title %}Consultation — VetProject{% endblock %}
+{% block page_title %}Consultation Detail{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom:16px;">
+    <a href="{% url 'consultations:vet_appointments' %}"
+       style="display:inline-flex; align-items:center; gap:6px;
+              color:var(--md-on-surface-variant); text-decoration:none;
+              font-weight:700; font-size:0.875rem;">
+        <span class="ms sm">arrow_back</span> Back to Appointments
+    </a>
+</div>
+
+<!-- Header -->
+<div style="background:var(--md-primary-container); border-radius:var(--md-shape-xl);
+            padding:20px 24px; margin-bottom:20px;
+            display:flex; align-items:center; gap:16px;">
+    <div style="font-size:3rem; line-height:1; flex-shrink:0;">
+        {% if appointment.pet.species == 'cat' %}🐱
+        {% elif appointment.pet.species == 'dog' %}🐶
+        {% else %}🐾{% endif %}
+    </div>
+    <div style="flex:1;">
+        <div style="font-weight:800; font-size:1.2rem;
+                    color:var(--md-on-primary-container);">
+            {{ appointment.pet.name }}
+            <span style="font-size:0.85rem; font-weight:600;
+                         color:var(--md-primary);">
+                · {{ appointment.pet.get_species_display }}
+                {% if appointment.pet.breed %} · {{ appointment.pet.breed }}{% endif %}
+            </span>
+        </div>
+        <div style="font-size:0.875rem; font-weight:600; margin-top:3px;
+                    color:var(--md-on-primary-container);">
+            👤 {{ appointment.user.get_full_name|default:appointment.user.username }}
+            · {{ appointment.user.phone_number|default:"No phone" }}
+        </div>
+        <div style="font-size:0.875rem; font-weight:600; margin-top:3px;
+                    color:var(--md-primary);">
+            {{ appointment.date|date:"l, M d, Y" }}
+            · {{ appointment.start_time|time:"H:i" }}–{{ appointment.end_time|time:"H:i" }}
+        </div>
+    </div>
+    <div>
+        <span class="status-chip
+            {% if appointment.status == 'confirmed' %}chip-green
+            {% elif appointment.status == 'in_progress' %}chip-yellow
+            {% elif appointment.status == 'completed' %}chip-green
+            {% elif appointment.status == 'awaiting_second_payment' %}chip-yellow
+            {% elif appointment.status == 'cancelled' %}chip-red
+            {% else %}chip-gray{% endif %}">
+            {{ appointment.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+<!-- Left column -->
+<div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Meeting controls -->
+    {% if can_start or can_end or appointment.status == 'awaiting_second_payment' %}
+    <div class="vet-card">
+        <div style="font-weight:800; margin-bottom:14px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                videocam
+            </span>
+            Meeting Controls
+        </div>
+
+        {% if appointment.meet_link %}
+        <div style="font-size:0.82rem; font-weight:600;
+                    color:var(--md-on-surface-variant); margin-bottom:12px;">
+            Meet Link:
+            <a href="{{ appointment.meet_link.url }}" target="_blank"
+               style="color:var(--md-primary);">
+                {{ appointment.meet_link.url|truncatechars:40 }}
+            </a>
+        </div>
+        {% else %}
+        <div class="alert alert-error" style="margin-bottom:12px;">
+            <span class="ms sm filled">error</span>
+            No Meet link assigned. Contact admin.
+        </div>
+        {% endif %}
+
+        {% if can_start %}
+        <form method="post"
+              action="{% url 'consultations:start_consultation' appointment.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-filled"
+                    style="width:100%; background:#16A34A;"
+                    onclick="return confirm('Start the consultation and open Google Meet?')">
+                <span class="ms sm">play_circle</span>
+                Start Consultation & Open Meet
+            </button>
+        </form>
+        {% endif %}
+
+        {% if can_end %}
+        <div class="alert alert-warning" style="margin-bottom:12px;">
+            <span class="ms sm filled">videocam</span>
+            Consultation in progress since
+            {{ appointment.consultation_start_time|time:"H:i" }}.
+            Fill in notes and prescription below, then end the consultation.
+        </div>
+        <form method="post"
+              action="{% url 'consultations:end_consultation' appointment.id %}">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:10px;
+                        margin-bottom:12px;">
+                <div class="field-wrap">
+                    <textarea name="consultation_notes" placeholder=" " rows="3">{{ appointment.consultation_notes }}</textarea>
+                    <label>Consultation notes</label>
+                </div>
+                <div class="field-wrap">
+                    <textarea name="diagnosis" placeholder=" " rows="2">{{ appointment.diagnosis }}</textarea>
+                    <label>Diagnosis</label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-danger"
+                    style="width:100%;"
+                    onclick="return confirm('End the consultation?')">
+                <span class="ms sm">stop_circle</span>
+                End Consultation
+            </button>
+        </form>
+        {% endif %}
+
+        {% if appointment.status == 'awaiting_second_payment' %}
+        <div class="alert alert-info" style="margin:0;">
+            <span class="ms sm filled">check_circle</span>
+            Consultation complete. Awaiting patient payment.
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Pre-consultation info -->
+    <div class="vet-card">
+        <div style="font-weight:800; margin-bottom:12px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                medical_information
+            </span>
+            Patient's Complaint
+        </div>
+        <span class="status-chip chip-blue" style="margin-bottom:10px;">
+            {{ appointment.get_primary_complaint_display }}
+        </span>
+        <p style="font-size:0.875rem; line-height:1.6;
+                  color:var(--md-on-surface-variant); font-weight:500; margin:8px 0 0;">
+            {{ appointment.complaint_description }}
+        </p>
+        {% if appointment.symptom_photo %}
+        <div style="margin-top:12px;">
+            <div style="font-size:0.78rem; font-weight:700;
+                        color:var(--md-on-surface-variant); margin-bottom:6px;">
+                SYMPTOM PHOTO
+            </div>
+            <img src="{{ appointment.symptom_photo.url }}"
+                 style="max-width:100%; border-radius:var(--md-shape-md);
+                        border:1px solid var(--md-outline-variant);">
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Pet info -->
+    <div class="vet-card">
+        <div style="font-weight:800; margin-bottom:12px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">pets</span>
+            Pet Profile
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;
+                    font-size:0.875rem;">
+            <div>
+                <span style="color:var(--md-on-surface-variant); font-weight:600;">
+                    Species
+                </span><br>
+                <strong>{{ appointment.pet.get_species_display }}</strong>
+            </div>
+            <div>
+                <span style="color:var(--md-on-surface-variant); font-weight:600;">
+                    Breed
+                </span><br>
+                <strong>{{ appointment.pet.breed|default:"—" }}</strong>
+            </div>
+            <div>
+                <span style="color:var(--md-on-surface-variant); font-weight:600;">
+                    Age
+                </span><br>
+                <strong>
+                    {% if appointment.pet.age_years %}
+                        {{ appointment.pet.age_years }}yr
+                    {% endif %}
+                    {% if appointment.pet.age_months %}
+                        {{ appointment.pet.age_months }}mo
+                    {% endif %}
+                    {% if not appointment.pet.age_years and not appointment.pet.age_months %}
+                        —
+                    {% endif %}
+                </strong>
+            </div>
+            <div>
+                <span style="color:var(--md-on-surface-variant); font-weight:600;">
+                    Weight
+                </span><br>
+                <strong>
+                    {% if appointment.pet.weight_kg %}
+                        {{ appointment.pet.weight_kg }}kg
+                    {% else %}—{% endif %}
+                </strong>
+            </div>
+        </div>
+        {% if appointment.pet.medical_history_notes %}
+        <div style="margin-top:12px; padding-top:12px;
+                    border-top:1px solid var(--md-outline-variant);">
+            <div style="font-size:0.78rem; font-weight:700;
+                        color:var(--md-on-surface-variant); margin-bottom:6px;">
+                MEDICAL HISTORY NOTES
+            </div>
+            <p style="font-size:0.875rem; white-space:pre-line; margin:0;
+                      color:var(--md-on-surface-variant); line-height:1.5;">
+                {{ appointment.pet.medical_history_notes }}
+            </p>
+        </div>
+        <!-- Add note form -->
+        <div style="margin-top:12px; padding-top:12px;
+                    border-top:1px solid var(--md-outline-variant);">
+            <div style="font-size:0.72rem; font-weight:700;
+                        color:var(--md-on-surface-variant); margin-bottom:6px;
+                        letter-spacing:0.5px;">
+                ADD TO MEDICAL HISTORY
+            </div>
+            <form method="post"
+                action="{% url 'consultations:update_pet_notes' appointment.pet.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
+                <div class="field-wrap" style="margin-bottom:8px;">
+                    <textarea name="note" placeholder=" " rows="2"></textarea>
+                    <label>Add a clinical note...</label>
+                </div>
+                <button type="submit" class="btn btn-sm btn-tonal">
+                    <span class="ms sm">add</span> Add Note
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Payment status -->
+    <div class="vet-card">
+        <div style="font-weight:800; margin-bottom:12px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">receipt</span>
+            Payment Status
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            {% if booking_payment %}
+            <div style="display:flex; justify-content:space-between;
+                        align-items:center;">
+                <span style="font-size:0.875rem; font-weight:600;">
+                    Booking Fee (৳{{ booking_payment.amount }})
+                </span>
+                <span class="status-chip
+                    {% if booking_payment.status == 'verified' %}chip-green
+                    {% elif booking_payment.status == 'pending' %}chip-yellow
+                    {% else %}chip-red{% endif %}"
+                    style="font-size:0.72rem;">
+                    {{ booking_payment.get_status_display }}
+                </span>
+            </div>
+            {% endif %}
+            {% if consultation_payment %}
+            <div style="display:flex; justify-content:space-between;
+                        align-items:center;">
+                <span style="font-size:0.875rem; font-weight:600;">
+                    Consultation Fee (৳{{ consultation_payment.amount }})
+                </span>
+                <span class="status-chip
+                    {% if consultation_payment.status == 'verified' %}chip-green
+                    {% elif consultation_payment.status == 'pending' %}chip-yellow
+                    {% else %}chip-red{% endif %}"
+                    style="font-size:0.72rem;">
+                    {{ consultation_payment.get_status_display }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Right column -->
+<div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Prescription -->
+    <div class="vet-card">
+        <div style="font-weight:800; margin-bottom:14px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                medication
+            </span>
+            Prescription
+            {% if prescription %}
+                <span class="status-chip chip-green"
+                      style="font-size:0.72rem; margin-left:4px;">
+                    Submitted
+                </span>
+            {% endif %}
+        </div>
+
+        <form method="post"
+            action="{% url 'consultations:submit_prescription' appointment.id %}">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:14px;">
+
+                <!-- Dynamic medication rows -->
+                <div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr;
+                                gap:6px; margin-bottom:6px;">
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);">
+                            MEDICATION
+                            <span style="color:var(--md-error);">*</span>
+                        </div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);">
+                            DOSAGE & INSTRUCTIONS
+                            <span style="color:var(--md-error);">*</span>
+                        </div>
+                    </div>
+
+                    <div id="medicationRows"
+                        style="display:flex; flex-direction:column; gap:8px;">
+                        <!-- Rows injected here by JS or pre-filled from existing prescription -->
+                        {% if prescription %}
+                            {% with med_lines=prescription.medications.splitlines dose_lines=prescription.dosage_instructions.splitlines %}
+                            {% for med in med_lines %}
+                            <div class="med-row" style="display:grid;
+                                        grid-template-columns:1fr 1fr auto; gap:6px;
+                                        align-items:flex-start;">
+                                <div class="field-wrap">
+                                    <input type="text" name="medication[]"
+                                        value="{{ med }}" placeholder=" ">
+                                    <label>e.g. Amoxicillin 250mg</label>
+                                </div>
+                                <div class="field-wrap">
+                                    <input type="text" name="dosage[]"
+                                        value="{% for d in dose_lines %}{% if forloop.counter == forloop.parentloop.counter %}{{ d }}{% endif %}{% endfor %}"
+                                        placeholder=" ">
+                                    <label>e.g. 1 tablet twice daily</label>
+                                </div>
+                                <button type="button" onclick="removeRow(this)"
+                                        style="background:none; border:none;
+                                            cursor:pointer; padding:8px;
+                                            color:var(--md-error); margin-top:8px;">
+                                    <span class="ms sm">remove_circle</span>
+                                </button>
+                            </div>
+                            {% endfor %}
+                            {% endwith %}
+                        {% else %}
+                            <!-- Default first empty row -->
+                            <div class="med-row" style="display:grid;
+                                        grid-template-columns:1fr 1fr auto; gap:6px;
+                                        align-items:flex-start;">
+                                <div class="field-wrap">
+                                    <input type="text" name="medication[]"
+                                        placeholder=" ">
+                                    <label>e.g. Amoxicillin 250mg</label>
+                                </div>
+                                <div class="field-wrap">
+                                    <input type="text" name="dosage[]"
+                                        placeholder=" ">
+                                    <label>e.g. 1 tablet twice daily</label>
+                                </div>
+                                <button type="button" onclick="removeRow(this)"
+                                        style="background:none; border:none;
+                                            cursor:pointer; padding:8px;
+                                            color:var(--md-error); margin-top:8px;">
+                                    <span class="ms sm">remove_circle</span>
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="button" onclick="addMedicationRow()"
+                            class="btn btn-tonal btn-sm" style="margin-top:10px;">
+                        <span class="ms sm">add</span> Add Another Medication
+                    </button>
+                </div>
+
+                <!-- Follow-up advice -->
+                <div>
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:6px;">
+                        FOLLOW-UP ADVICE
+                    </div>
+                    <div class="field-wrap">
+                        <textarea name="follow_up_advice" placeholder=" "
+                                rows="2">{% if prescription %}{{ prescription.follow_up_advice }}{% endif %}</textarea>
+                        <label>Follow-up advice (optional)</label>
+                    </div>
+                </div>
+
+                <!-- Additional notes -->
+                <div>
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:6px;">
+                        ADDITIONAL NOTES
+                    </div>
+                    <div class="field-wrap">
+                        <textarea name="additional_notes" placeholder=" "
+                                rows="2">{% if prescription %}{{ prescription.additional_notes }}{% endif %}</textarea>
+                        <label>Additional notes (optional)</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-filled" style="width:100%;">
+                    <span class="ms sm">save</span>
+                    {% if prescription %}Update Prescription
+                    {% else %}Save Prescription{% endif %}
+                </button>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- Pet history -->
+    <div class="vet-card">
+        <div style="font-weight:800; margin-bottom:14px;
+                    display:flex; align-items:center; gap:6px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">history</span>
+            {{ appointment.pet.name }}'s Consultation History
+            <span style="font-size:0.78rem; font-weight:600;
+                        color:var(--md-on-surface-variant); margin-left:4px;">
+                ({{ processed_history|length }} past consultation{{ processed_history|length|pluralize }})
+            </span>
+        </div>
+
+        {% if processed_history %}
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            {% for item in processed_history %}
+            <div style="border:1px solid var(--md-outline-variant);
+                        border-radius:var(--md-shape-lg); overflow:hidden;">
+
+                <!-- History item header -->
+                <div style="background:var(--md-surface-1); padding:12px 14px;
+                            display:flex; justify-content:space-between;
+                            align-items:flex-start; gap:10px;
+                            cursor:pointer;"
+                    onclick="toggleHistory({{ forloop.counter }})">
+                    <div>
+                        <div style="font-weight:800; font-size:0.9rem;">
+                            Dr. {{ item.appointment.vet.user.get_full_name }}
+                        </div>
+                        <div style="font-size:0.78rem; font-weight:600;
+                                    color:var(--md-on-surface-variant); margin-top:2px;">
+                            {{ item.appointment.date|date:"M d, Y" }}
+                            · {{ item.appointment.start_time|time:"H:i" }}
+                        </div>
+                        <span class="status-chip chip-blue"
+                            style="font-size:0.72rem; margin-top:4px; display:inline-flex;">
+                            {{ item.appointment.get_primary_complaint_display }}
+                        </span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                        {% if item.has_rx %}
+                            <span class="status-chip chip-green" style="font-size:0.72rem;">
+                                Rx available
+                            </span>
+                        {% else %}
+                            <span class="status-chip chip-gray" style="font-size:0.72rem;">
+                                No Rx
+                            </span>
+                        {% endif %}
+                        <span class="ms sm" id="chevron-{{ forloop.counter }}"
+                            style="color:var(--md-on-surface-variant);
+                                    transition:transform 0.2s;">
+                            expand_more
+                        </span>
+                    </div>
+                </div>
+
+                <!-- History item body (collapsible) -->
+                <div id="history-{{ forloop.counter }}"
+                    style="display:none; padding:14px;">
+
+                    <!-- Complaint -->
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:0.72rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);
+                                    margin-bottom:4px; letter-spacing:0.5px;">
+                            COMPLAINT
+                        </div>
+                        <p style="font-size:0.85rem; margin:0; line-height:1.5;
+                                color:var(--md-on-surface-variant); font-weight:500;">
+                            {{ item.appointment.complaint_description }}
+                        </p>
+                    </div>
+
+                    <!-- Diagnosis -->
+                    {% if item.appointment.diagnosis %}
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:0.72rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);
+                                    margin-bottom:4px; letter-spacing:0.5px;">
+                            DIAGNOSIS
+                        </div>
+                        <p style="font-size:0.85rem; margin:0; line-height:1.5;
+                                font-weight:600; color:var(--md-on-surface);">
+                            {{ item.appointment.diagnosis }}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Consultation notes -->
+                    {% if item.appointment.consultation_notes %}
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:0.72rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);
+                                    margin-bottom:4px; letter-spacing:0.5px;">
+                            CONSULTATION NOTES
+                        </div>
+                        <p style="font-size:0.85rem; margin:0; line-height:1.5;
+                                color:var(--md-on-surface-variant); font-weight:500;">
+                            {{ item.appointment.consultation_notes }}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Prescription -->
+                    {% if item.has_rx %}
+                    <div>
+                        <div style="font-size:0.72rem; font-weight:700;
+                                    color:var(--md-primary); margin-bottom:6px;
+                                    letter-spacing:0.5px;">
+                            PRESCRIPTION
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            {% for med, dose in item.med_pairs %}
+                            <div style="display:grid;
+                                        grid-template-columns:auto 1fr;
+                                        gap:10px; align-items:flex-start;
+                                        padding:8px 10px;
+                                        background:var(--md-surface-1);
+                                        border-radius:var(--md-shape-sm);
+                                        border-left:2px solid var(--md-primary);">
+                                <div style="width:20px; height:20px;
+                                            border-radius:var(--md-shape-full);
+                                            background:var(--md-primary); color:#fff;
+                                            display:flex; align-items:center;
+                                            justify-content:center; font-weight:800;
+                                            font-size:0.7rem; flex-shrink:0;">
+                                    {{ forloop.counter }}
+                                </div>
+                                <div>
+                                    <div style="font-weight:800; font-size:0.85rem;">
+                                        {{ med }}
+                                    </div>
+                                    <div style="font-size:0.8rem; font-weight:500;
+                                                color:var(--md-on-surface-variant);">
+                                        {{ dose }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if item.rx.follow_up_advice %}
+                        <div style="margin-top:8px; padding:8px 10px;
+                                    background:var(--md-primary-container);
+                                    border-radius:var(--md-shape-sm);">
+                            <div style="font-size:0.72rem; font-weight:700;
+                                        color:var(--md-primary); margin-bottom:3px;">
+                                FOLLOW-UP
+                            </div>
+                            <p style="font-size:0.82rem; margin:0; line-height:1.4;
+                                    color:var(--md-on-primary-container);
+                                    font-weight:500;">
+                                {{ item.rx.follow_up_advice }}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div style="text-align:center; padding:12px;
+                                color:var(--md-on-surface-variant);">
+                        <p style="font-size:0.85rem; font-weight:600; margin:0;">
+                            No prescription was issued for this consultation.
+                        </p>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="empty-state" style="padding:20px;">
+            <span class="ms filled">history</span>
+            <p>No previous consultations on this platform for {{ appointment.pet.name }}.</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+function addMedicationRow() {
+    const container = document.getElementById('medicationRows');
+    const row = document.createElement('div');
+    row.className = 'med-row';
+    row.style.cssText = `display:grid; grid-template-columns:1fr 1fr auto;
+                         gap:6px; align-items:flex-start;`;
+    row.innerHTML = `
+        <div class="field-wrap">
+            <input type="text" name="medication[]" placeholder=" ">
+            <label>e.g. Vitamin supplement</label>
+        </div>
+        <div class="field-wrap">
+            <input type="text" name="dosage[]" placeholder=" ">
+            <label>e.g. 1 tablet daily</label>
+        </div>
+        <button type="button" onclick="removeRow(this)"
+                style="background:none; border:none; cursor:pointer;
+                       padding:8px; color:var(--md-error); margin-top:8px;">
+            <span class="ms sm">remove_circle</span>
+        </button>
+    `;
+    container.appendChild(row);
+}
+
+function removeRow(btn) {
+    const rows = document.querySelectorAll('.med-row');
+    if (rows.length === 1) {
+        alert('At least one medication is required.');
+        return;
+    }
+    btn.closest('.med-row').remove();
+}
+
+function toggleHistory(index) {
+    const body    = document.getElementById(`history-${index}`);
+    const chevron = document.getElementById(`chevron-${index}`);
+    const isOpen  = body.style.display !== 'none';
+
+    body.style.display    = isOpen ? 'none' : 'block';
+    chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+</script>
+{% endblock %}

@@ -387,23 +387,323 @@ def delete_availability(request, window_id):
 
 @login_required_vet
 def vet_appointments(request):
-    return HttpResponse("Coming soon")
+    vet_profile = request.user.vet_profile
+    today = timezone.localdate()
+    tab = request.GET.get('tab', 'today')
+
+    todays = Appointment.objects.filter(
+        vet=vet_profile,
+        date=today,
+        status__in=['confirmed', 'in_progress', 'rescheduled'],
+    ).select_related('user', 'pet').order_by('start_time')
+
+    upcoming = Appointment.objects.filter(
+        vet=vet_profile,
+        date__gt=today,
+        status__in=['confirmed', 'rescheduled'],
+    ).select_related('user', 'pet').order_by('date', 'start_time')
+
+    awaiting = Appointment.objects.filter(
+        vet=vet_profile,
+        status='awaiting_second_payment',
+    ).select_related('user', 'pet').order_by('-date')
+
+    past = Appointment.objects.filter(
+        vet=vet_profile,
+        status__in=['completed', 'cancelled'],
+    ).select_related('user', 'pet').order_by('-date', '-start_time')
+
+    upcoming_count = Appointment.objects.filter(
+        vet=vet_profile,
+        date__gte=today,
+        status__in=['confirmed', 'rescheduled', 'in_progress'],
+    ).count()
+
+    ctx = {
+        'tab': tab,
+        'tabs': [
+            ('today',    'Today',    todays.count()),
+            ('upcoming', 'Upcoming', upcoming.count()),
+            ('awaiting', 'Awaiting Payment', awaiting.count()),
+            ('past',     'Past',     None),
+        ],
+        'todays': todays,
+        'upcoming': upcoming,
+        'awaiting': awaiting,
+        'past': past,
+        'today': today,
+        'todays_count': todays.count(),
+        'upcoming_count': upcoming_count,
+        'awaiting_count': awaiting.count(),
+        'past_count': past.count(),
+    }
+
+    return render(request, 'vet/appointments.html', ctx)
 
 @login_required_vet
 def vet_appointment_detail(request, appointment_id):
-    return HttpResponse("Coming soon")
+    vet_profile = request.user.vet_profile
+    appointment = get_object_or_404(
+        Appointment,
+        id=appointment_id,
+        vet=vet_profile,
+    )
+
+    # Get pet's full history across all vets on the platform
+    pet_history = Appointment.objects.filter(
+        pet=appointment.pet,
+        status='completed',
+    ).exclude(
+        id=appointment.id,
+    ).select_related(
+        'vet__user'
+    ).prefetch_related(
+        'prescription'
+    ).order_by('-date')
+
+    # Pre-process pet history for template display
+    processed_history = []
+    for past_appt in pet_history:
+        try:
+            rx = past_appt.prescription
+            med_lines  = [m.strip() for m in rx.medications.splitlines() if m.strip()]
+            dose_lines = [d.strip() for d in rx.dosage_instructions.splitlines() if d.strip()]
+            max_len    = max(len(med_lines), len(dose_lines), 1)
+            med_lines  += [''] * (max_len - len(med_lines))
+            dose_lines += [''] * (max_len - len(dose_lines))
+            med_pairs  = list(zip(med_lines, dose_lines))
+            has_rx     = True
+        except Exception:
+            rx        = None
+            med_pairs = []
+            has_rx    = False
+
+        processed_history.append({
+            'appointment': past_appt,
+            'rx':          rx,
+            'med_pairs':   med_pairs,
+            'has_rx':      has_rx,
+        })
+
+    # Get prescription if exists
+    try:
+        prescription = appointment.prescription
+    except Exception:
+        prescription = None
+
+    # Get payment status
+    booking_payment = appointment.payments.filter(
+        payment_type='booking'
+    ).first()
+    consultation_payment = appointment.payments.filter(
+        payment_type='consultation'
+    ).first()
+
+    from .forms import PrescriptionForm
+    prescription_form = PrescriptionForm(
+        instance=prescription
+    ) if prescription else PrescriptionForm()
+
+    ctx = {
+        'appointment': appointment,
+        'pet_history': pet_history,
+        'processed_history': processed_history,
+        'prescription': prescription,
+        'prescription_form': prescription_form,
+        'booking_payment': booking_payment,
+        'consultation_payment': consultation_payment,
+        'can_start': appointment.status == 'confirmed',
+        'can_end': appointment.status == 'in_progress',
+        'vet_profile': vet_profile,
+    }
+    return render(request, 'vet/appointment_detail.html', ctx)
+
 
 @login_required_vet
 def start_consultation(request, appointment_id):
-    return HttpResponse("Coming soon")
+    vet_profile = request.user.vet_profile
+    appointment = get_object_or_404(
+        Appointment,
+        id=appointment_id,
+        vet=vet_profile,
+        status='confirmed',
+    )
+
+    if request.method == 'POST':
+        # Check meet link is assigned
+        if not appointment.meet_link:
+            messages.error(
+                request,
+                "No Google Meet link is assigned to this appointment. "
+                "Please contact admin."
+            )
+            return redirect(
+                'consultations:vet_appointment_detail',
+                appointment_id=appointment_id
+            )
+
+        appointment.status = Appointment.Status.IN_PROGRESS
+        appointment.consultation_start_time = timezone.now()
+        appointment.save()
+
+        messages.success(request, "Consultation started. Good luck!")
+
+        # Open the meet link by redirecting to it
+        return redirect(appointment.meet_link.url)
+
+    return redirect(
+        'consultations:vet_appointment_detail',
+        appointment_id=appointment_id
+    )
+
 
 @login_required_vet
 def end_consultation(request, appointment_id):
-    return HttpResponse("Coming soon")
+    vet_profile = request.user.vet_profile
+    appointment = get_object_or_404(
+        Appointment,
+        id=appointment_id,
+        vet=vet_profile,
+        status='in_progress',
+    )
+
+    if request.method == 'POST':
+        appointment.consultation_end_time = timezone.now()
+
+        # Save any notes entered
+        notes     = request.POST.get('consultation_notes', '').strip()
+        diagnosis = request.POST.get('diagnosis', '').strip()
+        if notes:
+            appointment.consultation_notes = notes
+        if diagnosis:
+            appointment.diagnosis = diagnosis
+        appointment.save()
+
+        # Check if prescription already submitted
+        try:
+            prescription = appointment.prescription
+            has_prescription = True
+        except Exception:
+            has_prescription = False
+
+        if has_prescription:
+            # Prescription done — move to awaiting second payment
+            appointment.status = Appointment.Status.AWAITING_SECOND_PAYMENT
+            appointment.save()
+
+            # Free the meet link
+            if appointment.meet_link:
+                appointment.meet_link.is_in_use = False
+                appointment.meet_link.save()
+
+            messages.success(
+                request,
+                "Consultation ended. The patient will be prompted to pay "
+                "the consultation fee."
+            )
+        else:
+            # No prescription yet — stay on detail page to fill it in
+            messages.warning(
+                request,
+                "Consultation time recorded. Please fill in the prescription "
+                "before finishing."
+            )
+
+        return redirect(
+            'consultations:vet_appointment_detail',
+            appointment_id=appointment_id
+        )
+
+    return redirect(
+        'consultations:vet_appointment_detail',
+        appointment_id=appointment_id
+    )
 
 @login_required_vet
 def submit_prescription(request, appointment_id):
-    return HttpResponse("Coming soon")
+    vet_profile = request.user.vet_profile
+    appointment = get_object_or_404(
+        Appointment,
+        id=appointment_id,
+        vet=vet_profile,
+    )
+
+    if appointment.status not in [
+        'in_progress', 'awaiting_second_payment', 'completed'
+    ]:
+        messages.error(
+            request,
+            "Cannot submit prescription for this appointment."
+        )
+        return redirect(
+            'consultations:vet_appointment_detail',
+            appointment_id=appointment_id
+        )
+
+    if request.method == 'POST':
+        medications = request.POST.getlist('medication[]')
+        dosages     = request.POST.getlist('dosage[]')
+        follow_up   = request.POST.get('follow_up_advice', '').strip()
+        notes       = request.POST.get('additional_notes', '').strip()
+
+        # Filter out empty rows
+        med_pairs = [
+            (m.strip(), d.strip())
+            for m, d in zip(medications, dosages)
+            if m.strip() and d.strip()
+        ]
+
+        if not med_pairs:
+            messages.error(
+                request,
+                "Please add at least one medication with dosage instructions."
+            )
+            return redirect(
+                'consultations:vet_appointment_detail',
+                appointment_id=appointment_id
+            )
+
+        # Store as structured line-by-line text
+        medications_text = '\n'.join(m for m, d in med_pairs)
+        dosages_text     = '\n'.join(d for m, d in med_pairs)
+
+        # Create or update prescription
+        try:
+            prescription = appointment.prescription
+            prescription.medications          = medications_text
+            prescription.dosage_instructions  = dosages_text
+            prescription.follow_up_advice     = follow_up
+            prescription.additional_notes     = notes
+            prescription.save()
+            messages.success(request, "Prescription updated.")
+        except Exception:
+            from .models import Prescription
+            Prescription.objects.create(
+                appointment=appointment,
+                medications=medications_text,
+                dosage_instructions=dosages_text,
+                follow_up_advice=follow_up,
+                additional_notes=notes,
+            )
+            messages.success(request, "Prescription saved.")
+
+        # If consultation was in_progress and prescription now exists,
+        # prompt vet to end the consultation
+        if appointment.status == 'in_progress':
+            messages.info(
+                request,
+                "Prescription saved. You can now end the consultation."
+            )
+
+        return redirect(
+            'consultations:vet_appointment_detail',
+            appointment_id=appointment_id
+        )
+
+    return redirect(
+        'consultations:vet_appointment_detail',
+        appointment_id=appointment_id
+    )
 
 
 # ── User-facing placeholders ───────────────────────────────────────────────────
@@ -982,14 +1282,14 @@ def cancel_appointment(request, appointment_id):
         appointment.cancellation_reason = reason
         appointment.save()
 
-        # Free up the meet link if one was assigned
+        # Free the meet link
         if appointment.meet_link:
             appointment.meet_link.is_in_use = False
             appointment.meet_link.save()
             appointment.meet_link = None
             appointment.save()
 
-        # Flag booking payment for refund if it was verified
+        # Refund logic
         booking_payment = appointment.payments.filter(
             payment_type='booking',
             status='verified',
@@ -997,19 +1297,26 @@ def cancel_appointment(request, appointment_id):
 
         if booking_payment:
             settings = SiteSettings.get()
-            booking_payment.refund_amount = max(
+            refund_amount = max(
                 0, booking_payment.amount - settings.cancellation_deduction
             )
+            booking_payment.refund_amount = refund_amount
             booking_payment.refund_bkash_number = booking_payment.bkash_number
             booking_payment.save()
+            # Send cancellation email with refund info
+            from consultations.emails import send_cancellation_confirm
+            send_cancellation_confirm(appointment, refund_amount=refund_amount)
             messages.success(
                 request,
                 f"Appointment cancelled. A refund of "
-                f"৳{booking_payment.refund_amount} will be sent to "
+                f"৳{refund_amount} will be sent to "
                 f"{booking_payment.bkash_number} shortly."
             )
         else:
+            from consultations.emails import send_cancellation_confirm
+            send_cancellation_confirm(appointment, refund_amount=None)
             messages.success(request, "Appointment cancelled.")
+        
 
     return redirect('consultations:my_appointments')
 
@@ -1216,10 +1523,135 @@ def delete_pet(request, pet_id):
         messages.success(request, f"{name} has been removed.")
     return redirect('consultations:my_pets')
 
+@login_required_vet
+def update_pet_notes(request, pet_id):
+    """Vet can add to a pet's medical history notes."""
+    pet = get_object_or_404(Pet, id=pet_id)
+
+    if request.method == 'POST':
+        new_note    = request.POST.get('note', '').strip()
+        appointment_id = request.POST.get('appointment_id', '')
+
+        if new_note:
+            from django.utils import timezone as tz
+            timestamp   = tz.localtime().strftime('%Y-%m-%d')
+            vet_name    = f"Dr. {request.user.get_full_name()}"
+            note_entry  = f"[{timestamp} — {vet_name}]\n{new_note}"
+
+            if pet.medical_history_notes:
+                pet.medical_history_notes = (
+                    f"{pet.medical_history_notes}\n\n{note_entry}"
+                )
+            else:
+                pet.medical_history_notes = note_entry
+
+            pet.save()
+            messages.success(request, "Note added to pet's medical history.")
+
+        if appointment_id:
+            return redirect(
+                'consultations:vet_appointment_detail',
+                appointment_id=appointment_id
+            )
+
+    return redirect('consultations:vet_appointments')
+
 @login_required_user
 def view_prescription(request, appointment_id):
-    return HttpResponse("Coming soon")
+    appointment = get_object_or_404(
+        Appointment,
+        id=appointment_id,
+        user=request.user,
+    )
+
+    # Must have a prescription
+    try:
+        prescription = appointment.prescription
+    except Exception:
+        messages.error(request, "No prescription available yet.")
+        return redirect(
+            'consultations:appointment_detail',
+            appointment_id=appointment_id
+        )
+
+    # Must have second payment verified OR be completed
+    consultation_payment = appointment.payments.filter(
+        payment_type='consultation',
+        status='verified',
+    ).exists()
+
+    if appointment.status != 'completed' and not consultation_payment:
+        messages.error(
+            request,
+            "Your prescription will be available once your "
+            "consultation payment is verified."
+        )
+        return redirect(
+            'consultations:appointment_detail',
+            appointment_id=appointment_id
+        )
+
+    return render(request, 'user/view_prescription.html', {
+        'appointment': appointment,
+        'prescription': prescription,
+        'med_pairs': list(zip(
+            prescription.medications.splitlines(),
+            prescription.dosage_instructions.splitlines(),
+        )),
+    })
+
 
 @login_required_user
 def download_prescription(request, appointment_id):
-    return HttpResponse("Coming soon")
+    from django.http import HttpResponse
+    from consultations.pdf import generate_prescription_pdf
+
+    appointment = get_object_or_404(
+        Appointment,
+        id=appointment_id,
+        user=request.user,
+    )
+
+    try:
+        prescription = appointment.prescription
+    except Exception:
+        messages.error(request, "No prescription available.")
+        return redirect(
+            'consultations:appointment_detail',
+            appointment_id=appointment_id
+        )
+
+    # Payment gate
+    consultation_payment = appointment.payments.filter(
+        payment_type='consultation',
+        status='verified',
+    ).exists()
+
+    if appointment.status != 'completed' and not consultation_payment:
+        messages.error(
+            request,
+            "Payment must be verified before downloading the prescription."
+        )
+        return redirect(
+            'consultations:appointment_detail',
+            appointment_id=appointment_id
+        )
+
+    # Generate PDF
+    pdf_bytes = generate_prescription_pdf(appointment)
+
+    # Save to model if not already saved
+    if not prescription.pdf_file:
+        from django.core.files.base import ContentFile
+        filename = f"prescription_{appointment.id}.pdf"
+        prescription.pdf_file.save(
+            filename,
+            ContentFile(pdf_bytes),
+            save=True
+        )
+
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="prescription_{appointment.id}.pdf"'
+    )
+    return response

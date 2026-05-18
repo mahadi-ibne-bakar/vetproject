@@ -1,0 +1,62 @@
+<div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+            box-shadow:var(--md-elev-1); padding:18px 20px; margin-bottom:14px;
+            {% if highlight %}border-left:4px solid var(--md-primary);{% endif %}">
+
+    <div style="display:flex; align-items:flex-start; gap:14px;">
+
+        <!-- Species emoji -->
+        <div style="font-size:2.2rem; line-height:1; flex-shrink:0;">
+            {% if appt.pet.species == 'cat' %}🐱
+            {% elif appt.pet.species == 'dog' %}🐶
+            {% else %}🐾{% endif %}
+        </div>
+
+        <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:8px;
+                        flex-wrap:wrap; margin-bottom:4px;">
+                <span style="font-weight:800; font-size:1rem;">
+                    {{ appt.pet.name }}
+                </span>
+                <span style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                             font-weight:600;">
+                    {{ appt.pet.get_species_display }}
+                    {% if appt.pet.breed %} · {{ appt.pet.breed }}{% endif %}
+                </span>
+                <span class="status-chip
+                    {% if appt.status == 'confirmed' %}chip-green
+                    {% elif appt.status == 'in_progress' %}chip-yellow
+                    {% elif appt.status == 'completed' %}chip-green
+                    {% elif appt.status == 'cancelled' %}chip-red
+                    {% elif appt.status == 'rescheduled' %}chip-blue
+                    {% else %}chip-gray{% endif %}"
+                    style="font-size:0.72rem;">
+                    {{ appt.get_status_display }}
+                </span>
+            </div>
+
+            <div style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                        font-weight:600; margin-bottom:8px;">
+                👤 {{ appt.user.get_full_name|default:appt.user.username }}
+                · {{ appt.date|date:"M d, Y" }}
+                · {{ appt.start_time|time:"H:i" }}–{{ appt.end_time|time:"H:i" }}
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span class="status-chip chip-blue" style="font-size:0.75rem;">
+                    {{ appt.get_primary_complaint_display }}
+                </span>
+                <a href="{% url 'consultations:vet_appointment_detail' appt.id %}"
+                   class="btn btn-sm btn-filled" style="text-decoration:none;">
+                    {% if appt.status == 'in_progress' %}
+                        <span class="ms sm">videocam</span> Resume
+                    {% elif appt.status == 'confirmed' %}
+                        <span class="ms sm">open_in_new</span> Open
+                    {% else %}
+                        <span class="ms sm">info</span> Details
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% block title %}Prescription — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:720px; margin:0 auto;">
+
+    <a href="{% url 'consultations:appointment_detail' appointment.id %}"
+       style="display:inline-flex; align-items:center; gap:6px;
+              color:var(--md-on-surface-variant); text-decoration:none;
+              font-weight:700; font-size:0.875rem; margin-bottom:20px;">
+        <span class="ms sm">arrow_back</span> Back to Appointment
+    </a>
+
+    <!-- Prescription card -->
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-2); overflow:hidden;">
+
+        <!-- Header -->
+        <div style="background:var(--md-primary); padding:24px 28px;
+                    display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="color:#fff; font-weight:800; font-size:1.4rem;">
+                    VetProject
+                </div>
+                <div style="color:var(--md-primary-container); font-size:0.85rem;
+                            font-weight:600; margin-top:2px;">
+                    Online Veterinary Prescription
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="color:#fff; font-weight:700; font-size:0.9rem;">
+                    {{ appointment.date|date:"F j, Y" }}
+                </div>
+                <div style="color:var(--md-primary-container); font-size:0.82rem;
+                            margin-top:2px;">
+                    {{ appointment.start_time|time:"H:i" }} –
+                    {{ appointment.end_time|time:"H:i" }}
+                </div>
+            </div>
+        </div>
+
+        <div style="padding:24px 28px;">
+
+            <!-- Vet info -->
+            <div style="display:flex; justify-content:space-between;
+                        align-items:flex-start; margin-bottom:20px;
+                        padding-bottom:16px;
+                        border-bottom:1px solid var(--md-outline-variant);">
+                <div>
+                    <div style="font-weight:800; font-size:1rem;
+                                color:var(--md-primary);">
+                        Dr. {{ appointment.vet.user.get_full_name }}
+                    </div>
+                    <div style="font-size:0.82rem; font-weight:600;
+                                color:var(--md-on-surface-variant); margin-top:3px;">
+                        {{ appointment.vet.specializations|default:"General Practice" }}
+                    </div>
+                    <div style="font-size:0.82rem; font-weight:600;
+                                color:var(--md-on-surface-variant);">
+                        BVC Reg. No:
+                        {{ appointment.vet.bvc_registration_number|default:"—" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient info -->
+            <div style="background:var(--md-surface-1); border-radius:var(--md-shape-md);
+                        padding:14px 16px; margin-bottom:20px;
+                        display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                    <div style="font-size:0.75rem; font-weight:700;
+                                color:var(--md-on-surface-variant);">PET</div>
+                    <div style="font-weight:800; font-size:0.95rem;">
+                        {{ appointment.pet.name }}
+                    </div>
+                    <div style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                                font-weight:600;">
+                        {{ appointment.pet.get_species_display }}
+                        {% if appointment.pet.breed %}· {{ appointment.pet.breed }}{% endif %}
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size:0.75rem; font-weight:700;
+                                color:var(--md-on-surface-variant);">OWNER</div>
+                    <div style="font-weight:800; font-size:0.95rem;">
+                        {{ appointment.user.get_full_name }}
+                    </div>
+                    <div style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                                font-weight:600;">
+                        {{ appointment.user.phone_number|default:"" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint and diagnosis -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-primary); margin-bottom:6px;
+                            letter-spacing:0.5px;">COMPLAINT</div>
+                <div style="font-weight:700; margin-bottom:4px;">
+                    {{ appointment.get_primary_complaint_display }}
+                </div>
+                <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                          margin:0; line-height:1.5; font-weight:500;">
+                    {{ appointment.complaint_description }}
+                </p>
+                {% if appointment.diagnosis %}
+                <p style="font-size:0.875rem; margin:8px 0 0; font-weight:600;">
+                    <span style="color:var(--md-primary);">Diagnosis:</span>
+                    {{ appointment.diagnosis }}
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Medications -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-primary); margin-bottom:10px;
+                            letter-spacing:0.5px;">PRESCRIPTION</div>
+
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    {% for med, dose in med_pairs %}
+                    <div style="display:grid; grid-template-columns:auto 1fr;
+                                gap:12px; align-items:flex-start;
+                                padding:12px 14px;
+                                background:{% cycle 'var(--md-surface-1)' 'var(--md-surface)' %};
+                                border-radius:var(--md-shape-md);
+                                border-left:3px solid var(--md-primary);">
+                        <div style="width:24px; height:24px;
+                                    border-radius:var(--md-shape-full);
+                                    background:var(--md-primary); color:#fff;
+                                    display:flex; align-items:center;
+                                    justify-content:center; font-weight:800;
+                                    font-size:0.75rem; flex-shrink:0;">
+                            {{ forloop.counter }}
+                        </div>
+                        <div>
+                            <div style="font-weight:800; font-size:0.9rem;
+                                        margin-bottom:3px;">{{ med }}</div>
+                            <div style="font-size:0.85rem; font-weight:500;
+                                        color:var(--md-on-surface-variant);">
+                                {{ dose }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Follow-up -->
+            {% if prescription.follow_up_advice %}
+            <div style="margin-bottom:16px; padding:14px 16px;
+                        background:var(--md-primary-container);
+                        border-radius:var(--md-shape-md);">
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-primary); margin-bottom:6px;
+                            letter-spacing:0.5px;">FOLLOW-UP ADVICE</div>
+                <p style="font-size:0.875rem; margin:0; line-height:1.5;
+                          font-weight:500;
+                          color:var(--md-on-primary-container);">
+                    {{ prescription.follow_up_advice }}
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Additional notes -->
+            {% if prescription.additional_notes %}
+            <div style="margin-bottom:16px;">
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:6px;
+                            letter-spacing:0.5px;">ADDITIONAL NOTES</div>
+                <p style="font-size:0.875rem; margin:0; line-height:1.5;
+                          color:var(--md-on-surface-variant); font-weight:500;">
+                    {{ prescription.additional_notes }}
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div style="margin-top:24px; padding-top:16px;
+                        border-top:1px solid var(--md-outline-variant);
+                        display:flex; justify-content:space-between;
+                        align-items:center; flex-wrap:wrap; gap:12px;">
+                <div style="font-size:0.78rem; color:var(--md-on-surface-variant);
+                            font-weight:500; max-width:400px; line-height:1.4;">
+                    This prescription was issued following an online consultation
+                    via VetProject. For emergencies, please visit a physical
+                    veterinary clinic immediately.
+                </div>
+                <a href="{% url 'consultations:download_prescription' appointment.id %}"
+                   class="btn btn-filled">
+                    <span class="ms sm">download</span> Download PDF
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
