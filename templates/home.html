@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-
-{% block title %}Home — VetProject{% endblock %}
+{% block title %}VetProject — Online Vet Consultations in Bangladesh{% endblock %}
 
 {% block content %}
 
+<!-- Service off banner -->
 {% if not site_settings.booking_enabled %}
 <div class="alert alert-warning"
      style="margin-bottom:24px; border-radius:var(--md-shape-lg);">
@@ -22,35 +22,40 @@
 </div>
 {% endif %}
 
-<!-- Hero -->
-<div style="text-align:center; padding:60px 16px 48px;">
-    <div style="max-width:620px; margin:0 auto;">
+<!-- ── Hero ──────────────────────────────────────────────────────────────── -->
+<div style="text-align:center; padding:56px 16px 48px;">
+    <div style="max-width:640px; margin:0 auto;">
+
         <div style="display:inline-flex; align-items:center; gap:6px;
                     background:var(--md-primary-container);
                     color:var(--md-on-primary-container);
                     padding:5px 14px; border-radius:var(--md-shape-full);
                     font-size:0.82rem; font-weight:700; margin-bottom:20px;">
             <span class="ms sm filled">verified</span>
-            Certified Vets Only
+            BVC Certified Vets Only
         </div>
+
         <h1 style="font-size:clamp(2rem,5vw,3rem); font-weight:800;
                    color:var(--md-on-surface); line-height:1.2; margin:0 0 16px;">
             Expert vet care,<br>
             <span style="color:var(--md-primary);">from your home</span>
         </h1>
+
         <p style="font-size:1.05rem; color:var(--md-on-surface-variant);
                   font-weight:500; line-height:1.6; margin:0 0 32px;">
             Connect with certified veterinarians in Bangladesh via video call.
-            Get professional advice for your cats and dogs — quickly, affordably,
-            and without the trip to the clinic.
+            Get professional advice for your cats and dogs — quickly,
+            affordably, and without the trip to the clinic.
         </p>
-        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+
+        <div style="display:flex; gap:12px; justify-content:center;
+                    flex-wrap:wrap;">
             {% if site_settings.booking_enabled %}
-                <a href="{% url 'consultations:book_by_time' %}"
-                   class="btn btn-filled btn-lg ripple">
-                    <span class="ms">calendar_month</span>
-                    Book an Appointment
-                </a>
+            <a href="{% url 'consultations:book_by_time' %}"
+               class="btn btn-filled btn-lg ripple">
+                <span class="ms">calendar_month</span>
+                Book an Appointment
+            </a>
             {% endif %}
             <a href="{% url 'consultations:vet_list' %}"
                class="btn btn-tonal btn-lg ripple">
@@ -58,58 +63,65 @@
                 Browse Our Vets
             </a>
         </div>
+
     </div>
 
-    <!-- Stats row -->
+    <!-- Stats -->
     <div style="display:flex; gap:16px; justify-content:center;
-                flex-wrap:wrap; margin-top:56px;">
-        <div style="background:var(--md-surface-1); border-radius:var(--md-shape-lg);
-                    padding:20px 28px; min-width:140px;
-                    box-shadow:var(--md-elev-1);">
+                flex-wrap:wrap; margin-top:52px;">
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-lg);
+                    padding:20px 28px; min-width:140px; box-shadow:var(--md-elev-1);">
             <div style="font-size:1.8rem; font-weight:800;
-                        color:var(--md-primary);">{{ total_consultations }}</div>
+                        color:var(--md-primary);">
+                {{ total_consultations }}
+            </div>
             <div style="font-size:0.85rem; font-weight:600;
                         color:var(--md-on-surface-variant); margin-top:4px;">
                 Consultations
             </div>
         </div>
-        <div style="background:var(--md-surface-1); border-radius:var(--md-shape-lg);
-                    padding:20px 28px; min-width:140px;
-                    box-shadow:var(--md-elev-1);">
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-lg);
+                    padding:20px 28px; min-width:140px; box-shadow:var(--md-elev-1);">
             <div style="font-size:1.8rem; font-weight:800;
-                        color:var(--md-primary);">{{ total_users }}</div>
+                        color:var(--md-primary);">
+                {{ total_users }}
+            </div>
             <div style="font-size:0.85rem; font-weight:600;
                         color:var(--md-on-surface-variant); margin-top:4px;">
                 Pet Owners
             </div>
         </div>
-        <div style="background:var(--md-surface-1); border-radius:var(--md-shape-lg);
-                    padding:20px 28px; min-width:140px;
-                    box-shadow:var(--md-elev-1);">
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-lg);
+                    padding:20px 28px; min-width:140px; box-shadow:var(--md-elev-1);">
             <div style="font-size:1.8rem; font-weight:800;
-                        color:var(--md-primary);">{{ total_vets }}</div>
+                        color:var(--md-primary);">
+                {{ total_vets }}
+            </div>
             <div style="font-size:0.85rem; font-weight:600;
                         color:var(--md-on-surface-variant); margin-top:4px;">
                 Certified Vets
             </div>
         </div>
     </div>
-
 </div>
 
-<!-- How it works -->
+<!-- ── How it works ───────────────────────────────────────────────────────── -->
 <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
             box-shadow:var(--md-elev-1); padding:40px 32px; margin-bottom:40px;">
     <h2 style="font-size:1.4rem; font-weight:800; text-align:center;
-               margin:0 0 32px;">How it works</h2>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+               margin:0 0 32px; color:var(--md-on-surface);">
+        How it works
+    </h2>
+    <div style="display:grid;
+                grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
                 gap:24px; text-align:center;">
         {% for step in how_it_works %}
         <div>
-            <div style="width:56px; height:56px; border-radius:var(--md-shape-lg);
+            <div style="width:56px; height:56px;
+                        border-radius:var(--md-shape-lg);
                         background:var(--md-primary-container);
-                        display:flex; align-items:center; justify-content:center;
-                        margin:0 auto 14px;">
+                        display:flex; align-items:center;
+                        justify-content:center; margin:0 auto 14px;">
                 <span class="ms lg filled"
                       style="color:var(--md-primary);">{{ step.icon }}</span>
             </div>
@@ -122,6 +134,230 @@
             </div>
         </div>
         {% endfor %}
+    </div>
+</div>
+
+<!-- ── Featured Vets ──────────────────────────────────────────────────────── -->
+{% if featured_vets %}
+<div style="margin-bottom:40px;">
+    <div style="display:flex; align-items:center; justify-content:space-between;
+                margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <div>
+            <h2 style="font-size:1.4rem; font-weight:800; margin:0 0 4px;">
+                Meet Our Vets
+            </h2>
+            <p style="color:var(--md-on-surface-variant); font-weight:600;
+                      font-size:0.9rem; margin:0;">
+                Certified, experienced, and ready to help your pet
+            </p>
+        </div>
+        <a href="{% url 'consultations:vet_list' %}"
+           class="btn btn-tonal" style="text-decoration:none;">
+            <span class="ms sm">arrow_forward</span> View all vets
+        </a>
+    </div>
+
+    <div style="display:grid;
+                grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+                gap:20px;">
+        {% for vet in featured_vets %}
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); overflow:hidden;
+                    transition:box-shadow 0.2s;"
+             onmouseover="this.style.boxShadow='var(--md-elev-3)'"
+             onmouseout="this.style.boxShadow='var(--md-elev-1)'">
+
+            <div style="background:var(--md-primary-container);
+                        padding:20px; display:flex; align-items:center; gap:14px;">
+                {% if vet.profile_photo %}
+                    <img src="{{ vet.profile_photo.url }}"
+                         style="width:56px; height:56px;
+                                border-radius:var(--md-shape-full);
+                                object-fit:cover;
+                                border:3px solid var(--md-primary);">
+                {% else %}
+                    <div style="width:56px; height:56px;
+                                border-radius:var(--md-shape-full);
+                                background:var(--md-primary); color:#fff;
+                                display:flex; align-items:center;
+                                justify-content:center; font-weight:800;
+                                font-size:1.2rem; flex-shrink:0;">
+                        {{ vet.user.first_name|first|upper }}
+                    </div>
+                {% endif %}
+                <div>
+                    <div style="font-weight:800; font-size:1rem;
+                                color:var(--md-on-primary-container);">
+                        Dr. {{ vet.user.get_full_name }}
+                    </div>
+                    <div style="font-size:0.82rem; font-weight:600;
+                                color:var(--md-primary); margin-top:3px;">
+                        {{ vet.specializations|truncatechars:35|default:"General Practice" }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding:16px 20px;">
+                <div style="display:flex; gap:16px; margin-bottom:14px;
+                            flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:5px;
+                                font-size:0.82rem; font-weight:600;
+                                color:var(--md-on-surface-variant);">
+                        <span class="ms sm filled" style="color:#CA8A04;">star</span>
+                        {% if vet.avg_rating %}
+                            {{ vet.avg_rating|floatformat:1 }}
+                        {% else %}
+                            New
+                        {% endif %}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:5px;
+                                font-size:0.82rem; font-weight:600;
+                                color:var(--md-on-surface-variant);">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary);">check_circle</span>
+                        {{ vet.consultation_count }} consultation{{ vet.consultation_count|pluralize }}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:5px;
+                                font-size:0.82rem; font-weight:600;
+                                color:var(--md-on-surface-variant);">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary);">work</span>
+                        {{ vet.years_of_experience }}yr exp
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:center;
+                            justify-content:space-between;">
+                    <div>
+                        <span style="font-size:0.78rem; color:var(--md-on-surface-variant);
+                                     font-weight:600;">Consultation fee</span>
+                        <div style="font-weight:800; color:var(--md-primary);">
+                            ৳{{ vet.consultation_fee }}
+                        </div>
+                    </div>
+                    <a href="{% url 'consultations:vet_detail' vet.id %}"
+                       class="btn btn-tonal btn-sm"
+                       style="text-decoration:none;">
+                        View Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Recent Blog Posts ──────────────────────────────────────────────────── -->
+{% if recent_posts %}
+<div style="margin-bottom:40px;">
+    <div style="display:flex; align-items:center; justify-content:space-between;
+                margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <div>
+            <h2 style="font-size:1.4rem; font-weight:800; margin:0 0 4px;">
+                Pet Health Articles
+            </h2>
+            <p style="color:var(--md-on-surface-variant); font-weight:600;
+                      font-size:0.9rem; margin:0;">
+                Expert advice from our veterinarians
+            </p>
+        </div>
+        <a href="{% url 'blog:blog_list' %}"
+           class="btn btn-tonal" style="text-decoration:none;">
+            <span class="ms sm">arrow_forward</span> All articles
+        </a>
+    </div>
+
+    <div style="display:grid;
+                grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+                gap:20px;">
+        {% for post in recent_posts %}
+        <a href="{% url 'blog:blog_post' post.slug %}"
+           style="text-decoration:none; display:block;
+                  background:var(--md-surface); border-radius:var(--md-shape-xl);
+                  box-shadow:var(--md-elev-1); overflow:hidden;
+                  transition:box-shadow 0.2s;"
+           onmouseover="this.style.boxShadow='var(--md-elev-3)'"
+           onmouseout="this.style.boxShadow='var(--md-elev-1)'">
+
+            {% if post.featured_image %}
+            <img src="{{ post.featured_image.url }}" alt="{{ post.title }}"
+                 style="width:100%; height:140px; object-fit:cover;">
+            {% else %}
+            <div style="width:100%; height:100px;
+                        background:var(--md-primary-container);
+                        display:flex; align-items:center; justify-content:center;">
+                <span class="ms lg filled"
+                      style="color:var(--md-primary);">article</span>
+            </div>
+            {% endif %}
+
+            <div style="padding:16px 18px;">
+                <div style="font-weight:800; font-size:0.95rem;
+                            color:var(--md-on-surface); margin-bottom:6px;
+                            line-height:1.3;">
+                    {{ post.title|truncatechars:60 }}
+                </div>
+                <p style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                           font-weight:500; line-height:1.5; margin:0 0 10px;">
+                    {{ post.content|truncatechars:90 }}
+                </p>
+                <div style="display:flex; align-items:center; gap:6px;
+                            font-size:0.75rem; font-weight:600;
+                            color:var(--md-on-surface-variant);">
+                    <div style="width:20px; height:20px;
+                                border-radius:var(--md-shape-full);
+                                background:var(--md-primary-container);
+                                color:var(--md-on-primary-container);
+                                display:flex; align-items:center;
+                                justify-content:center; font-weight:800;
+                                font-size:0.65rem;">
+                        {{ post.author.first_name|first|upper }}
+                    </div>
+                    Dr. {{ post.author.get_full_name }}
+                    <span style="color:var(--md-outline);">·</span>
+                    {{ post.published_at|date:"M d" }}
+                    <span style="color:var(--md-outline);">·</span>
+                    <span style="display:inline-flex; align-items:center; gap:2px;">
+                        <span class="ms sm" style="font-size:13px;">visibility</span>
+                        {{ post.view_count }}
+                    </span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Final CTA ──────────────────────────────────────────────────────────── -->
+<div style="background:var(--md-primary); border-radius:var(--md-shape-xl);
+            padding:40px 32px; text-align:center; margin-bottom:16px;">
+    <h2 style="font-size:1.5rem; font-weight:800; color:#fff; margin:0 0 10px;">
+        Your pet deserves the best care
+    </h2>
+    <p style="color:var(--md-primary-container); font-weight:500;
+              font-size:0.95rem; margin:0 0 24px; line-height:1.6;">
+        Join hundreds of pet owners in Bangladesh who trust VetProject
+        for their cats and dogs.
+    </p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        {% if site_settings.booking_enabled %}
+        <a href="{% url 'consultations:book_by_time' %}"
+           class="btn btn-lg ripple"
+           style="background:#fff; color:var(--md-primary);
+                  text-decoration:none;">
+            <span class="ms">calendar_month</span>
+            Book Now — ৳50 to start
+        </a>
+        {% endif %}
+        <a href="{% url 'accounts:register' %}"
+           class="btn btn-lg ripple"
+           style="background:transparent; color:#fff; border:2px solid #fff;
+                  text-decoration:none;">
+            <span class="ms">person_add</span>
+            Create Free Account
+        </a>
     </div>
 </div>
 

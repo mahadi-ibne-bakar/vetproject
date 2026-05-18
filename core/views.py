@@ -1,25 +1,51 @@
-from django.shortcuts import render
-from core.models import SiteSettings
-from accounts.models import User, VetProfile
-from consultations.models import Appointment
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings as django_settings
+from accounts.models import User
+from core.models import SiteSettings
 
 
 def home(request):
-    settings = SiteSettings.get()
+    from accounts.models import VetProfile
+    from consultations.models import Appointment
+    from blog.models import BlogPost
+    from django.db.models import Avg, Count, Q
+
+    site_settings = SiteSettings.get()
+
+    # Featured vets — approved, active, ordered by consultation count
+    featured_vets = VetProfile.objects.filter(
+        application_status='approved',
+        is_active=True,
+    ).select_related('user').annotate(
+        avg_rating=Avg(
+            'reviews__rating',
+            filter=Q(reviews__is_visible=True)
+        ),
+        consultation_count=Count(
+            'appointments',
+            filter=Q(appointments__status='completed')
+        ),
+    ).order_by('-consultation_count')[:3]
+
+    # Recent blog posts
+    recent_posts = BlogPost.objects.filter(
+        status='published'
+    ).select_related('author').order_by('-published_at')[:3]
 
     how_it_works = [
         {
             'icon': 'calendar_month',
             'title': 'Pick a date and time',
-            'description': 'Choose when you want the consultation and see available vets.',
+            'description': 'Choose when you want the consultation '
+                           'and see available vets.',
         },
         {
             'icon': 'stethoscope',
             'title': 'Choose your vet',
-            'description': 'Browse certified vets and pick one that fits your needs.',
+            'description': 'Browse certified vets and pick one '
+                           'that fits your needs.',
         },
         {
             'icon': 'payments',
@@ -29,18 +55,24 @@ def home(request):
         {
             'icon': 'videocam',
             'title': 'Meet on Google Meet',
-            'description': 'Join the video call at the scheduled time from anywhere.',
+            'description': 'Join the video call at the scheduled '
+                           'time from anywhere.',
         },
     ]
 
     ctx = {
-        'site_settings': settings,
-        'total_consultations': Appointment.objects.filter(status='completed').count(),
+        'site_settings': site_settings,
+        'total_consultations': Appointment.objects.filter(
+            status='completed'
+        ).count(),
         'total_users': User.objects.filter(role='user').count(),
         'total_vets': VetProfile.objects.filter(
-            application_status='approved', is_active=True
+            application_status='approved',
+            is_active=True,
         ).count(),
         'how_it_works': how_it_works,
+        'featured_vets': featured_vets,
+        'recent_posts': recent_posts,
     }
     return render(request, 'home.html', ctx)
 
