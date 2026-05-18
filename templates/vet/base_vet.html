@@ -7,10 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Vet Dashboard — VetProject{% endblock %}</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'css/icons.css' %}">
 
     {% tailwind_css %}
 
@@ -368,19 +367,6 @@
         .empty-state { text-align: center; padding: 40px 24px; color: var(--md-on-surface-variant); }
         .empty-state .ms { font-size: 44px; opacity: 0.3; display: block; margin-bottom: 10px; }
         .empty-state p { font-weight: 600; font-size: 0.9rem; }
-
-        .ms {
-            font-family: 'Material Symbols Rounded';
-            font-weight: normal; font-style: normal;
-            font-size: 24px; line-height: 1;
-            display: inline-block; white-space: nowrap;
-            direction: ltr; -webkit-font-smoothing: antialiased;
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle; user-select: none;
-        }
-        .ms.filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .ms.sm { font-size: 18px; }
-        .ms.lg { font-size: 28px; }
 
         @media (max-width: 768px) {
             .vet-sidebar { transform: translateX(-100%); }
