@@ -52,6 +52,9 @@ def about(request):
 def contact(request):
     return render(request, 'contact.html', {})
 
+def shop(request):
+    return render(request, 'public/shop.html', {})
+
 
 @csrf_exempt
 def send_reminders_endpoint(request):

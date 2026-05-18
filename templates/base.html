@@ -541,8 +541,16 @@
 
     <!-- Desktop Nav -->
     <nav class="top-app-bar__nav">
+        {% if site_settings.booking_enabled %}
+        <a href="{% url 'consultations:book_by_time' %}" class="nav-link ripple"
+        style="background:var(--md-primary); color:var(--md-on-primary);
+                border-radius:var(--md-shape-full);">
+            <span class="ms sm filled">calendar_month</span>
+            Book Now
+        </a>
+        {% endif %}
         <a href="{% url 'consultations:vet_list' %}" class="nav-link ripple">
-            <span class="ms sm">medical_services</span>
+            <span class="ms sm">stethoscope</span>
             Our Vets
         </a>
         <a href="{% url 'blog:blog_list' %}" class="nav-link ripple">
@@ -551,7 +559,6 @@
         </a>
 
         {% if user.is_authenticated %}
-            <!-- Show role-appropriate nav items -->
             {% if user.is_vet %}
                 <a href="{% url 'consultations:vet_dashboard' %}" class="nav-link ripple">
                     <span class="ms sm">dashboard</span>
@@ -571,7 +578,8 @@
 
             <!-- User menu -->
             <div class="user-menu">
-                <button class="user-menu__trigger ripple" onclick="toggleUserMenu()" id="userMenuTrigger">
+                <button class="user-menu__trigger ripple"
+                        onclick="toggleUserMenu()" id="userMenuTrigger">
                     <div class="avatar">
                         {{ user.first_name|first|upper }}{% if not user.first_name %}{{ user.username|first|upper }}{% endif %}
                     </div>
@@ -580,7 +588,9 @@
                 </button>
                 <div class="user-menu__dropdown" id="userMenuDropdown">
                     <div class="user-menu__header">
-                        <div class="user-menu__name">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="user-menu__name">
+                            {{ user.get_full_name|default:user.username }}
+                        </div>
                         <div class="user-menu__email">{{ user.email }}</div>
                     </div>
                     <a href="{% url 'accounts:profile' %}" class="user-menu__item ripple">
@@ -588,14 +598,16 @@
                         My Profile
                     </a>
                     {% if user.is_pet_owner %}
-                        <a href="{% url 'consultations:my_pets' %}" class="user-menu__item ripple">
+                        <a href="{% url 'consultations:my_pets' %}"
+                        class="user-menu__item ripple">
                             <span class="ms sm">pets</span>
                             My Pets
                         </a>
                     {% endif %}
                     <div class="user-menu__divider"></div>
-                    <a href="{% url 'accounts:logout' %}" class="user-menu__item ripple"
-                        style="color: var(--md-error);">
+                    <a href="{% url 'accounts:logout' %}"
+                    class="user-menu__item ripple"
+                    style="color:var(--md-error);">
                         <span class="ms sm">logout</span>
                         Sign out
                     </a>
@@ -603,9 +615,10 @@
             </div>
 
         {% else %}
-            <!-- Not logged in -->
-            <a href="{% url 'accounts:login' %}" class="btn btn-outlined btn-sm ripple">Sign in</a>
-            <a href="{% url 'accounts:register' %}" class="btn btn-filled btn-sm ripple">Get started</a>
+            <a href="{% url 'accounts:login' %}"
+            class="btn btn-outlined btn-sm ripple">Sign in</a>
+            <a href="{% url 'accounts:register' %}"
+            class="btn btn-filled btn-sm ripple">Get started</a>
         {% endif %}
     </nav>
 
@@ -634,51 +647,82 @@
                     {{ user.first_name|first|upper }}{% if not user.first_name %}{{ user.username|first|upper }}{% endif %}
                 </div>
             {% else %}
-                <span style="font-weight:800; color:var(--md-primary); font-size:1.1rem;">VetProject</span>
-                <button onclick="closeMobileMenu()" style="background:none;border:none;cursor:pointer;">
+                <span style="font-weight:800; color:var(--md-primary);
+                            font-size:1.1rem;">VetProject</span>
+                <button onclick="closeMobileMenu()"
+                        style="background:none; border:none; cursor:pointer;">
                     <span class="ms">close</span>
                 </button>
             {% endif %}
         </div>
 
-        <a href="{% url 'consultations:vet_list' %}" class="nav-link ripple" style="width:100%;">
-            <span class="ms sm">medical_services</span> Our Vets
+        {% if site_settings.booking_enabled %}
+        <a href="{% url 'consultations:book_by_time' %}"
+        class="nav-link ripple"
+        style="background:var(--md-primary); color:var(--md-on-primary);
+                border-radius:var(--md-shape-full); width:100%;">
+            <span class="ms sm filled">calendar_month</span> Book Now
         </a>
-        <a href="{% url 'blog:blog_list' %}" class="nav-link ripple" style="width:100%;">
+        {% endif %}
+
+        <a href="{% url 'consultations:vet_list' %}"
+        class="nav-link ripple" style="width:100%;">
+            <span class="ms sm">stethoscope</span> Our Vets
+        </a>
+        <a href="{% url 'blog:blog_list' %}"
+        class="nav-link ripple" style="width:100%;">
             <span class="ms sm">article</span> Blog
         </a>
 
         {% if user.is_authenticated %}
             {% if user.is_vet %}
-                <a href="{% url 'consultations:vet_dashboard' %}" class="nav-link ripple" style="width:100%;">
+                <a href="{% url 'consultations:vet_dashboard' %}"
+                class="nav-link ripple" style="width:100%;">
                     <span class="ms sm">dashboard</span> Dashboard
                 </a>
             {% elif user.is_admin_user or user.is_superuser %}
-                <a href="{% url 'dashboard:home' %}" class="nav-link ripple" style="width:100%;">
+                <a href="{% url 'dashboard:home' %}"
+                class="nav-link ripple" style="width:100%;">
                     <span class="ms sm">admin_panel_settings</span> Admin
                 </a>
             {% else %}
-                <a href="{% url 'consultations:my_appointments' %}" class="nav-link ripple" style="width:100%;">
+                <a href="{% url 'consultations:my_appointments' %}"
+                class="nav-link ripple" style="width:100%;">
                     <span class="ms sm">calendar_month</span> My Appointments
                 </a>
-                <a href="{% url 'consultations:my_pets' %}" class="nav-link ripple" style="width:100%;">
+                <a href="{% url 'consultations:my_pets' %}"
+                class="nav-link ripple" style="width:100%;">
                     <span class="ms sm">pets</span> My Pets
                 </a>
             {% endif %}
-            <a href="{% url 'accounts:profile' %}" class="nav-link ripple" style="width:100%;">
+            <a href="{% url 'accounts:profile' %}"
+            class="nav-link ripple" style="width:100%;">
                 <span class="ms sm">person</span> My Profile
             </a>
-            <div style="margin-top:auto; padding-top:16px; border-top:1px solid var(--md-outline-variant);">
+            <div style="margin-top:auto; padding-top:16px;
+                        border-top:1px solid var(--md-outline-variant);">
                 <a href="{% url 'accounts:logout' %}"
-                    class="btn btn-outlined ripple" style="width:100%; color:var(--md-error); border-color:var(--md-error);">
+                class="btn btn-outlined ripple"
+                style="width:100%; color:var(--md-error);
+                        border-color:var(--md-error);">
                     <span class="ms sm">logout</span> Sign out
                 </a>
             </div>
         {% else %}
-            <div style="margin-top:16px; display:flex; flex-direction:column; gap:10px;">
-                <a href="{% url 'accounts:login' %}" class="btn btn-outlined ripple" style="width:100%;">Sign in</a>
-                <a href="{% url 'accounts:register' %}" class="btn btn-filled ripple" style="width:100%;">Get started</a>
-                <a href="{% url 'accounts:vet_apply' %}" class="btn btn-tonal ripple" style="width:100%;">Apply as a Vet</a>
+            <div style="margin-top:16px; display:flex;
+                        flex-direction:column; gap:10px;">
+                <a href="{% url 'accounts:login' %}"
+                class="btn btn-outlined ripple" style="width:100%;">
+                    Sign in
+                </a>
+                <a href="{% url 'accounts:register' %}"
+                class="btn btn-filled ripple" style="width:100%;">
+                    Get started
+                </a>
+                <a href="{% url 'accounts:vet_apply' %}"
+                class="btn btn-tonal ripple" style="width:100%;">
+                    Apply as a Vet
+                </a>
             </div>
         {% endif %}
     </div>
@@ -710,15 +754,192 @@
     {% block content %}{% endblock %}
 </main>
 
-<!-- ── Footer ────────────────────────────────────────────────────── -->
-<footer class="footer">
-    <div>
-        VetProject &copy; 2025 &nbsp;·&nbsp;
-        <a href="#" style="color:var(--md-primary); text-decoration:none;">Terms</a>
-        &nbsp;·&nbsp;
-        <a href="#" style="color:var(--md-primary); text-decoration:none;">Privacy</a>
-        &nbsp;·&nbsp;
-        <a href="{% url 'core:contact' %}" style="color:var(--md-primary); text-decoration:none;">Contact</a>
+<!-- ── Footer ────────────────────────────────────────────────────────────── -->
+<footer style="background:var(--md-surface-1);
+               border-top:1px solid var(--md-outline-variant);
+               padding:40px 24px 24px;">
+
+    <div style="max-width:1200px; margin:0 auto;">
+
+        <!-- Top row -->
+        <div style="display:grid;
+                    grid-template-columns:2fr 1fr 1fr 1fr;
+                    gap:32px; margin-bottom:32px;">
+
+            <!-- Brand column -->
+            <div>
+                <div style="display:flex; align-items:center; gap:10px;
+                            margin-bottom:12px;">
+                    <div style="width:36px; height:36px;
+                                background:var(--md-primary);
+                                border-radius:var(--md-shape-sm);
+                                display:flex; align-items:center;
+                                justify-content:center;">
+                        <span class="ms filled"
+                              style="color:#fff; font-size:20px;">pets</span>
+                    </div>
+                    <span style="font-weight:800; font-size:1.1rem;
+                                 color:var(--md-primary);">VetProject</span>
+                </div>
+                <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                           font-weight:500; line-height:1.6; margin:0 0 16px;
+                           max-width:280px;">
+                    Expert veterinary care for your cats and dogs,
+                    from the comfort of your home. Available across Bangladesh.
+                </p>
+                <div style="display:flex; gap:10px;">
+                    <a href="#" style="width:36px; height:36px;
+                                      border-radius:var(--md-shape-full);
+                                      background:var(--md-surface-variant);
+                                      display:flex; align-items:center;
+                                      justify-content:center;
+                                      text-decoration:none;
+                                      color:var(--md-on-surface-variant);
+                                      transition:background 0.2s;"
+                       onmouseover="this.style.background='var(--md-primary-container)'"
+                       onmouseout="this.style.background='var(--md-surface-variant)'"
+                       title="Facebook">
+                        <span class="ms sm filled">group</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Services -->
+            <div>
+                <div style="font-weight:800; font-size:0.875rem;
+                            margin-bottom:14px; color:var(--md-on-surface);">
+                    Services
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <a href="{% url 'consultations:book_by_time' %}"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Book Consultation
+                    </a>
+                    <a href="{% url 'consultations:vet_list' %}"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Our Vets
+                    </a>
+                    <a href="{% url 'blog:blog_list' %}"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Pet Health Blog
+                    </a>
+                    <a href="{% url 'core:shop' %}"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Shop
+                    </a>
+                </div>
+            </div>
+
+            <!-- Company -->
+            <div>
+                <div style="font-weight:800; font-size:0.875rem;
+                            margin-bottom:14px; color:var(--md-on-surface);">
+                    Company
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <a href="{% url 'core:about' %}"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        About Us
+                    </a>
+                    <a href="{% url 'core:contact' %}"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Contact Us
+                    </a>
+                    <a href="{% url 'accounts:vet_apply' %}"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Join as a Vet
+                    </a>
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div>
+                <div style="font-weight:800; font-size:0.875rem;
+                            margin-bottom:14px; color:var(--md-on-surface);">
+                    Support
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <a href="{% url 'core:contact' %}"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Help Centre
+                    </a>
+                    <a href="#"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Privacy Policy
+                    </a>
+                    <a href="#"
+                       style="font-size:0.85rem; font-weight:600;
+                              color:var(--md-on-surface-variant);
+                              text-decoration:none; transition:color 0.15s;"
+                       onmouseover="this.style.color='var(--md-primary)'"
+                       onmouseout="this.style.color='var(--md-on-surface-variant)'">
+                        Terms of Service
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom row -->
+        <div style="padding-top:20px;
+                    border-top:1px solid var(--md-outline-variant);
+                    display:flex; justify-content:space-between;
+                    align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="font-size:0.82rem; font-weight:600;
+                        color:var(--md-on-surface-variant);">
+                © 2025 VetProject. All rights reserved.
+                Made with ❤️ for pets in Bangladesh.
+            </div>
+            <div style="display:flex; gap:16px;">
+                <a href="{% url 'accounts:login' %}"
+                   style="font-size:0.82rem; font-weight:700;
+                          color:var(--md-primary); text-decoration:none;">
+                    Sign In
+                </a>
+                <a href="{% url 'accounts:register' %}"
+                   style="font-size:0.82rem; font-weight:700;
+                          color:var(--md-primary); text-decoration:none;">
+                    Create Account
+                </a>
+            </div>
+        </div>
+
     </div>
 </footer>
 
