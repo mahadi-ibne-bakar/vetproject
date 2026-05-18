@@ -78,11 +78,120 @@ def home(request):
 
 
 def about(request):
-    return render(request, 'about.html', {})
+    team = [
+        {
+            'name': 'The VetProject Team',
+            'role': 'Founded in Bangladesh',
+            'description': (
+                'VetProject was built by a team passionate about improving '
+                'access to veterinary care for pet owners across Bangladesh. '
+                'We believe every cat and dog deserves quality healthcare, '
+                'regardless of where their owner lives.'
+            ),
+        },
+    ]
+
+    values = [
+        {
+            'icon': 'verified',
+            'title': 'Quality First',
+            'description': (
+                'Every vet on our platform is verified with a valid BVC '
+                'registration number. We never compromise on credentials.'
+            ),
+        },
+        {
+            'icon': 'accessibility',
+            'title': 'Accessible Care',
+            'description': (
+                'Whether you\'re in Dhaka, Chittagong, or a small town, '
+                'you deserve access to a qualified vet. We make that possible.'
+            ),
+        },
+        {
+            'icon': 'favorite',
+            'title': 'Pet Wellbeing',
+            'description': (
+                'We put the health and happiness of your pets at the centre '
+                'of everything we build and every decision we make.'
+            ),
+        },
+        {
+            'icon': 'lock',
+            'title': 'Privacy & Trust',
+            'description': (
+                'Your consultation details, pet records, and payment '
+                'information are kept strictly private and secure.'
+            ),
+        },
+    ]
+
+    ctx = {
+        'values': values,
+        'team': team,
+    }
+    return render(request, 'public/about.html', ctx)
 
 
 def contact(request):
-    return render(request, 'contact.html', {})
+    submitted = False
+
+    faqs = [
+        {
+            'q': 'How does the online consultation work?',
+            'a': 'You book a slot, pay ৳50 via bKash to confirm, '
+                 'then join a Google Meet video call with your vet at the scheduled time.',
+        },
+        {
+            'q': 'What if my pet needs physical treatment?',
+            'a': 'Our vets will advise you if an in-person visit is necessary. '
+                 'Online consultations are best for advice, diagnosis, and follow-ups.',
+        },
+        {
+            'q': 'How do I get my prescription?',
+            'a': 'After the consultation, pay the consultation fee via bKash. '
+                 'Once verified, your prescription PDF is instantly available to download.',
+        },
+        {
+            'q': 'Can I cancel my appointment?',
+            'a': 'Yes. Cancel at least 2 hours before your appointment for a refund '
+                 'of your booking fee minus a ৳10 cancellation fee.',
+        },
+    ]
+
+    if request.method == 'POST':
+        # ... existing POST handling code ...
+        name    = request.POST.get('name', '').strip()
+        email   = request.POST.get('email', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        message = request.POST.get('message', '').strip()
+
+        if name and email and message:
+            from django.core.mail import send_mail
+            from django.conf import settings as django_settings
+
+            full_message = (
+                f"Name: {name}\n"
+                f"Email: {email}\n"
+                f"Subject: {subject}\n\n"
+                f"Message:\n{message}"
+            )
+            try:
+                send_mail(
+                    subject=f"VetProject Contact: {subject or 'No subject'}",
+                    message=full_message,
+                    from_email=django_settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[django_settings.DEFAULT_FROM_EMAIL],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+            submitted = True
+
+    return render(request, 'public/contact.html', {
+        'submitted': submitted,
+        'faqs': faqs,
+    })
 
 def shop(request):
     return render(request, 'public/shop.html', {})

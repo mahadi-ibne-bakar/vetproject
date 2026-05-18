@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% block title %}About Us — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:900px; margin:0 auto;">
+
+    <!-- Hero -->
+    <div style="text-align:center; padding:48px 16px 40px;">
+        <div style="display:inline-flex; align-items:center; gap:6px;
+                    background:var(--md-primary-container);
+                    color:var(--md-on-primary-container);
+                    padding:5px 14px; border-radius:var(--md-shape-full);
+                    font-size:0.82rem; font-weight:700; margin-bottom:16px;">
+            <span class="ms sm filled">pets</span>
+            Our Story
+        </div>
+        <h1 style="font-size:clamp(1.8rem,4vw,2.6rem); font-weight:800;
+                   color:var(--md-on-surface); margin:0 0 16px; line-height:1.2;">
+            Making vet care accessible<br>
+            <span style="color:var(--md-primary);">for every pet in Bangladesh</span>
+        </h1>
+        <p style="font-size:1rem; color:var(--md-on-surface-variant);
+                  font-weight:500; line-height:1.7; margin:0 auto;
+                  max-width:580px;">
+            VetProject was born out of a simple observation — too many pet owners
+            in Bangladesh struggle to access qualified veterinary advice. Clinics
+            are far, queues are long, and taking a stressed cat or dog out is
+            difficult. We built the solution.
+        </p>
+    </div>
+
+    <!-- Mission statement -->
+    <div style="background:var(--md-primary); border-radius:var(--md-shape-xl);
+                padding:36px 40px; margin-bottom:40px; text-align:center;">
+        <span class="ms lg filled" style="color:var(--md-primary-container);
+                                          display:block; margin-bottom:12px;">
+            format_quote
+        </span>
+        <p style="font-size:1.15rem; font-weight:700; color:#fff;
+                  line-height:1.6; margin:0; max-width:600px;
+                  margin:0 auto;">
+            Our mission is to connect every pet owner in Bangladesh with a
+            certified veterinarian — from anywhere, at any time, affordably.
+        </p>
+    </div>
+
+    <!-- What we do -->
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:32px; margin-bottom:32px;">
+        <h2 style="font-size:1.3rem; font-weight:800; margin:0 0 16px;
+                   display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                info
+            </span>
+            What We Do
+        </h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div>
+                <p style="font-size:0.95rem; color:var(--md-on-surface-variant);
+                           font-weight:500; line-height:1.7; margin:0 0 14px;">
+                    VetProject is an online veterinary consultation platform
+                    built specifically for Bangladesh. We connect cat and dog
+                    owners with certified, BVC-registered veterinarians via
+                    Google Meet video calls.
+                </p>
+                <p style="font-size:0.95rem; color:var(--md-on-surface-variant);
+                           font-weight:500; line-height:1.7; margin:0;">
+                    From diagnosing early symptoms to giving dietary advice,
+                    our vets provide professional guidance that helps you make
+                    the right decisions for your pet's health — without leaving
+                    your home.
+                </p>
+            </div>
+            <div>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    {% for item in values|slice:":2" %}
+                    <div style="display:flex; gap:12px; align-items:flex-start;">
+                        <div style="width:40px; height:40px;
+                                    border-radius:var(--md-shape-md);
+                                    background:var(--md-primary-container);
+                                    display:flex; align-items:center;
+                                    justify-content:center; flex-shrink:0;">
+                            <span class="ms sm filled"
+                                  style="color:var(--md-primary);">
+                                {{ item.icon }}
+                            </span>
+                        </div>
+                        <div>
+                            <div style="font-weight:800; font-size:0.9rem;
+                                        margin-bottom:4px;">
+                                {{ item.title }}
+                            </div>
+                            <div style="font-size:0.85rem; font-weight:500;
+                                        color:var(--md-on-surface-variant);
+                                        line-height:1.5;">
+                                {{ item.description }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Our values -->
+    <div style="margin-bottom:40px;">
+        <h2 style="font-size:1.3rem; font-weight:800; margin:0 0 20px;
+                   text-align:center;">
+            Our Values
+        </h2>
+        <div style="display:grid;
+                    grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+                    gap:16px;">
+            {% for value in values %}
+            <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                        box-shadow:var(--md-elev-1); padding:24px;
+                        text-align:center;">
+                <div style="width:52px; height:52px;
+                            border-radius:var(--md-shape-lg);
+                            background:var(--md-primary-container);
+                            display:flex; align-items:center;
+                            justify-content:center; margin:0 auto 14px;">
+                    <span class="ms filled"
+                          style="color:var(--md-primary);">{{ value.icon }}</span>
+                </div>
+                <div style="font-weight:800; font-size:0.95rem; margin-bottom:8px;">
+                    {{ value.title }}
+                </div>
+                <div style="font-size:0.85rem; font-weight:500;
+                            color:var(--md-on-surface-variant); line-height:1.5;">
+                    {{ value.description }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- How we verify vets -->
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:32px; margin-bottom:40px;">
+        <h2 style="font-size:1.3rem; font-weight:800; margin:0 0 16px;
+                   display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                verified
+            </span>
+            How We Verify Our Vets
+        </h2>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+            {% for step in "1234"|make_list %}
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:32px; height:32px;
+                            border-radius:var(--md-shape-full);
+                            background:var(--md-primary); color:#fff;
+                            display:flex; align-items:center;
+                            justify-content:center; font-weight:800;
+                            font-size:0.85rem; flex-shrink:0;">
+                    {{ step }}
+                </div>
+                <div style="padding-top:4px;">
+                    {% if step == "1" %}
+                    <div style="font-weight:700; margin-bottom:3px;">
+                        Application Review
+                    </div>
+                    <div style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                                font-weight:500;">
+                        Every vet submits a detailed application including their
+                        BVC registration number, education, and experience.
+                    </div>
+                    {% elif step == "2" %}
+                    <div style="font-weight:700; margin-bottom:3px;">
+                        BVC Verification
+                    </div>
+                    <div style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                                font-weight:500;">
+                        We verify each vet's Bangladesh Veterinary Council
+                        registration number before approving their profile.
+                    </div>
+                    {% elif step == "3" %}
+                    <div style="font-weight:700; margin-bottom:3px;">
+                        Manual Approval
+                    </div>
+                    <div style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                                font-weight:500;">
+                        Our team manually reviews every application. No vet
+                        goes live without explicit approval from our team.
+                    </div>
+                    {% elif step == "4" %}
+                    <div style="font-weight:700; margin-bottom:3px;">
+                        Ongoing Monitoring
+                    </div>
+                    <div style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                                font-weight:500;">
+                        We monitor consultation quality through user reviews and
+                        can deactivate any vet who doesn't meet our standards.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="background:var(--md-primary-container);
+                border-radius:var(--md-shape-xl); padding:32px;
+                text-align:center; margin-bottom:16px;">
+        <h2 style="font-size:1.2rem; font-weight:800;
+                   color:var(--md-on-primary-container); margin:0 0 10px;">
+            Ready to get started?
+        </h2>
+        <p style="color:var(--md-primary); font-weight:600;
+                  font-size:0.9rem; margin:0 0 20px;">
+            Book your first consultation today.
+        </p>
+        <div style="display:flex; gap:12px; justify-content:center;
+                    flex-wrap:wrap;">
+            <a href="{% url 'consultations:book_by_time' %}"
+               class="btn btn-filled" style="text-decoration:none;">
+                <span class="ms sm">calendar_month</span>
+                Book a Consultation
+            </a>
+            <a href="{% url 'core:contact' %}"
+               class="btn btn-outlined" style="text-decoration:none;">
+                <span class="ms sm">mail</span>
+                Contact Us
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
