@@ -54,7 +54,9 @@ def generate_prescription_pdf(appointment) -> bytes:
         fontName='Helvetica-Bold',
         fontSize=22,
         textColor=PRIMARY,
-        spaceAfter=2,
+        spaceAfter=0,
+        spaceBefore=0,
+        leading=26,
     )
     brand_sub = ParagraphStyle(
         'BrandSub',
@@ -62,6 +64,8 @@ def generate_prescription_pdf(appointment) -> bytes:
         fontSize=9,
         textColor=GRAY,
         spaceAfter=0,
+        spaceBefore=0,
+        leading=12,
     )
     section_heading = ParagraphStyle(
         'SectionHeading',
@@ -133,14 +137,15 @@ def generate_prescription_pdf(appointment) -> bytes:
     header_table = Table(header_data, colWidths=[120*mm, 50*mm])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ALIGN',  (1, 0), (1, 0), 'RIGHT'),
+        ('ALIGN',  (1, 0), (1, 0),  'RIGHT'),
     ]))
     story.append(header_table)
+    story.append(Spacer(1, 2*mm))
     story.append(Paragraph(
         'Online Veterinary Consultation Service · Bangladesh',
         brand_sub
     ))
-    story.append(Spacer(1, 4*mm))
+    story.append(Spacer(1, 6*mm))
     story.append(HRFlowable(
         width='100%', thickness=2, color=PRIMARY, spaceAfter=6
     ))
