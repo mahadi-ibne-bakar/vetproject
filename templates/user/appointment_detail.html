@@ -350,25 +350,30 @@
             {% csrf_token %}
             <div style="margin-bottom:16px;">
                 <div style="font-size:0.8rem; font-weight:700;
-                            color:var(--md-on-surface-variant); margin-bottom:8px;">
+                            color:var(--md-on-surface-variant); margin-bottom:10px;">
                     YOUR RATING
                 </div>
-                <div style="display:flex; gap:8px;">
+                <div style="display:flex; gap:6px;" id="starRow">
                     {% for i in "12345" %}
-                    <label style="cursor:pointer;">
+                    <label style="cursor:pointer;" class="star-label">
                         <input type="radio" name="rating"
-                               value="{{ forloop.counter }}"
-                               style="display:none;"
-                               {% if forloop.counter == 5 %}checked{% endif %}>
-                        <span class="ms lg"
-                              style="color:#CA8A04; transition:transform 0.1s;"
-                              onmouseover="this.style.transform='scale(1.2)'"
-                              onmouseout="this.style.transform='scale(1)'">
+                            value="{{ forloop.counter }}"
+                            style="display:none;">
+                        <span class="ms"
+                            style="font-size:36px; color:#D1D5DB;
+                                    transition:color 0.15s, transform 0.15s;
+                                    display:block;"
+                            data-value="{{ forloop.counter }}">
                             star
                         </span>
                     </label>
                     {% endfor %}
                 </div>
+                <p style="font-size:0.78rem; font-weight:600;
+                        color:var(--md-on-surface-variant); margin-top:6px;"
+                id="ratingLabel">
+                    Click a star to rate
+                </p>
             </div>
             <div class="field-wrap" style="margin-bottom:14px;">
                 <textarea name="comment" placeholder=" " rows="3"></textarea>
@@ -383,4 +388,62 @@
     {% endif %}
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Cancel form toggle
+    function showCancel() {
+        document.getElementById('cancelForm').style.display = 'block';
+    }
+
+    // Star rating
+    const stars     = document.querySelectorAll('.star-label');
+    const label     = document.getElementById('ratingLabel');
+    const ratingText = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+    let selectedRating = 0;
+
+    function paintStars(upTo) {
+        stars.forEach((s, idx) => {
+            const icon = s.querySelector('.ms');
+            if (idx < upTo) {
+                icon.style.color          = '#CA8A04';
+                icon.style.fontVariationSettings = "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+                icon.style.transform      = 'scale(1.1)';
+            } else {
+                icon.style.color          = '#D1D5DB';
+                icon.style.fontVariationSettings = "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+                icon.style.transform      = 'scale(1)';
+            }
+        });
+    }
+
+    stars.forEach((star, idx) => {
+        const radio = star.querySelector('input');
+        const value = idx + 1;
+
+        // Hover
+        star.addEventListener('mouseenter', () => {
+            paintStars(value);
+            label.textContent = ratingText[value];
+        });
+
+        star.addEventListener('mouseleave', () => {
+            paintStars(selectedRating);
+            label.textContent = selectedRating
+                ? ratingText[selectedRating]
+                : 'Click a star to rate';
+        });
+
+        // Click
+        star.addEventListener('click', () => {
+            selectedRating = value;
+            radio.checked  = true;
+            paintStars(value);
+            label.textContent = ratingText[value] + ' — good choice!';
+            label.style.color = '#CA8A04';
+            label.style.fontWeight = '700';
+        });
+    });
+</script>
 {% endblock %}
