@@ -20,7 +20,7 @@
         <p style="color:var(--md-on-surface-variant); font-weight:600;
                   font-size:0.9rem; margin:0 0 20px;">
             Current: {{ appointment.date|date:"M d, Y" }}
-            at {{ appointment.start_time|time:"H:i" }}
+            at {{ appointment.start_time|time:"g:i A" }}
             with Dr. {{ appointment.vet.user.get_full_name }}
         </p>
 

@@ -218,8 +218,8 @@
                                 padding:6px 12px; border-radius:var(--md-shape-full);">
                         <span style="font-weight:700; font-size:0.85rem;
                                      color:var(--md-on-primary-container);">
-                            {{ window.start_time|time:"H:i" }} –
-                            {{ window.end_time|time:"H:i" }}
+                            {{ window.start_time|time:"g:i A" }} –
+                            {{ window.end_time|time:"g:i A" }}
                             {% if window.end_date %}
                                 <span style="font-size:0.75rem; opacity:0.8;">
                                     until {{ window.end_date|date:"M d" }}
@@ -278,8 +278,8 @@
                 </td>
                 <td>
                     <span class="status-chip chip-blue">
-                        {{ window.start_time|time:"H:i" }} –
-                        {{ window.end_time|time:"H:i" }}
+                        {{ window.start_time|time:"g:i A" }} –
+                        {{ window.end_time|time:"g:i A" }}
                     </span>
                 </td>
                 <td>

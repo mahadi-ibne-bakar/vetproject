@@ -139,7 +139,7 @@
                     {{ payment.transaction_id }}
                 </td>
                 <td style="font-size:0.8rem; color:var(--md-on-surface-variant);">
-                    {{ payment.created_at|date:"M d, H:i" }}
+                    {{ payment.created_at|date:"M d" }} {{ payment.created_at|time:"g:i A" }}
                 </td>
                 <td>
                     <span class="status-chip

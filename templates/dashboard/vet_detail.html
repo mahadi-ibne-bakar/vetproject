@@ -405,7 +405,7 @@
                                 {% if forloop.counter0 == day_index %}{{ name }}{% endif %}
                             {% endfor %}
                         {% endwith %}
-                        — {{ w.start_time|time:"H:i" }} – {{ w.end_time|time:"H:i" }}
+                        — {{ w.start_time|time:"g:i A" }} – {{ w.end_time|time:"g:i A" }}
                         {% if w.end_date %}
                             <span style="font-size:0.75rem; opacity:0.75;">
                                 until {{ w.end_date|date:"M d, Y" }}
@@ -440,7 +440,7 @@
                     <span style="font-weight:700; font-size:0.875rem;
                                 color:#1E40AF; flex:1;">
                         {{ w.specific_date|date:"M d, Y" }}
-                        — {{ w.start_time|time:"H:i" }} – {{ w.end_time|time:"H:i" }}
+                        — {{ w.start_time|time:"g:i A" }} – {{ w.end_time|time:"g:i A" }}
                     </span>
                     <form method="post"
                         action="{% url 'dashboard:admin_delete_availability' vet.id w.id %}">

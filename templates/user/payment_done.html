@@ -24,7 +24,7 @@
             Your appointment with
             <strong>Dr. {{ appointment.vet.user.get_full_name }}</strong>
             on <strong>{{ appointment.date|date:"M d, Y" }}</strong>
-            at <strong>{{ appointment.start_time|time:"H:i" }}</strong>
+            at <strong>{{ appointment.start_time|time:"g:i A" }}</strong>
             will be confirmed shortly.
         </p>
 

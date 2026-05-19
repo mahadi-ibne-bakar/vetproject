@@ -33,8 +33,8 @@
                 </div>
                 <div style="color:var(--md-primary-container); font-size:0.82rem;
                             margin-top:2px;">
-                    {{ appointment.start_time|time:"H:i" }} –
-                    {{ appointment.end_time|time:"H:i" }}
+                    {{ appointment.start_time|time:"g:i A" }} –
+                    {{ appointment.end_time|time:"g:i A" }}
                 </div>
             </div>
         </div>

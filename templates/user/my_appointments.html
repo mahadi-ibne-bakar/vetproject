@@ -107,7 +107,7 @@
                 <div style="font-size:0.875rem; color:var(--md-on-surface-variant);
                             font-weight:600; margin-top:3px;">
                     {{ appt.pet.name }} · {{ appt.date|date:"M d, Y" }}
-                    at {{ appt.start_time|time:"H:i" }}
+                    at {{ appt.start_time|time:"g:i A" }}
                 </div>
             </div>
             <a href="{% url 'consultations:submit_second_payment' appt.id %}"

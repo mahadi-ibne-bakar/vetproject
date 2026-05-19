@@ -38,7 +38,7 @@
                         font-weight:600; margin-bottom:8px;">
                 👤 {{ appt.user.get_full_name|default:appt.user.username }}
                 · {{ appt.date|date:"M d, Y" }}
-                · {{ appt.start_time|time:"H:i" }}–{{ appt.end_time|time:"H:i" }}
+                · {{ appt.start_time|time:"g:i A" }}–{{ appt.end_time|time:"g:i A" }}
             </div>
 
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">

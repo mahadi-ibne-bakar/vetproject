@@ -49,7 +49,7 @@
                 <td style="font-size:0.875rem;">{{ payment.appointment.pet.name }}</td>
                 <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
                     {{ payment.appointment.date|date:"M d, Y" }}
-                    at {{ payment.appointment.start_time|time:"H:i" }}
+                    at {{ payment.appointment.start_time|time:"g:i A" }}
                 </td>
                 <td style="font-weight:700;">৳{{ payment.amount }}</td>
                 <td style="color:var(--md-error); font-weight:700;">- ৳{{ deduction }}</td>
@@ -118,7 +118,7 @@
                     {{ payment.bkash_number }}
                 </td>
                 <td style="font-size:0.82rem; color:var(--md-on-surface-variant);">
-                    {{ payment.refund_sent_at|date:"M d, Y H:i" }}
+                    {{ payment.refund_sent_at|date:"M d, Y" }} {{ payment.refund_sent_at|time:"g:i A" }}
                 </td>
             </tr>
             {% empty %}

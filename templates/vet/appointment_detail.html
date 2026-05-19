@@ -40,7 +40,7 @@
         <div style="font-size:0.875rem; font-weight:600; margin-top:3px;
                     color:var(--md-primary);">
             {{ appointment.date|date:"l, M d, Y" }}
-            · {{ appointment.start_time|time:"H:i" }}–{{ appointment.end_time|time:"H:i" }}
+            · {{ appointment.start_time|time:"g:i A" }}–{{ appointment.end_time|time:"g:i A" }}
         </div>
     </div>
     <div>
@@ -105,7 +105,7 @@
         <div class="alert alert-warning" style="margin-bottom:12px;">
             <span class="ms sm filled">videocam</span>
             Consultation in progress since
-            {{ appointment.consultation_start_time|time:"H:i" }}.
+            {{ appointment.consultation_start_time|time:"g:i A" }}.
             Fill in notes and prescription below, then end the consultation.
         </div>
         <form method="post"
@@ -463,7 +463,7 @@
                         <div style="font-size:0.78rem; font-weight:600;
                                     color:var(--md-on-surface-variant); margin-top:2px;">
                             {{ item.appointment.date|date:"M d, Y" }}
-                            · {{ item.appointment.start_time|time:"H:i" }}
+                            · {{ item.appointment.start_time|time:"g:i A" }}
                         </div>
                         <span class="status-chip chip-blue"
                             style="font-size:0.72rem; margin-top:4px; display:inline-flex;">

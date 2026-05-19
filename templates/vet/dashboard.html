@@ -107,7 +107,7 @@
             {% for appt in todays_appointments %}
             <tr>
                 <td style="font-weight:700; color:var(--md-primary);">
-                    {{ appt.start_time|time:"H:i" }} – {{ appt.end_time|time:"H:i" }}
+                    {{ appt.start_time|time:"g:i A" }} – {{ appt.end_time|time:"g:i A" }}
                 </td>
                 <td>
                     <div style="font-weight:700;">{{ appt.pet.name }}</div>
@@ -173,7 +173,7 @@
                             {{ appt.date|date:"M d" }}
                         </div>
                         <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
-                            {{ appt.start_time|time:"H:i" }}
+                            {{ appt.start_time|time:"g:i A" }}
                         </div>
                     </td>
                     <td>

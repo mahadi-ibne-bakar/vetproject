@@ -188,8 +188,8 @@ def generate_prescription_pdf(appointment) -> bytes:
             'Breed',
             pet.breed or '—',
             'Consultation',
-            f"{appointment.start_time.strftime('%H:%M')} – "
-            f"{appointment.end_time.strftime('%H:%M')}",
+            f"{appointment.start_time.strftime('%I:%M %p')} – "
+            f"{appointment.end_time.strftime('%I:%M %p')}",
         ],
         [
             'Age',

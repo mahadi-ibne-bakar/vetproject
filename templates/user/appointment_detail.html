@@ -35,7 +35,7 @@
             <div style="font-size:0.875rem; font-weight:600;
                         color:var(--md-primary); margin-top:3px;">
                 {{ appointment.date|date:"l, F j, Y" }}
-                · {{ appointment.start_time|time:"H:i" }}–{{ appointment.end_time|time:"H:i" }}
+                · {{ appointment.start_time|time:"g:i A" }}–{{ appointment.end_time|time:"g:i A" }}
             </div>
             <div style="margin-top:8px;">
                 <span class="status-chip

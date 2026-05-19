@@ -30,7 +30,7 @@
             <div style="font-size:0.82rem; font-weight:600;
                         color:var(--md-primary); margin-top:2px;">
                 {{ appointment.date|date:"l, M d, Y" }}
-                at {{ appointment.start_time|time:"H:i" }}
+                at {{ appointment.start_time|time:"g:i A" }}
             </div>
         </div>
         <div style="font-weight:800; font-size:1.1rem;

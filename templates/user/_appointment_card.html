@@ -42,7 +42,7 @@
                         font-weight:600; margin-bottom:8px;">
                 🐾 {{ appt.pet.name }} ({{ appt.pet.get_species_display }})
                 · {{ appt.date|date:"l, M d, Y" }}
-                · {{ appt.start_time|time:"H:i" }}–{{ appt.end_time|time:"H:i" }}
+                · {{ appt.start_time|time:"g:i A" }}–{{ appt.end_time|time:"g:i A" }}
             </div>
 
             <div style="display:flex; gap:8px; flex-wrap:wrap;">

@@ -125,7 +125,7 @@
                                 {% if appt.status == 'confirmed' or appt.status == 'in_progress' %}
                                     <div style="font-weight:600;">{{ appt.pet.name }}</div>
                                     <div style="color:var(--md-on-surface-variant);">
-                                        {{ appt.date|date:"M d" }} {{ appt.start_time|time:"H:i" }}
+                                        {{ appt.date|date:"M d" }} {{ appt.start_time|time:"g:i A" }}
                                     </div>
                                 {% endif %}
                             {% endfor %}
