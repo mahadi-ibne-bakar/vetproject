@@ -147,6 +147,41 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# ─── Storage (Supabase S3-compatible) ─────────────────────────────────────────
+SUPABASE_URL        = config('SUPABASE_URL', default='')
+SUPABASE_SERVICE_KEY = config('SUPABASE_SERVICE_KEY', default='')
+SUPABASE_BUCKET     = config('SUPABASE_BUCKET', default='vetproject-media')
+
+# Extract project ID from URL for S3 endpoint
+import re as _re
+_match = _re.search(r'https://([^.]+)\.supabase\.co', SUPABASE_URL)
+SUPABASE_PROJECT_ID = _match.group(1) if _match else ''
+
+if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+    # Use Supabase Storage for all media files
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    AWS_ACCESS_KEY_ID       = SUPABASE_SERVICE_KEY
+    AWS_SECRET_ACCESS_KEY   = SUPABASE_SERVICE_KEY
+    AWS_STORAGE_BUCKET_NAME = SUPABASE_BUCKET
+    AWS_S3_REGION_NAME      = 'ap-southeast-1'
+    AWS_S3_ENDPOINT_URL     = f'https://{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/s3'
+    AWS_S3_FILE_OVERWRITE   = False
+    AWS_DEFAULT_ACL         = 'public-read'
+    AWS_QUERYSTRING_AUTH    = False
+
+    # CDN URL for serving files
+    AWS_S3_CUSTOM_DOMAIN    = (
+        f'{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/{SUPABASE_BUCKET}'
+    )
+
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+else:
+    # Fallback to local storage for development without credentials
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_URL  = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # ─── Email ────────────────────────────────────────────────────────────────────
 

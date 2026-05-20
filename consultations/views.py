@@ -88,6 +88,8 @@ def vet_dashboard(request):
 
 @login_required_vet
 def vet_edit_profile(request):
+    from core.image_utils import compress_if_image
+
     vet_profile = request.user.vet_profile
 
     if request.method == 'POST':
@@ -98,19 +100,24 @@ def vet_edit_profile(request):
             user=request.user,
         )
         if form.is_valid():
+            vet = form.save(commit=False)
+            if 'profile_photo' in request.FILES:
+                vet.profile_photo = compress_if_image(
+                    request.FILES['profile_photo'],
+                    image_type='profile'
+                )
+            vet.save()
+            # Save user fields too
             form.save()
             messages.success(request, "Your profile has been updated.")
             return redirect('consultations:vet_edit_profile')
         else:
             messages.error(request, "Please fix the errors below.")
     else:
-        form = VetProfileForm(
-            instance=vet_profile,
-            user=request.user,
-        )
+        form = VetProfileForm(instance=vet_profile, user=request.user)
 
     return render(request, 'vet/edit_profile.html', {
-        'form': form,
+        'form':        form,
         'vet_profile': vet_profile,
     })
 
@@ -863,6 +870,14 @@ def book_appointment(request, vet_id):
             + urlencode({'next': booking_next, 'context': 'booking'})
         )
 
+    if 'symptom_photo' in request.FILES:
+        from core.image_utils import compress_if_image
+        appointment.symptom_photo = compress_if_image(
+            request.FILES['symptom_photo'],
+            image_type='symptom'
+        )
+        appointment.save()
+
     if request.method == 'POST':
         pet_id = request.POST.get('pet_id')
         primary_complaint = request.POST.get('primary_complaint')
@@ -1450,22 +1465,29 @@ def my_pets(request):
 
 @login_required_user
 def add_pet(request):
-    # Detect if we're in booking context
+
     from urllib.parse import unquote
-    next_url = unquote(request.GET.get('next', '') or request.POST.get('next', ''))
-    context  = request.GET.get('context', '') or request.POST.get('context', '')
+    from core.image_utils import compress_if_image
+
+    next_url   = unquote(request.GET.get('next', '') or request.POST.get('next', ''))
+    context    = request.GET.get('context', '') or request.POST.get('context', '')
     in_booking = context == 'booking'
 
     if request.method == 'POST':
         form = PetForm(request.POST, request.FILES)
         if form.is_valid():
-            pet = form.save(commit=False)
+            pet       = form.save(commit=False)
             pet.owner = request.user
+
+            # Compress photo before saving
+            if 'photo' in request.FILES:
+                pet.photo = compress_if_image(
+                    request.FILES['photo'],
+                    image_type='pet'
+                )
+
             pet.save()
-            messages.success(
-                request,
-                f"{pet.name} has been added."
-            )
+            messages.success(request, f"{pet.name} has been added.")
             if next_url:
                 return redirect(next_url)
             return redirect('consultations:my_pets')
@@ -1475,20 +1497,28 @@ def add_pet(request):
         form = PetForm()
 
     return render(request, 'user/add_pet.html', {
-        'form': form,
-        'next_url': next_url,
+        'form':       form,
+        'next_url':   next_url,
         'in_booking': in_booking,
     })
 
 
 @login_required_user
 def edit_pet(request, pet_id):
+    from core.image_utils import compress_if_image
+
     pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
 
     if request.method == 'POST':
         form = PetForm(request.POST, request.FILES, instance=pet)
         if form.is_valid():
-            form.save()
+            pet = form.save(commit=False)
+            if 'photo' in request.FILES:
+                pet.photo = compress_if_image(
+                    request.FILES['photo'],
+                    image_type='pet'
+                )
+            pet.save()
             messages.success(request, f"{pet.name}'s profile has been updated.")
             return redirect('consultations:my_pets')
         else:
@@ -1498,7 +1528,7 @@ def edit_pet(request, pet_id):
 
     return render(request, 'user/edit_pet.html', {
         'form': form,
-        'pet': pet,
+        'pet':  pet,
     })
 
 

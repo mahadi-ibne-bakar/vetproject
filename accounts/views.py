@@ -156,6 +156,7 @@ def vet_apply(request):
     if request.method == 'POST':
         form = VetApplicationForm(request.POST)
         if form.is_valid():
+            from core.image_utils import compress_if_image
             # Create the User first
             user = User.objects.create_user(
                 username=form.cleaned_data['email'],
