@@ -1,15 +1,326 @@
 {% extends 'base.html' %}
-
 {% block title %}My Profile — VetProject{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
-    <div class="bg-white rounded-2xl shadow-md p-6">
-        <p class="text-gray-600"><span class="font-medium">Name:</span> {{ user.get_full_name }}</p>
-        <p class="text-gray-600 mt-2"><span class="font-medium">Email:</span> {{ user.email }}</p>
-        <p class="text-gray-600 mt-2"><span class="font-medium">Phone:</span> {{ user.phone_number }}</p>
-        <p class="text-gray-600 mt-2"><span class="font-medium">Member since:</span> {{ user.created_at|date:"F j, Y" }}</p>
+<div style="max-width:800px; margin:0 auto;">
+
+    <div style="margin-bottom:24px;">
+        <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 4px;">
+            My Profile
+        </h1>
+        <p style="color:var(--md-on-surface-variant); font-weight:600;
+                  font-size:0.9rem; margin:0;">
+            Manage your account details
+        </p>
     </div>
+
+    <div style="display:grid; grid-template-columns:1fr 2fr; gap:20px;
+                align-items:start;">
+
+        <!-- Left: Avatar + stats -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <!-- Avatar card -->
+            <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                        box-shadow:var(--md-elev-1); overflow:hidden;">
+                <div style="background:var(--md-primary-container);
+                            padding:28px 20px; text-align:center;">
+                    {% if user.profile_photo %}
+                        <img src="{{ user.profile_photo.url }}"
+                             alt="{{ user.get_full_name }}"
+                             style="width:80px; height:80px;
+                                    border-radius:var(--md-shape-full);
+                                    object-fit:cover;
+                                    border:3px solid var(--md-primary);
+                                    margin-bottom:12px;">
+                    {% else %}
+                        <div style="width:80px; height:80px;
+                                    border-radius:var(--md-shape-full);
+                                    background:var(--md-primary); color:#fff;
+                                    display:flex; align-items:center;
+                                    justify-content:center; font-weight:800;
+                                    font-size:1.8rem; margin:0 auto 12px;">
+                            {{ user.first_name|first|upper|default:user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div style="font-weight:800; font-size:1.1rem;
+                                color:var(--md-on-primary-container);">
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                    <div style="font-size:0.82rem; font-weight:600;
+                                color:var(--md-primary); margin-top:3px;">
+                        Pet Owner
+                    </div>
+                </div>
+                <div style="padding:16px 20px;">
+                    <div style="font-size:0.82rem; font-weight:600;
+                                color:var(--md-on-surface-variant);
+                                margin-bottom:4px;">Email</div>
+                    <div style="font-weight:700; font-size:0.9rem;
+                                word-break:break-all;">
+                        {{ user.email }}
+                    </div>
+                    <div style="font-size:0.78rem; font-weight:600;
+                                color:var(--md-on-surface-variant); margin-top:10px;">
+                        Member since {{ user.date_joined|date:"M Y" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats card -->
+            <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                        box-shadow:var(--md-elev-1); padding:16px 20px;">
+                <div style="font-weight:800; font-size:0.9rem; margin-bottom:12px;">
+                    Activity
+                </div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="display:flex; justify-content:space-between;
+                                align-items:center;">
+                        <span style="font-size:0.85rem; font-weight:600;
+                                     color:var(--md-on-surface-variant);">
+                            Pets registered
+                        </span>
+                        <span style="font-weight:800; color:var(--md-primary);">
+                            {{ pets.count }}
+                        </span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;
+                                align-items:center;">
+                        <span style="font-size:0.85rem; font-weight:600;
+                                     color:var(--md-on-surface-variant);">
+                            Total appointments
+                        </span>
+                        <span style="font-weight:800; color:var(--md-primary);">
+                            {{ total_appointments }}
+                        </span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;
+                                align-items:center;">
+                        <span style="font-size:0.85rem; font-weight:600;
+                                     color:var(--md-on-surface-variant);">
+                            Completed
+                        </span>
+                        <span style="font-weight:800; color:#16A34A;">
+                            {{ completed_appointments }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick links -->
+            <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                        box-shadow:var(--md-elev-1); padding:16px 20px;">
+                <div style="font-weight:800; font-size:0.9rem; margin-bottom:12px;">
+                    Quick Links
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <a href="{% url 'consultations:my_appointments' %}"
+                       style="display:flex; align-items:center; gap:8px;
+                              padding:8px 10px; border-radius:var(--md-shape-md);
+                              text-decoration:none; font-weight:600;
+                              font-size:0.875rem; color:var(--md-on-surface);
+                              transition:background 0.15s;"
+                       onmouseover="this.style.background='var(--md-surface-variant)'"
+                       onmouseout="this.style.background=''">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary);">calendar_month</span>
+                        My Appointments
+                    </a>
+                    <a href="{% url 'consultations:my_pets' %}"
+                       style="display:flex; align-items:center; gap:8px;
+                              padding:8px 10px; border-radius:var(--md-shape-md);
+                              text-decoration:none; font-weight:600;
+                              font-size:0.875rem; color:var(--md-on-surface);
+                              transition:background 0.15s;"
+                       onmouseover="this.style.background='var(--md-surface-variant)'"
+                       onmouseout="this.style.background=''">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary);">pets</span>
+                        My Pets
+                    </a>
+                    <a href="{% url 'consultations:book_by_time' %}"
+                       style="display:flex; align-items:center; gap:8px;
+                              padding:8px 10px; border-radius:var(--md-shape-md);
+                              text-decoration:none; font-weight:600;
+                              font-size:0.875rem; color:var(--md-on-surface);
+                              transition:background 0.15s;"
+                       onmouseover="this.style.background='var(--md-surface-variant)'"
+                       onmouseout="this.style.background=''">
+                        <span class="ms sm filled"
+                              style="color:var(--md-primary);">add_circle</span>
+                        Book Consultation
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right: Edit form -->
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); padding:28px;">
+
+            <h2 style="font-size:1.1rem; font-weight:800; margin:0 0 20px;
+                        padding-bottom:14px;
+                        border-bottom:1px solid var(--md-outline-variant);
+                        display:flex; align-items:center; gap:8px;">
+                <span class="ms sm filled"
+                      style="color:var(--md-primary);">edit</span>
+                Edit Profile
+            </h2>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="display:flex; flex-direction:column; gap:16px;">
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr;
+                                gap:12px;">
+                        <div>
+                            <div style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        margin-bottom:6px;">
+                                FIRST NAME
+                                <span style="color:var(--md-error);">*</span>
+                            </div>
+                            <div class="field-wrap">
+                                {{ form.first_name }}
+                                <label>First name</label>
+                            </div>
+                            {% if form.first_name.errors %}
+                                <p class="field-error">
+                                    {{ form.first_name.errors.0 }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant);
+                                        margin-bottom:6px;">
+                                LAST NAME
+                            </div>
+                            <div class="field-wrap">
+                                {{ form.last_name }}
+                                <label>Last name</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);
+                                    margin-bottom:6px;">PHONE NUMBER</div>
+                        <div class="field-wrap">
+                            {{ form.phone_number }}
+                            <label>Phone number</label>
+                        </div>
+                        {% if form.phone_number.errors %}
+                            <p class="field-error">
+                                {{ form.phone_number.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);
+                                    margin-bottom:6px;">ADDRESS</div>
+                        <div class="field-wrap">
+                            {{ form.address }}
+                            <label>Your address (optional)</label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);
+                                    margin-bottom:6px;">PROFILE PHOTO</div>
+                        {% if user.profile_photo %}
+                        <div style="margin-bottom:8px;">
+                            <img src="{{ user.profile_photo.url }}"
+                                 style="width:48px; height:48px;
+                                        border-radius:var(--md-shape-full);
+                                        object-fit:cover;">
+                        </div>
+                        {% endif %}
+                        {{ form.profile_photo }}
+                        <p class="field-hint">JPG or PNG. Max 5MB.</p>
+                    </div>
+
+                    <!-- Read only fields -->
+                    <div style="background:var(--md-surface-1);
+                                border-radius:var(--md-shape-md);
+                                padding:14px 16px;">
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant);
+                                    margin-bottom:8px;">
+                            ACCOUNT (READ-ONLY)
+                        </div>
+                        <div style="font-size:0.875rem; font-weight:600;
+                                    color:var(--md-on-surface);">
+                            {{ user.email }}
+                        </div>
+                        <div style="font-size:0.78rem; font-weight:600;
+                                    color:var(--md-on-surface-variant);
+                                    margin-top:4px;">
+                            To change your email or password use the
+                            <a href="{% url 'accounts:password_reset' %}"
+                               style="color:var(--md-primary);">
+                               password reset
+                            </a> flow.
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        <span class="ms sm filled">error</span>
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-filled"
+                            style="width:100%;">
+                        <span class="ms sm">save</span>
+                        Save Changes
+                    </button>
+
+                </div>
+            </form>
+
+            <!-- Pets section -->
+            {% if pets %}
+            <div style="margin-top:24px; padding-top:20px;
+                        border-top:1px solid var(--md-outline-variant);">
+                <div style="font-weight:800; font-size:0.9rem; margin-bottom:12px;
+                            display:flex; align-items:center;
+                            justify-content:space-between;">
+                    <span>My Pets</span>
+                    <a href="{% url 'consultations:my_pets' %}"
+                       style="font-size:0.82rem; color:var(--md-primary);
+                              text-decoration:none; font-weight:700;">
+                        Manage →
+                    </a>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    {% for pet in pets %}
+                    <div style="display:flex; align-items:center; gap:8px;
+                                background:var(--md-surface-1);
+                                padding:8px 12px;
+                                border-radius:var(--md-shape-full);">
+                        <span style="font-size:1.2rem;">
+                            {% if pet.species == 'cat' %}🐱
+                            {% elif pet.species == 'dog' %}🐶
+                            {% else %}🐾{% endif %}
+                        </span>
+                        <span style="font-weight:700; font-size:0.875rem;">
+                            {{ pet.name }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
 </div>
 {% endblock %}

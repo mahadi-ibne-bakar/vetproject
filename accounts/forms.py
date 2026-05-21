@@ -60,6 +60,39 @@ class UserLoginForm(AuthenticationForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs=password_attrs()))
 
+class UserProfileForm(forms.ModelForm):
+    """Allows pet owners to edit their own profile details."""
+
+    first_name = forms.CharField(
+        max_length=50, required=True,
+        widget=forms.TextInput(attrs={'placeholder': ' '})
+    )
+    last_name = forms.CharField(
+        max_length=50, required=False,
+        widget=forms.TextInput(attrs={'placeholder': ' '})
+    )
+
+    class Meta:
+        model = User
+        fields = ['phone_number', 'address', 'profile_photo']
+        widgets = {
+            'phone_number': forms.TextInput(attrs={'placeholder': ' '}),
+            'address':      forms.Textarea(attrs={'placeholder': ' ', 'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['first_name'].initial = self.instance.first_name
+            self.fields['last_name'].initial  = self.instance.last_name
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name  = self.cleaned_data['last_name']
+        if commit:
+            user.save()
+        return user
 
 class VetLoginForm(AuthenticationForm):
     username = forms.EmailField(label='Email',

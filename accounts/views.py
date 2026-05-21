@@ -95,8 +95,50 @@ def user_logout(request):
 
 @login_required_user
 def profile(request):
-    """Basic profile page — expanded in later days."""
-    return render(request, 'accounts/profile.html', {'user': request.user})
+    from .forms import UserProfileForm
+    from core.image_utils import compress_if_image
+
+    if request.method == 'POST':
+        form = UserProfileForm(
+            request.POST,
+            request.FILES,
+            instance=request.user,
+        )
+        if form.is_valid():
+            user = form.save(commit=False)
+            if 'profile_photo' in request.FILES:
+                user.profile_photo = compress_if_image(
+                    request.FILES['profile_photo'],
+                    image_type='profile'
+                )
+            user.save()
+            messages.success(request, "Your profile has been updated.")
+            return redirect('accounts:profile')
+        else:
+            messages.error(request, "Please fix the errors below.")
+    else:
+        form = UserProfileForm(instance=request.user)
+
+    # User's pets for quick view
+    from consultations.models import Pet
+    pets = Pet.objects.filter(owner=request.user).order_by('name')
+
+    # Appointment stats
+    from consultations.models import Appointment
+    total_appointments = Appointment.objects.filter(
+        user=request.user
+    ).count()
+    completed_appointments = Appointment.objects.filter(
+        user=request.user,
+        status='completed'
+    ).count()
+
+    return render(request, 'accounts/profile.html', {
+        'form':                  form,
+        'pets':                  pets,
+        'total_appointments':    total_appointments,
+        'completed_appointments': completed_appointments,
+    })
 
 
 # ─── Vet Login ────────────────────────────────────────────────────────────────
