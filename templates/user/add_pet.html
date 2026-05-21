@@ -124,7 +124,8 @@
                                 color:var(--md-on-surface-variant); margin-bottom:6px;">
                         PHOTO (optional)
                     </div>
-                    {{ form.photo }}
+                    {% load image_upload %}
+                    {% image_upload_field form.photo "Upload pet photo" %}
                 </div>
 
                 {% if form.non_field_errors %}

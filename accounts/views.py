@@ -96,7 +96,8 @@ def user_logout(request):
 @login_required_user
 def profile(request):
     from .forms import UserProfileForm
-    from core.image_utils import compress_if_image
+    from core.image_utils import compress_if_image, rename_image
+    from core.storage_utils import delete_file
 
     if request.method == 'POST':
         form = UserProfileForm(
@@ -107,10 +108,22 @@ def profile(request):
         if form.is_valid():
             user = form.save(commit=False)
             if 'profile_photo' in request.FILES:
+                if request.user.profile_photo:
+                    delete_file(request.user.profile_photo)
+                new_name = rename_image(
+                    request.FILES['profile_photo'],
+                    prefix='user',
+                    identifier=request.user.username,
+                )
                 user.profile_photo = compress_if_image(
                     request.FILES['profile_photo'],
-                    image_type='profile'
+                    image_type='profile',
+                    new_name=new_name,
                 )
+            elif request.POST.get('profile_photo-clear'):
+                if request.user.profile_photo:
+                    delete_file(request.user.profile_photo)
+                user.profile_photo = None
             user.save()
             messages.success(request, "Your profile has been updated.")
             return redirect('accounts:profile')
@@ -119,24 +132,17 @@ def profile(request):
     else:
         form = UserProfileForm(instance=request.user)
 
-    # User's pets for quick view
-    from consultations.models import Pet
-    pets = Pet.objects.filter(owner=request.user).order_by('name')
-
-    # Appointment stats
-    from consultations.models import Appointment
-    total_appointments = Appointment.objects.filter(
-        user=request.user
-    ).count()
+    from consultations.models import Pet, Appointment
+    pets                  = Pet.objects.filter(owner=request.user).order_by('name')
+    total_appointments    = Appointment.objects.filter(user=request.user).count()
     completed_appointments = Appointment.objects.filter(
-        user=request.user,
-        status='completed'
+        user=request.user, status='completed'
     ).count()
 
     return render(request, 'accounts/profile.html', {
-        'form':                  form,
-        'pets':                  pets,
-        'total_appointments':    total_appointments,
+        'form':                   form,
+        'pets':                   pets,
+        'total_appointments':     total_appointments,
         'completed_appointments': completed_appointments,
     })
 

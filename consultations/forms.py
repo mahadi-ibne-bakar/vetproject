@@ -1,6 +1,7 @@
 from django import forms
 from accounts.models import VetProfile
 from .models import Pet, VetAvailability, BlockedDate, Prescription
+from core.widgets import ImageUploadWidget
 
 
 def input_attrs():
@@ -49,6 +50,7 @@ class VetProfileForm(forms.ModelForm):
                 attrs={**input_attrs(), 'min': 0}
             ),
             'specializations': forms.TextInput(attrs=input_attrs()),
+            'profile_photo': ImageUploadWidget(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -91,6 +93,7 @@ class PetForm(forms.ModelForm):
             'age_years':  forms.NumberInput(attrs={**input_attrs(), 'min': 0}),
             'age_months': forms.NumberInput(attrs={**input_attrs(), 'min': 0, 'max': 11}),
             'weight_kg':  forms.NumberInput(attrs={**input_attrs(), 'min': 0, 'step': '0.01'}),
+            'photo': ImageUploadWidget(),
         }
 
 

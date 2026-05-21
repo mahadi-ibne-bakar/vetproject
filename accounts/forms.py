@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User, VetProfile
+from core.widgets import ImageUploadWidget
 
 # Helper: minimal attrs for all inputs — styling is handled by base.html CSS
 def input_attrs(placeholder=""):
@@ -25,8 +26,12 @@ class UserRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone_number', 'password1', 'password2']
-
+        fields = ['phone_number', 'address', 'profile_photo']
+        widgets = {
+            'phone_number':  forms.TextInput(attrs={'placeholder': ' '}),
+            'address':       forms.Textarea(attrs={'placeholder': ' ', 'rows': 3}),
+            'profile_photo': ImageUploadWidget(),
+        }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['password1'].widget = forms.PasswordInput(attrs=password_attrs())

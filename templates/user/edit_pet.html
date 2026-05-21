@@ -113,7 +113,8 @@
                         {% if pet.photo %}CHANGE PHOTO{% else %}ADD PHOTO{% endif %}
                         (optional)
                     </div>
-                    {{ form.photo }}
+                    {% load image_upload %}
+                    {% image_upload_field form.photo "Upload pet photo" %}
                 </div>
 
                 <div style="display:flex; gap:10px; justify-content:flex-end;">

@@ -1,0 +1,87 @@
+<div class="styled-image-upload" id="upload-wrap-{{ field_id }}">
+
+    <!-- Preview area -->
+    <div id="preview-area-{{ field_id }}"
+         style="margin-bottom:10px;
+                {% if not has_image %}display:none;{% endif %}">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <img src="{{ image_url }}"
+                 id="preview-img-{{ field_id }}"
+                 style="width:64px; height:64px; border-radius:8px;
+                        object-fit:cover;
+                        border:2px solid var(--md-primary-container);">
+            <div>
+                <div style="font-size:0.82rem; font-weight:700;
+                            color:var(--md-on-surface);">
+                    {% if has_image %}Current photo{% else %}New photo{% endif %}
+                </div>
+                <div id="preview-name-{{ field_id }}"
+                     style="font-size:0.75rem; font-weight:600;
+                            color:var(--md-on-surface-variant);">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden real file input -->
+    {{ field }}
+
+    <!-- Clear checkbox — hidden, we control it programmatically -->
+    {% if has_image %}
+    <input type="checkbox"
+           name="{{ field_name }}-clear"
+           id="{{ field_name }}-clear-id"
+           style="display:none;">
+    {% endif %}
+
+    <!-- Styled buttons -->
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <label for="{{ field_id }}"
+               style="display:inline-flex; align-items:center; gap:6px;
+                      padding:8px 16px; border-radius:var(--md-shape-full);
+                      border:1.5px solid var(--md-outline);
+                      background:var(--md-surface); cursor:pointer;
+                      font-family:'Nunito',sans-serif; font-weight:700;
+                      font-size:0.85rem; color:var(--md-primary);
+                      transition:background 0.15s, border-color 0.15s;"
+               onmouseover="this.style.background='var(--md-primary-container)';
+                            this.style.borderColor='var(--md-primary)'"
+               onmouseout="this.style.background='var(--md-surface)';
+                           this.style.borderColor='var(--md-outline)'">
+            <span class="ms sm">photo_camera</span>
+            <span id="upload-label-{{ field_id }}">
+                {% if has_image %}Change photo{% else %}{{ label }}{% endif %}
+            </span>
+        </label>
+
+        {% if has_image %}
+        <button type="button"
+                id="remove-btn-{{ field_id }}"
+                onclick="removeImage('{{ field_id }}', '{{ field_name }}')"
+                style="display:inline-flex; align-items:center; gap:4px;
+                       padding:8px 14px; border-radius:var(--md-shape-full);
+                       border:1.5px solid var(--md-error);
+                       background:transparent; cursor:pointer;
+                       font-family:'Nunito',sans-serif; font-weight:700;
+                       font-size:0.82rem; color:var(--md-error);
+                       transition:background 0.15s;"
+                onmouseover="this.style.background='var(--md-error-container)'"
+                onmouseout="this.style.background='transparent'">
+            <span class="ms sm">delete</span> Remove
+        </button>
+        {% else %}
+        <button type="button"
+                id="remove-btn-{{ field_id }}"
+                onclick="removeImage('{{ field_id }}', '{{ field_name }}')"
+                style="display:none; align-items:center; gap:4px;
+                       padding:8px 14px; border-radius:var(--md-shape-full);
+                       border:1.5px solid var(--md-error);
+                       background:transparent; cursor:pointer;
+                       font-family:'Nunito',sans-serif; font-weight:700;
+                       font-size:0.82rem; color:var(--md-error);">
+            <span class="ms sm">delete</span> Remove
+        </button>
+        {% endif %}
+    </div>
+
+</div>

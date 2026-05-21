@@ -241,7 +241,8 @@
                                         object-fit:cover;">
                         </div>
                         {% endif %}
-                        {{ form.profile_photo }}
+                        {% load image_upload %}
+                        {% image_upload_field form.profile_photo "Upload profile photo" %}
                         <p class="field-hint">JPG or PNG. Max 5MB.</p>
                     </div>
 

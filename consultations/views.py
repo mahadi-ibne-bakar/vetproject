@@ -88,7 +88,8 @@ def vet_dashboard(request):
 
 @login_required_vet
 def vet_edit_profile(request):
-    from core.image_utils import compress_if_image
+    from core.image_utils import compress_if_image, rename_image
+    from core.storage_utils import delete_file
 
     vet_profile = request.user.vet_profile
 
@@ -101,14 +102,30 @@ def vet_edit_profile(request):
         )
         if form.is_valid():
             vet = form.save(commit=False)
+
             if 'profile_photo' in request.FILES:
+                # Delete old photo first
+                if vet_profile.profile_photo:
+                    delete_file(vet_profile.profile_photo)
+                # Rename and compress
+                new_name = rename_image(
+                    request.FILES['profile_photo'],
+                    prefix='vet',
+                    identifier=request.user.get_full_name()
+                )
                 vet.profile_photo = compress_if_image(
                     request.FILES['profile_photo'],
-                    image_type='profile'
+                    image_type='profile',
+                    new_name=new_name,
                 )
+            elif request.POST.get('profile_photo-clear'):
+                # User clicked Remove
+                if vet_profile.profile_photo:
+                    delete_file(vet_profile.profile_photo)
+                vet.profile_photo = None
+
             vet.save()
-            # Save user fields too
-            form.save()
+            form.save()  # saves user name/phone fields
             messages.success(request, "Your profile has been updated.")
             return redirect('consultations:vet_edit_profile')
         else:
@@ -1465,9 +1482,8 @@ def my_pets(request):
 
 @login_required_user
 def add_pet(request):
-
     from urllib.parse import unquote
-    from core.image_utils import compress_if_image
+    from core.image_utils import compress_if_image, rename_image
 
     next_url   = unquote(request.GET.get('next', '') or request.POST.get('next', ''))
     context    = request.GET.get('context', '') or request.POST.get('context', '')
@@ -1478,14 +1494,17 @@ def add_pet(request):
         if form.is_valid():
             pet       = form.save(commit=False)
             pet.owner = request.user
-
-            # Compress photo before saving
             if 'photo' in request.FILES:
+                new_name  = rename_image(
+                    request.FILES['photo'],
+                    prefix='pet',
+                    identifier=form.cleaned_data.get('name', '')
+                )
                 pet.photo = compress_if_image(
                     request.FILES['photo'],
-                    image_type='pet'
+                    image_type='pet',
+                    new_name=new_name,
                 )
-
             pet.save()
             messages.success(request, f"{pet.name} has been added.")
             if next_url:
@@ -1505,20 +1524,34 @@ def add_pet(request):
 
 @login_required_user
 def edit_pet(request, pet_id):
-    from core.image_utils import compress_if_image
+    from core.image_utils import compress_if_image, rename_image
+    from core.storage_utils import delete_file
 
     pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
 
     if request.method == 'POST':
         form = PetForm(request.POST, request.FILES, instance=pet)
         if form.is_valid():
-            pet = form.save(commit=False)
+            updated_pet = form.save(commit=False)
             if 'photo' in request.FILES:
-                pet.photo = compress_if_image(
+                if pet.photo:
+                    delete_file(pet.photo)
+                new_name = rename_image(
                     request.FILES['photo'],
-                    image_type='pet'
+                    prefix='pet',
+                    identifier=pet.name,
                 )
-            pet.save()
+                updated_pet.photo = compress_if_image(
+                    request.FILES['photo'],
+                    image_type='pet',
+                    new_name=new_name,
+                )
+            elif request.POST.get('photo-clear'):
+                if pet.photo:
+                    delete_file(pet.photo)
+                updated_pet.photo = None
+
+            updated_pet.save()
             messages.success(request, f"{pet.name}'s profile has been updated.")
             return redirect('consultations:my_pets')
         else:
@@ -1534,10 +1567,11 @@ def edit_pet(request, pet_id):
 
 @login_required_user
 def delete_pet(request, pet_id):
+    from core.storage_utils import delete_file
+
     pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
     if request.method == 'POST':
         name = pet.name
-        # Check if pet has upcoming appointments
         upcoming = Appointment.objects.filter(
             pet=pet,
             status__in=['pending_payment', 'confirmed', 'in_progress'],
@@ -1545,10 +1579,12 @@ def delete_pet(request, pet_id):
         if upcoming:
             messages.error(
                 request,
-                f"Cannot delete {name} — they have upcoming appointments. "
-                f"Cancel the appointments first."
+                f"Cannot delete {name} — they have upcoming appointments."
             )
             return redirect('consultations:my_pets')
+        # Delete photo from storage before deleting the record
+        if pet.photo:
+            delete_file(pet.photo)
         pet.delete()
         messages.success(request, f"{name} has been removed.")
     return redirect('consultations:my_pets')

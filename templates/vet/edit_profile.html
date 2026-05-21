@@ -165,7 +165,8 @@
                             font-weight:600; margin-bottom:8px;">
                     {{ form.profile_photo.label }}
                 </div>
-                {{ form.profile_photo }}
+                {% load image_upload %}
+                {% image_upload_field form.profile_photo "Upload profile photo" %}
                 <p class="field-hint">JPG or PNG. Shown on your public profile.</p>
                 {% if form.profile_photo.errors %}
                     <p class="field-error">{{ form.profile_photo.errors.0 }}</p>

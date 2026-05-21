@@ -748,6 +748,46 @@
 
     checkSidebarVisibility();
     window.addEventListener('resize', checkSidebarVisibility);
+    // ── Image upload widget ─────────────────────────────────────
+    function previewImage(input, fieldId) {
+        const previewArea = document.getElementById('preview-area-' + fieldId);
+        const previewImg  = document.getElementById('preview-img-' + fieldId);
+        const previewName = document.getElementById('preview-name-' + fieldId);
+        const uploadLabel = document.getElementById('upload-label-' + fieldId);
+        const removeBtn   = document.getElementById('remove-btn-' + fieldId);
+
+        if (input.files && input.files[0]) {
+            const file   = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewImg.src         = e.target.result;
+                previewArea.style.display = 'block';
+                if (uploadLabel) uploadLabel.textContent = 'Change photo';
+                if (removeBtn)   removeBtn.style.display = 'inline-flex';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function removeImage(fieldId, fieldName) {
+        const input       = document.getElementById(fieldId);
+        const previewArea = document.getElementById('preview-area-' + fieldId);
+        const uploadLabel = document.getElementById('upload-label-' + fieldId);
+        const removeBtn   = document.getElementById('remove-btn-' + fieldId);
+        const clearCb     = document.getElementById(fieldName + '-clear-id');
+
+        // Clear the file input
+        input.value = '';
+
+        // Hide preview
+        if (previewArea) previewArea.style.display = 'none';
+        if (uploadLabel) uploadLabel.textContent   = 'Upload photo';
+        if (removeBtn)   removeBtn.style.display   = 'none';
+
+        // Check the clear checkbox so Django knows to delete the image
+        if (clearCb) clearCb.checked = true;
+    }
 </script>
 
 {% block extra_js %}{% endblock %}

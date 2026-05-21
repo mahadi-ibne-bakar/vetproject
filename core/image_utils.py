@@ -33,6 +33,7 @@ def compress_image(
     image_file,
     image_type: str = 'default',
     output_format: str = 'JPEG',
+    new_name: str = None,
 ) -> InMemoryUploadedFile:
     """
     Compresses and resizes an uploaded image.
@@ -73,25 +74,29 @@ def compress_image(
     img.save(output, format=output_format, quality=JPEG_QUALITY, optimize=True)
     output.seek(0)
 
-    # Build the output filename with correct extension
-    original_name = getattr(image_file, 'name', 'image.jpg')
-    name_without_ext = original_name.rsplit('.', 1)[0]
-    ext = 'jpg' if output_format == 'JPEG' else 'webp'
-    new_name = f"{name_without_ext}.{ext}"
+    # Use provided name or keep original
+    if new_name:
+        ext = 'jpg' if output_format == 'JPEG' else 'webp'
+        final_name = f"{new_name.rsplit('.', 1)[0]}.{ext}"
+    else:
+        original_name    = getattr(image_file, 'name', 'image.jpg')
+        name_without_ext = original_name.rsplit('.', 1)[0]
+        ext              = 'jpg' if output_format == 'JPEG' else 'webp'
+        final_name       = f"{name_without_ext}.{ext}"
 
     content_type = 'image/jpeg' if output_format == 'JPEG' else 'image/webp'
 
     return InMemoryUploadedFile(
         output,
         'ImageField',
-        new_name,
+        final_name,
         content_type,
         sys.getsizeof(output),
         None,
     )
 
 
-def compress_if_image(image_file, image_type: str = 'default'):
+def compress_if_image(image_file, image_type: str = 'default', new_name: str = None):
     """
     Safe wrapper — compresses if it's an image, returns as-is otherwise.
     Use this in views when you're not 100% sure the field has an image.
@@ -99,7 +104,34 @@ def compress_if_image(image_file, image_type: str = 'default'):
     if not image_file:
         return image_file
     try:
-        return compress_image(image_file, image_type=image_type)
+        return compress_image(image_file, image_type=image_type, new_name=new_name)
     except Exception:
-        # If compression fails for any reason, return original
         return image_file
+    
+import uuid
+from django.utils.text import slugify
+
+
+def rename_image(image_file, prefix: str, identifier: str = '') -> str:
+    """
+    Generates a clean filename for an uploaded image.
+
+    Examples:
+        rename_image(file, 'vet', 'dr-ahmed')  → 'vet_dr-ahmed_a3f2b1.jpg'
+        rename_image(file, 'pet', 'max')        → 'pet_max_7d2e4c.jpg'
+        rename_image(file, 'user', 'mahadi')    → 'user_mahadi_9f1a2b.jpg'
+    """
+    ext = image_file.name.rsplit('.', 1)[-1].lower() if '.' in image_file.name else 'jpg'
+    if ext not in ('jpg', 'jpeg', 'png', 'webp', 'gif'):
+        ext = 'jpg'
+
+    # Clean identifier
+    clean_id = slugify(identifier)[:20] if identifier else ''
+    uid      = uuid.uuid4().hex[:6]
+
+    if clean_id:
+        filename = f"{prefix}_{clean_id}_{uid}.{ext}"
+    else:
+        filename = f"{prefix}_{uid}.{ext}"
+
+    return filename
