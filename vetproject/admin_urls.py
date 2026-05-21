@@ -28,6 +28,7 @@ urlpatterns = [
     path('payments/verify/', admin_views.verify_payment, name='verify_payment'),
     path('payments/refunds/', admin_views.refund_list, name='refund_list'),
     path('payments/<int:payment_id>/mark-refunded/', admin_views.mark_refunded, name='mark_refunded'),
+    path('payments/<int:payment_id>/quick-verify/', admin_views.quick_verify_payment, name='quick_verify_payment'),
 
     # Meet links
     path('meet-links/', admin_views.meet_links, name='meet_links'),

@@ -110,6 +110,7 @@
                 <th>TrxID</th>
                 <th>Date</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -150,6 +151,23 @@
                         {{ payment.get_status_display }}
                     </span>
                 </td>
+                <td>
+                    {% if payment.status == 'pending' %}
+                    <button onclick="openQuickVerify(
+                                {{ payment.id }},
+                                '{{ payment.bkash_number }}',
+                                '{{ payment.transaction_id }}',
+                                '{{ payment.amount }}'
+                            )"
+                            class="btn btn-sm"
+                            style="background:#DCFCE7; color:#166534; white-space:nowrap;">
+                        <span class="ms sm filled">check_circle</span> Verify
+                    </button>
+                    {% else %}
+                    <span style="font-size:0.78rem; color:var(--md-on-surface-variant);
+                                font-weight:600;">—</span>
+                    {% endif %}
+                </td>
             </tr>
             {% empty %}
             <tr>
@@ -165,4 +183,108 @@
     </table>
 </div>
 
+<!-- Quick verify modal -->
+<div id="quickVerifyModal"
+     style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.5); z-index:500;
+            align-items:center; justify-content:center;">
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                padding:28px; width:100%; max-width:440px; margin:16px;">
+
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <div style="width:44px; height:44px; border-radius:var(--md-shape-full);
+                        background:#DCFCE7; display:flex; align-items:center;
+                        justify-content:center; flex-shrink:0;">
+                <span class="ms filled" style="color:#16A34A;">check_circle</span>
+            </div>
+            <div>
+                <h3 style="font-weight:800; margin:0 0 2px;">Verify Payment</h3>
+                <p style="color:var(--md-on-surface-variant); font-size:0.875rem;
+                           margin:0; font-weight:600;">
+                    Manually confirm this payment
+                </p>
+            </div>
+        </div>
+
+        <!-- Payment summary -->
+        <div style="background:var(--md-surface-1); border-radius:var(--md-shape-md);
+                    padding:14px 16px; margin-bottom:16px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr;
+                        gap:8px; font-size:0.875rem;">
+                <div>
+                    <div style="font-size:0.72rem; font-weight:700;
+                                color:var(--md-on-surface-variant);">
+                        BKASH NUMBER
+                    </div>
+                    <div style="font-weight:700; font-family:monospace;"
+                         id="qvBkash">—</div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem; font-weight:700;
+                                color:var(--md-on-surface-variant);">
+                        AMOUNT
+                    </div>
+                    <div style="font-weight:800; color:var(--md-primary);"
+                         id="qvAmount">—</div>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <div style="font-size:0.72rem; font-weight:700;
+                                color:var(--md-on-surface-variant);">
+                        TRANSACTION ID
+                    </div>
+                    <div style="font-weight:700; font-family:monospace;"
+                         id="qvTrxId">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning" style="margin-bottom:16px;">
+            <span class="ms sm filled">warning</span>
+            <div style="font-size:0.82rem;">
+                Only verify if you have confirmed receipt of this payment
+                in your bKash account. This action updates the appointment
+                status immediately.
+            </div>
+        </div>
+
+        <form method="post" id="quickVerifyForm">
+            {% csrf_token %}
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-outlined"
+                        onclick="closeQuickVerify()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-filled"
+                        style="background:#16A34A;">
+                    <span class="ms sm filled">check_circle</span>
+                    Confirm Verified
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openQuickVerify(paymentId, bkash, trxId, amount) {
+    document.getElementById('qvBkash').textContent  = bkash;
+    document.getElementById('qvTrxId').textContent  = trxId;
+    document.getElementById('qvAmount').textContent = '৳' + amount;
+    document.getElementById('quickVerifyForm').action =
+        `/dashboard/payments/${paymentId}/quick-verify/`;
+    document.getElementById('quickVerifyModal').style.display = 'flex';
+}
+
+function closeQuickVerify() {
+    document.getElementById('quickVerifyModal').style.display = 'none';
+}
+
+// Close on backdrop click
+document.getElementById('quickVerifyModal').addEventListener('click', function(e) {
+    if (e.target === this) closeQuickVerify();
+});
+</script>
 {% endblock %}

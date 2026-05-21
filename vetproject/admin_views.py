@@ -567,6 +567,62 @@ def verify_payment(request):
 
     return redirect('dashboard:payment_list')
 
+@login_required_admin
+def quick_verify_payment(request, payment_id):
+    """
+    One-tap payment verification from the payment list.
+    Admin manually confirms a pending payment without pasting SMS.
+    Used when admin already knows the payment is legitimate.
+    """
+    if request.method == 'POST':
+        payment = get_object_or_404(Payment, id=payment_id)
+
+        if payment.status != Payment.Status.PENDING:
+            messages.error(
+                request,
+                f"Payment is already {payment.get_status_display()} "
+                f"and cannot be verified again."
+            )
+            return redirect('dashboard:payment_list')
+
+        payment.status      = Payment.Status.VERIFIED
+        payment.verified_by = request.user
+        payment.verified_at = timezone.now()
+        payment.save()
+
+        # Update appointment status
+        appt = payment.appointment
+
+        if payment.payment_type == 'booking':
+            if appt.status == 'pending_payment':
+                appt.status = 'confirmed'
+                # Assign a free meet link
+                free_link = MeetLink.objects.filter(is_in_use=False).first()
+                if free_link:
+                    appt.meet_link       = free_link
+                    free_link.is_in_use  = True
+                    free_link.save()
+                appt.save()
+                # Send confirmation email
+                from consultations.emails import send_booking_confirmed
+                send_booking_confirmed(appt)
+
+        elif payment.payment_type == 'consultation':
+            if appt.status == 'awaiting_second_payment':
+                appt.status = 'completed'
+                appt.save()
+                # Send prescription ready email
+                from consultations.emails import send_prescription_ready
+                send_prescription_ready(appt)
+
+        messages.success(
+            request,
+            f"Payment of ৳{payment.amount} from {payment.bkash_number} "
+            f"(TrxID: {payment.transaction_id}) manually verified. "
+            f"Appointment status updated to {appt.get_status_display()}."
+        )
+
+    return redirect('dashboard:payment_list')
 
 @login_required_admin
 def refund_list(request):
