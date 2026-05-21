@@ -247,23 +247,32 @@
                     <div>
                         {% if vet.average_rating %}
                             <span style="font-size:0.82rem; font-weight:700;
-                                         color:#CA8A04;">
+                                        color:#CA8A04;">
                                 {{ vet.average_rating }}★
                             </span>
                         {% else %}
                             <span style="font-size:0.82rem; font-weight:600;
-                                         color:var(--md-on-surface-variant);">New</span>
+                                        color:var(--md-on-surface-variant);">New</span>
                         {% endif %}
                         <span style="font-size:0.8rem; font-weight:600;
-                                     color:var(--md-on-surface-variant);
-                                     margin-left:8px;">
+                                    color:var(--md-on-surface-variant);
+                                    margin-left:8px;">
                             ৳{{ vet.consultation_fee }}
                         </span>
                     </div>
-                    <a href="{% url 'consultations:book_appointment' vet.id %}?date={{ selected_date_str }}&start={{ selected_start }}&end={{ selected_end }}"
-                       class="btn btn-filled btn-sm">
-                        Book
-                    </a>
+                    <div style="display:flex; gap:6px;">
+                        <a href="{% url 'consultations:vet_detail' vet.id %}"
+                        target="_blank"
+                        class="btn btn-outlined btn-sm"
+                        style="text-decoration:none;">
+                            <span class="ms sm">person</span> Profile
+                        </a>
+                        <a href="{% url 'consultations:book_appointment' vet.id %}?date={{ selected_date_str }}&start={{ selected_start }}&end={{ selected_end }}"
+                        class="btn btn-filled btn-sm"
+                        style="text-decoration:none;">
+                            <span class="ms sm">calendar_month</span> Book
+                        </a>
+                    </div>
                 </div>
             </div>
             {% endfor %}
