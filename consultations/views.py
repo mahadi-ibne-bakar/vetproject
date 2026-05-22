@@ -1466,13 +1466,6 @@ def submit_feedback(request, appointment_id):
     return redirect('consultations:appointment_detail',
                   appointment_id=appointment_id)
 
-@login_required_user
-def cancel_appointment(request, appointment_id):
-    return HttpResponse("Coming soon")
-
-@login_required_user
-def submit_second_payment(request, appointment_id):
-    return HttpResponse("Coming soon")
 
 @login_required_user
 def my_pets(request):

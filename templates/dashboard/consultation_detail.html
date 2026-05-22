@@ -1,0 +1,328 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Consultation Detail — VetProject Admin{% endblock %}
+{% block page_title %}Consultation Detail{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom:16px;">
+    <a href="{% url 'dashboard:consultation_list' %}"
+       class="btn btn-outlined btn-sm">
+        <span class="ms sm">arrow_back</span> Back to Consultations
+    </a>
+</div>
+
+<!-- Header -->
+<div style="background:var(--md-primary-container);
+            border-radius:var(--md-shape-xl); padding:20px 24px;
+            margin-bottom:20px; display:flex; align-items:center;
+            gap:16px; flex-wrap:wrap;">
+    <div style="font-size:2.5rem;">
+        {% if appointment.pet.species == 'cat' %}🐱
+        {% elif appointment.pet.species == 'dog' %}🐶
+        {% else %}🐾{% endif %}
+    </div>
+    <div style="flex:1;">
+        <div style="font-weight:800; font-size:1.15rem;
+                    color:var(--md-on-primary-container);">
+            {{ appointment.pet.name }}
+            <span style="font-size:0.875rem; font-weight:600;
+                         color:var(--md-primary);">
+                · {{ appointment.pet.get_species_display }}
+            </span>
+        </div>
+        <div style="font-size:0.875rem; font-weight:600; margin-top:3px;
+                    color:var(--md-on-primary-container);">
+            Owner: {{ appointment.user.get_full_name|default:appointment.user.username }}
+            · {{ appointment.user.email }}
+            · {{ appointment.user.phone_number|default:"No phone" }}
+        </div>
+        <div style="font-size:0.875rem; font-weight:600; margin-top:3px;
+                    color:var(--md-primary);">
+            Dr. {{ appointment.vet.user.get_full_name }}
+            · {{ appointment.date|date:"l, M d, Y" }}
+            · {{ appointment.start_time|time:"g:i A" }} –
+            {{ appointment.end_time|time:"g:i A" }}
+        </div>
+    </div>
+    <div>
+        <span class="status-chip
+            {% if appointment.status == 'completed' %}chip-green
+            {% elif appointment.status == 'confirmed' %}chip-blue
+            {% elif appointment.status == 'cancelled' %}chip-red
+            {% elif appointment.status == 'in_progress' %}chip-yellow
+            {% else %}chip-gray{% endif %}">
+            {{ appointment.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <!-- Left -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Complaint -->
+        <div class="admin-card">
+            <div style="font-weight:800; margin-bottom:10px;
+                        display:flex; align-items:center; gap:6px;">
+                <span class="ms sm filled"
+                      style="color:var(--md-primary);">
+                    medical_information
+                </span>
+                Complaint
+            </div>
+            <span class="status-chip chip-blue" style="margin-bottom:8px;">
+                {{ appointment.get_primary_complaint_display }}
+            </span>
+            <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                       margin:8px 0 0; line-height:1.5; font-weight:500;">
+                {{ appointment.complaint_description }}
+            </p>
+            {% if appointment.symptom_photo %}
+            <div style="margin-top:10px;">
+                <img src="{{ appointment.symptom_photo.url }}"
+                     style="max-width:100%; border-radius:var(--md-shape-md);
+                            border:1px solid var(--md-outline-variant);">
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Consultation notes -->
+        {% if appointment.consultation_notes or appointment.diagnosis %}
+        <div class="admin-card">
+            <div style="font-weight:800; margin-bottom:10px;">
+                Vet Notes
+            </div>
+            {% if appointment.diagnosis %}
+            <div style="margin-bottom:8px;">
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:4px;">
+                    DIAGNOSIS
+                </div>
+                <p style="font-size:0.875rem; margin:0; font-weight:600;">
+                    {{ appointment.diagnosis }}
+                </p>
+            </div>
+            {% endif %}
+            {% if appointment.consultation_notes %}
+            <div>
+                <div style="font-size:0.75rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:4px;">
+                    NOTES
+                </div>
+                <p style="font-size:0.875rem; margin:0; font-weight:500;
+                           color:var(--md-on-surface-variant); line-height:1.5;">
+                    {{ appointment.consultation_notes }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Payment status -->
+        <div class="admin-card">
+            <div style="font-weight:800; margin-bottom:12px;
+                        display:flex; align-items:center; gap:6px;">
+                <span class="ms sm filled"
+                      style="color:var(--md-primary);">receipt</span>
+                Payments
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                {% if booking_payment %}
+                <div style="display:flex; justify-content:space-between;
+                            align-items:center; padding:10px 14px;
+                            background:var(--md-surface-1);
+                            border-radius:var(--md-shape-md);">
+                    <div>
+                        <div style="font-weight:700; font-size:0.875rem;">
+                            Booking Fee
+                        </div>
+                        <div style="font-size:0.78rem; font-weight:600;
+                                    color:var(--md-on-surface-variant);">
+                            {{ booking_payment.bkash_number }}
+                            · TrxID: {{ booking_payment.transaction_id }}
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:800;">
+                            ৳{{ booking_payment.amount }}
+                        </div>
+                        <span class="status-chip
+                            {% if booking_payment.status == 'verified' %}chip-green
+                            {% elif booking_payment.status == 'pending' %}chip-yellow
+                            {% else %}chip-red{% endif %}"
+                            style="font-size:0.72rem;">
+                            {{ booking_payment.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                {% if consultation_payment %}
+                <div style="display:flex; justify-content:space-between;
+                            align-items:center; padding:10px 14px;
+                            background:var(--md-surface-1);
+                            border-radius:var(--md-shape-md);">
+                    <div>
+                        <div style="font-weight:700; font-size:0.875rem;">
+                            Consultation Fee
+                        </div>
+                        <div style="font-size:0.78rem; font-weight:600;
+                                    color:var(--md-on-surface-variant);">
+                            {{ consultation_payment.bkash_number }}
+                            · TrxID: {{ consultation_payment.transaction_id }}
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:800;">
+                            ৳{{ consultation_payment.amount }}
+                        </div>
+                        <span class="status-chip
+                            {% if consultation_payment.status == 'verified' %}chip-green
+                            {% elif consultation_payment.status == 'pending' %}chip-yellow
+                            {% else %}chip-red{% endif %}"
+                            style="font-size:0.72rem;">
+                            {{ consultation_payment.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                {% if not booking_payment and not consultation_payment %}
+                <p style="color:var(--md-on-surface-variant); font-size:0.875rem;
+                           font-weight:600; margin:0;">No payments recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Admin actions -->
+        {% if appointment.status not in 'completed,cancelled' %}
+        <div class="admin-card">
+            <div style="font-weight:800; margin-bottom:12px;">Actions</div>
+            <button onclick="document.getElementById('adminCancelForm').style.display='block'"
+                    class="btn btn-danger" style="width:100%;">
+                <span class="ms sm">cancel</span> Cancel This Consultation
+            </button>
+            <div id="adminCancelForm"
+                 style="display:none; margin-top:12px; padding:14px;
+                        background:var(--md-error-container);
+                        border-radius:var(--md-shape-md);">
+                <form method="post"
+                      action="{% url 'dashboard:cancel_consultation' appointment.id %}">
+                    {% csrf_token %}
+                    <div class="field-wrap" style="margin-bottom:10px;">
+                        <textarea name="reason" placeholder=" " rows="2"></textarea>
+                        <label>Reason for cancellation</label>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Cancel this consultation?')">
+                            Confirm Cancel
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outlined"
+                                onclick="document.getElementById('adminCancelForm').style.display='none'">
+                            Keep
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Right -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Prescription -->
+        <div class="admin-card">
+            <div style="font-weight:800; margin-bottom:12px;
+                        display:flex; align-items:center; gap:6px;">
+                <span class="ms sm filled"
+                      style="color:var(--md-primary);">medication</span>
+                Prescription
+            </div>
+            {% if prescription %}
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                {% for med, dose in med_pairs %}
+                <div style="padding:8px 12px; background:var(--md-surface-1);
+                            border-radius:var(--md-shape-md);
+                            border-left:2px solid var(--md-primary);">
+                    <div style="font-weight:800; font-size:0.875rem;">
+                        {{ med }}
+                    </div>
+                    <div style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                                font-weight:500;">
+                        {{ dose }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% if prescription.follow_up_advice %}
+                <div style="padding:8px 12px; background:var(--md-primary-container);
+                            border-radius:var(--md-shape-md);">
+                    <div style="font-size:0.75rem; font-weight:700;
+                                color:var(--md-primary); margin-bottom:3px;">
+                        FOLLOW-UP
+                    </div>
+                    <p style="font-size:0.82rem; margin:0;
+                               color:var(--md-on-primary-container);
+                               font-weight:500;">
+                        {{ prescription.follow_up_advice }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p style="color:var(--md-on-surface-variant); font-size:0.875rem;
+                       font-weight:600; margin:0;">
+                No prescription submitted yet.
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Meet link -->
+        {% if appointment.meet_link %}
+        <div class="admin-card">
+            <div style="font-weight:800; margin-bottom:8px;
+                        display:flex; align-items:center; gap:6px;">
+                <span class="ms sm filled"
+                      style="color:var(--md-primary);">videocam</span>
+                Meet Link
+            </div>
+            <a href="{{ appointment.meet_link.url }}" target="_blank"
+               style="font-size:0.875rem; color:var(--md-primary);
+                      font-weight:600; word-break:break-all;">
+                {{ appointment.meet_link.url }}
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Timing -->
+        {% if appointment.consultation_start_time %}
+        <div class="admin-card">
+            <div style="font-weight:800; margin-bottom:10px;">Timing</div>
+            <div style="font-size:0.875rem; display:flex;
+                        flex-direction:column; gap:6px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--md-on-surface-variant);
+                                 font-weight:600;">Started</span>
+                    <strong>
+                        {{ appointment.consultation_start_time|time:"g:i A" }}
+                    </strong>
+                </div>
+                {% if appointment.consultation_end_time %}
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--md-on-surface-variant);
+                                 font-weight:600;">Ended</span>
+                    <strong>
+                        {{ appointment.consultation_end_time|time:"g:i A" }}
+                    </strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

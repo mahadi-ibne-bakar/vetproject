@@ -388,15 +388,143 @@ def unban_user(request, user_id):
 
 @login_required_admin
 def consultation_list(request):
-    return render(request, 'dashboard/consultation_list.html', admin_context(request))
+    tab    = request.GET.get('tab', 'upcoming')
+    search = request.GET.get('search', '').strip()
+
+    base_qs = Appointment.objects.select_related(
+        'user', 'vet__user', 'pet'
+    ).order_by('-date', '-start_time')
+
+    if search:
+        base_qs = base_qs.filter(
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search)  |
+            Q(pet__name__icontains=search)         |
+            Q(vet__user__first_name__icontains=search) |
+            Q(vet__user__last_name__icontains=search)
+        )
+
+    upcoming = base_qs.filter(
+        status__in=['pending_payment', 'confirmed',
+                    'rescheduled', 'in_progress']
+    )
+    awaiting = base_qs.filter(status='awaiting_second_payment')
+    completed = base_qs.filter(status='completed')
+    cancelled = base_qs.filter(status='cancelled')
+
+    ctx = {
+        **admin_context(request),
+        'tab':    tab,
+        'search': search,
+        'tabs': [
+            ('upcoming',  'Upcoming',         upcoming.count()),
+            ('awaiting',  'Awaiting Payment', awaiting.count()),
+            ('completed', 'Completed',        completed.count()),
+            ('cancelled', 'Cancelled',        None),
+        ],
+        'upcoming':        upcoming,
+        'awaiting':        awaiting,
+        'completed':       completed,
+        'cancelled':       cancelled,
+        'upcoming_count':  upcoming.count(),
+        'awaiting_count':  awaiting.count(),
+        'completed_count': completed.count(),
+        'cancelled_count': cancelled.count(),
+    }
+    return render(request, 'dashboard/consultation_list.html', ctx)
+
 
 @login_required_admin
 def consultation_detail(request, appointment_id):
-    return HttpResponse("Coming soon")
+    appointment = get_object_or_404(
+        Appointment, id=appointment_id
+    )
+    booking_payment = appointment.payments.filter(
+        payment_type='booking'
+    ).first()
+    consultation_payment = appointment.payments.filter(
+        payment_type='consultation'
+    ).first()
+    try:
+        prescription = appointment.prescription
+    except Exception:
+        prescription = None
+
+    if prescription:
+        med_lines  = [m.strip() for m in prescription.medications.splitlines() if m.strip()]
+        dose_lines = [d.strip() for d in prescription.dosage_instructions.splitlines() if d.strip()]
+        max_len    = max(len(med_lines), len(dose_lines), 1)
+        med_lines  += [''] * (max_len - len(med_lines))
+        dose_lines += [''] * (max_len - len(dose_lines))
+        med_pairs  = list(zip(med_lines, dose_lines))
+    else:
+        med_pairs = []
+
+    ctx = {
+        **admin_context(request),
+        'appointment':          appointment,
+        'booking_payment':      booking_payment,
+        'consultation_payment': consultation_payment,
+        'prescription':         prescription,
+        'med_pairs':            med_pairs,
+    }
+    return render(request, 'dashboard/consultation_detail.html', ctx)
+
 
 @login_required_admin
 def cancel_consultation(request, appointment_id):
-    return HttpResponse("Coming soon")
+    if request.method == 'POST':
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+
+        if appointment.status in ['completed', 'cancelled']:
+            messages.error(
+                request,
+                "This appointment is already completed or cancelled."
+            )
+            return redirect('dashboard:consultation_detail',
+                          appointment_id=appointment_id)
+
+        reason = request.POST.get('reason', '').strip()
+        appointment.status = Appointment.Status.CANCELLED
+        appointment.cancellation_reason = reason
+        appointment.save()
+
+        # Free the meet link
+        if appointment.meet_link:
+            appointment.meet_link.is_in_use = False
+            appointment.meet_link.save()
+            appointment.meet_link = None
+            appointment.save()
+
+        # Flag for refund if booking payment was verified
+        booking_payment = appointment.payments.filter(
+            payment_type='booking',
+            status='verified',
+        ).first()
+
+        if booking_payment:
+            settings_obj = SiteSettings.get()
+            booking_payment.refund_amount = max(
+                0, booking_payment.amount - settings_obj.cancellation_deduction
+            )
+            booking_payment.refund_bkash_number = booking_payment.bkash_number
+            booking_payment.save()
+            messages.success(
+                request,
+                f"Appointment cancelled. "
+                f"Refund of ৳{booking_payment.refund_amount} "
+                f"flagged for {booking_payment.bkash_number}."
+            )
+        else:
+            messages.success(request, "Appointment cancelled.")
+
+        from consultations.emails import send_cancellation_confirm
+        send_cancellation_confirm(
+            appointment,
+            refund_amount=booking_payment.refund_amount if booking_payment else None
+        )
+
+    return redirect('dashboard:consultation_list')
 
 @login_required_admin
 def payment_list(request):

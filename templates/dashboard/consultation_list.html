@@ -1,8 +1,232 @@
 {% extends 'dashboard/base_admin.html' %}
-{% block page_title %}Coming Soon{% endblock %}
+{% block title %}Consultations — VetProject Admin{% endblock %}
+{% block page_title %}Consultation Management{% endblock %}
+
 {% block content %}
-<div class="empty-state">
-    <span class="ms filled">construction</span>
-    <p>This section is being built.</p>
+
+<!-- Search -->
+<div class="admin-card" style="margin-bottom:16px; padding:12px 16px;">
+    <form method="get" style="display:flex; gap:10px; align-items:center;">
+        <input type="hidden" name="tab" value="{{ tab }}">
+        <div class="field-wrap" style="flex:1;">
+            <input type="text" name="search"
+                   value="{{ search }}" placeholder=" ">
+            <label>Search by owner, pet or vet name</label>
+        </div>
+        <button type="submit" class="btn btn-filled" style="flex-shrink:0;">
+            <span class="ms sm">search</span> Search
+        </button>
+        {% if search %}
+        <a href="?tab={{ tab }}" class="btn btn-outlined" style="flex-shrink:0;">
+            Clear
+        </a>
+        {% endif %}
+    </form>
 </div>
+
+<!-- Tabs -->
+<div style="display:flex; gap:4px; margin-bottom:20px;
+            background:var(--md-surface); border-radius:var(--md-shape-full);
+            padding:4px; width:fit-content; box-shadow:var(--md-elev-1);">
+    {% for value, label, count in tabs %}
+    <a href="?tab={{ value }}"
+       style="padding:8px 18px; border-radius:var(--md-shape-full);
+              font-weight:700; font-size:0.875rem; text-decoration:none;
+              transition:background 0.2s;
+              {% if tab == value %}background:var(--md-primary); color:#fff;
+              {% else %}color:var(--md-on-surface-variant);{% endif %}">
+        {{ label }}
+        {% if count %}
+        <span style="background:{% if tab == value %}rgba(255,255,255,0.3)
+                     {% else %}var(--md-secondary){% endif %};
+                     color:#fff; border-radius:999px;
+                     padding:1px 7px; font-size:0.75rem; margin-left:4px;">
+            {{ count }}
+        </span>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Upcoming tab -->
+{% if tab == 'upcoming' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Upcoming Consultations</span>
+        <span style="font-size:0.85rem; color:var(--md-on-surface-variant);
+                     font-weight:600;">{{ upcoming_count }} total</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Pet / Owner</th>
+                <th>Vet</th>
+                <th>Date & Time</th>
+                <th>Complaint</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in upcoming %}
+            {% include 'dashboard/_consultation_row.html' %}
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state">
+                    <span class="ms filled">calendar_month</span>
+                    <p>No upcoming consultations.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Awaiting payment tab -->
+{% if tab == 'awaiting' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Awaiting Payment</span>
+        <span style="font-size:0.85rem; color:var(--md-on-surface-variant);
+                     font-weight:600;">{{ awaiting_count }} total</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Pet / Owner</th>
+                <th>Vet</th>
+                <th>Date & Time</th>
+                <th>Complaint</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in awaiting %}
+            {% include 'dashboard/_consultation_row.html' %}
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state">
+                    <span class="ms filled">payments</span>
+                    <p>No consultations awaiting payment.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Completed tab -->
+{% if tab == 'completed' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Completed Consultations</span>
+        <span style="font-size:0.85rem; color:var(--md-on-surface-variant);
+                     font-weight:600;">{{ completed_count }} total</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Pet / Owner</th>
+                <th>Vet</th>
+                <th>Date & Time</th>
+                <th>Complaint</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in completed %}
+            {% include 'dashboard/_consultation_row.html' %}
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state">
+                    <span class="ms filled">check_circle</span>
+                    <p>No completed consultations yet.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Cancelled tab -->
+{% if tab == 'cancelled' %}
+<div class="admin-table-wrap">
+    <div class="admin-table-header">
+        <span class="admin-table-title">Cancelled Consultations</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Pet / Owner</th>
+                <th>Vet</th>
+                <th>Date & Time</th>
+                <th>Complaint</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in cancelled %}
+            {% include 'dashboard/_consultation_row.html' %}
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state">
+                    <span class="ms filled">cancel</span>
+                    <p>No cancelled consultations.</p>
+                </div>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Cancel modal -->
+<div id="cancelModal"
+     style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.5); z-index:500;
+            align-items:center; justify-content:center;">
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                padding:28px; width:100%; max-width:440px; margin:16px;">
+        <h3 style="font-weight:800; margin:0 0 8px;">Cancel Consultation</h3>
+        <p style="color:var(--md-on-surface-variant); font-size:0.875rem;
+                   margin:0 0 16px;">
+            Cancelling: <strong id="cancelPetName"></strong>
+        </p>
+        <form method="post" id="cancelForm">
+            {% csrf_token %}
+            <div class="field-wrap" style="margin-bottom:16px;">
+                <textarea name="reason" placeholder=" " rows="3"></textarea>
+                <label>Reason for cancellation</label>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-outlined"
+                        onclick="closeCancelModal()">Keep</button>
+                <button type="submit" class="btn btn-danger">
+                    <span class="ms sm">cancel</span> Confirm Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openCancelModal(apptId, petName) {
+    document.getElementById('cancelPetName').textContent = petName;
+    document.getElementById('cancelForm').action =
+        `/dashboard/consultations/${apptId}/cancel/`;
+    document.getElementById('cancelModal').style.display = 'flex';
+}
+function closeCancelModal() {
+    document.getElementById('cancelModal').style.display = 'none';
+}
+</script>
 {% endblock %}

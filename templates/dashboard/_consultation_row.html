@@ -1,0 +1,50 @@
+<tr>
+    <td>
+        <div style="font-weight:700;">{{ appt.pet.name }}</div>
+        <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+            {{ appt.user.get_full_name|default:appt.user.username }}
+        </div>
+    </td>
+    <td style="font-size:0.875rem; font-weight:600;">
+        Dr. {{ appt.vet.user.get_full_name }}
+    </td>
+    <td>
+        <div style="font-weight:700; font-size:0.875rem;">
+            {{ appt.date|date:"M d, Y" }}
+        </div>
+        <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+            {{ appt.start_time|time:"g:i A" }}
+        </div>
+    </td>
+    <td>
+        <span class="status-chip chip-blue" style="font-size:0.72rem;">
+            {{ appt.get_primary_complaint_display }}
+        </span>
+    </td>
+    <td>
+        <span class="status-chip
+            {% if appt.status == 'completed' %}chip-green
+            {% elif appt.status == 'confirmed' %}chip-blue
+            {% elif appt.status == 'in_progress' %}chip-yellow
+            {% elif appt.status == 'cancelled' %}chip-red
+            {% elif appt.status == 'pending_payment' %}chip-yellow
+            {% elif appt.status == 'awaiting_second_payment' %}chip-yellow
+            {% else %}chip-gray{% endif %}">
+            {{ appt.get_status_display }}
+        </span>
+    </td>
+    <td>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <a href="{% url 'dashboard:consultation_detail' appt.id %}"
+               class="btn btn-sm btn-outlined">
+                <span class="ms sm">info</span> View
+            </a>
+            {% if appt.status not in 'completed,cancelled' %}
+            <button onclick="openCancelModal({{ appt.id }}, '{{ appt.pet.name|escapejs }}')"
+                    class="btn btn-sm btn-danger">
+                <span class="ms sm">cancel</span> Cancel
+            </button>
+            {% endif %}
+        </div>
+    </td>
+</tr>
