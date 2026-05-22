@@ -81,8 +81,9 @@ class UserProfileForm(forms.ModelForm):
         model = User
         fields = ['phone_number', 'address', 'profile_photo']
         widgets = {
-            'phone_number': forms.TextInput(attrs={'placeholder': ' '}),
-            'address':      forms.Textarea(attrs={'placeholder': ' ', 'rows': 3}),
+            'phone_number':  forms.TextInput(attrs={'placeholder': ' '}),
+            'address':       forms.Textarea(attrs={'placeholder': ' ', 'rows': 3}),
+            'profile_photo': ImageUploadWidget(),
         }
 
     def __init__(self, *args, **kwargs):

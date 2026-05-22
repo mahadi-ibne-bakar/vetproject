@@ -158,10 +158,59 @@
                         SYMPTOM PHOTO
                         <span style="font-weight:500; opacity:0.7;">(optional)</span>
                     </div>
+
+                    <!-- Preview area -->
+                    <div id="preview-area-symptom"
+                        style="display:none; margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="" id="preview-img-symptom"
+                                style="width:64px; height:64px; border-radius:8px;
+                                        object-fit:cover;
+                                        border:2px solid var(--md-primary-container);">
+                            <div style="font-size:0.82rem; font-weight:700;
+                                        color:var(--md-on-surface);">
+                                Photo selected
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden real input -->
                     <input type="file" name="symptom_photo"
-                           accept="image/*"
-                           style="font-family:'Nunito',sans-serif;
-                                  font-size:0.875rem; font-weight:600;">
+                        id="id_symptom_photo"
+                        accept="image/*"
+                        style="display:none;"
+                        onchange="previewSymptom(this)">
+
+                    <!-- Styled buttons -->
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <label for="id_symptom_photo"
+                            style="display:inline-flex; align-items:center; gap:6px;
+                                    padding:8px 16px; border-radius:var(--md-shape-full);
+                                    border:1.5px solid var(--md-outline);
+                                    background:var(--md-surface); cursor:pointer;
+                                    font-family:'Nunito',sans-serif; font-weight:700;
+                                    font-size:0.85rem; color:var(--md-primary);
+                                    transition:background 0.15s, border-color 0.15s;"
+                            onmouseover="this.style.background='var(--md-primary-container)';
+                                            this.style.borderColor='var(--md-primary)'"
+                            onmouseout="this.style.background='var(--md-surface)';
+                                        this.style.borderColor='var(--md-outline)'">
+                            <span class="ms sm">photo_camera</span>
+                            <span id="symptom-upload-label">Upload symptom photo</span>
+                        </label>
+
+                        <button type="button" id="remove-symptom-btn"
+                                onclick="removeSymptom()"
+                                style="display:none; align-items:center; gap:4px;
+                                    padding:8px 14px; border-radius:var(--md-shape-full);
+                                    border:1.5px solid var(--md-error);
+                                    background:transparent; cursor:pointer;
+                                    font-family:'Nunito',sans-serif; font-weight:700;
+                                    font-size:0.82rem; color:var(--md-error);">
+                            <span class="ms sm">delete</span> Remove
+                        </button>
+                    </div>
+
                     <p class="field-hint" style="margin-top:6px;">
                         Upload a photo of the symptom to help the vet.
                     </p>
@@ -274,5 +323,27 @@
             updateChip();
         });
     });
+
+    function previewSymptom(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview-img-symptom').src = e.target.result;
+                document.getElementById('preview-area-symptom').style.display = 'block';
+                document.getElementById('symptom-upload-label').textContent = 'Change photo';
+                document.getElementById('remove-symptom-btn').style.display = 'inline-flex';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeSymptom() {
+        document.getElementById('id_symptom_photo').value = '';
+        document.getElementById('preview-area-symptom').style.display = 'none';
+        document.getElementById('symptom-upload-label').textContent = 'Upload symptom photo';
+        document.getElementById('remove-symptom-btn').style.display = 'none';
+    }
+
 </script>
 {% endblock %}
+

@@ -233,14 +233,6 @@
                         <div style="font-size:0.78rem; font-weight:700;
                                     color:var(--md-on-surface-variant);
                                     margin-bottom:6px;">PROFILE PHOTO</div>
-                        {% if user.profile_photo %}
-                        <div style="margin-bottom:8px;">
-                            <img src="{{ user.profile_photo.url }}"
-                                 style="width:48px; height:48px;
-                                        border-radius:var(--md-shape-full);
-                                        object-fit:cover;">
-                        </div>
-                        {% endif %}
                         {% load image_upload %}
                         {% image_upload_field form.profile_photo "Upload profile photo" %}
                         <p class="field-hint">JPG or PNG. Max 5MB.</p>
