@@ -21,7 +21,7 @@
         </div>
         <div>
             <div class="stat-card__value">{{ available_count }}</div>
-            <div class="stat-card__label">Available</div>
+            <div class="stat-card__label">Available Today</div>
         </div>
     </div>
     <div class="stat-card" style="flex:1; min-width:150px;">
@@ -114,6 +114,8 @@
                 <td>
                     {% if link.is_in_use %}
                         <span class="status-chip chip-yellow">In Use</span>
+                    {% elif link.id in used_today_ids %}
+                        <span class="status-chip chip-gray">Used Today</span>
                     {% else %}
                         <span class="status-chip chip-green">Available</span>
                     {% endif %}

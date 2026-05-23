@@ -635,14 +635,35 @@ def verify_payment(request):
                 appt = full_match.appointment
                 if appt.status == 'pending_payment':
                     appt.status = 'confirmed'
-                    # Assign a free meet link from the pool
+                    # Assign a free meet link — not already used today
+                    from django.utils import timezone as tz
+                    today = tz.localdate()
+
+                    # Get IDs of links already used today
+                    used_today = Appointment.objects.filter(
+                        date=today,
+                        status__in=['confirmed', 'in_progress', 'completed'],
+                    ).exclude(
+                        meet_link__isnull=True
+                    ).values_list('meet_link_id', flat=True)
+
                     free_link = MeetLink.objects.filter(
-                        is_in_use=False
+                        is_in_use=False,
+                    ).exclude(
+                        id__in=used_today,
                     ).first()
+
                     if free_link:
-                        appt.meet_link = free_link
+                        appt.meet_link      = free_link
                         free_link.is_in_use = True
                         free_link.save()
+                    else:
+                        # No completely free link — warn admin
+                        messages.warning(
+                            request,
+                            "Appointment confirmed but no Meet link available "
+                            "that hasn't been used today. Please add more Meet links."
+                        )
                     appt.save()
                     # Send confirmation emails to user and vet
                     from consultations.emails import send_booking_confirmed
@@ -724,12 +745,35 @@ def quick_verify_payment(request, payment_id):
         if payment.payment_type == 'booking':
             if appt.status == 'pending_payment':
                 appt.status = 'confirmed'
-                # Assign a free meet link
-                free_link = MeetLink.objects.filter(is_in_use=False).first()
+                # Assign a free meet link — not already used today
+                from django.utils import timezone as tz
+                today = tz.localdate()
+
+                # Get IDs of links already used today
+                used_today = Appointment.objects.filter(
+                    date=today,
+                    status__in=['confirmed', 'in_progress', 'completed'],
+                ).exclude(
+                    meet_link__isnull=True
+                ).values_list('meet_link_id', flat=True)
+
+                free_link = MeetLink.objects.filter(
+                    is_in_use=False,
+                ).exclude(
+                    id__in=used_today,
+                ).first()
+
                 if free_link:
-                    appt.meet_link       = free_link
-                    free_link.is_in_use  = True
+                    appt.meet_link      = free_link
+                    free_link.is_in_use = True
                     free_link.save()
+                else:
+                    # No completely free link — warn admin
+                    messages.warning(
+                        request,
+                        "Appointment confirmed but no Meet link available "
+                        "that hasn't been used today. Please add more Meet links."
+                    )
                 appt.save()
                 # Send confirmation email
                 from consultations.emails import send_booking_confirmed
@@ -811,13 +855,27 @@ def mark_refunded(request, payment_id):
 
 @login_required_admin
 def meet_links(request):
+    from django.utils import timezone as tz
+    today = timezone.localdate()
+
+    used_today_ids = Appointment.objects.filter(
+        date=today,
+        status__in=['confirmed', 'in_progress', 'completed'],
+    ).exclude(
+        meet_link__isnull=True
+    ).values_list('meet_link_id', flat=True)
+
     links = MeetLink.objects.all().order_by('is_in_use', 'added_at')
+
     ctx = {
         **admin_context(request),
-        'links': links,
-        'total_count': links.count(),
-        'available_count': links.filter(is_in_use=False).count(),
-        'in_use_count': links.filter(is_in_use=True).count(),
+        'links':           links,
+        'total_count':     links.count(),
+        'available_count': links.filter(is_in_use=False).exclude(
+            id__in=used_today_ids
+        ).count(),
+        'in_use_count':    links.filter(is_in_use=True).count(),
+        'used_today_ids':  list(used_today_ids),
     }
     return render(request, 'dashboard/meet_links.html', ctx)
 
