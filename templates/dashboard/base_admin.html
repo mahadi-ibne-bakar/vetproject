@@ -549,6 +549,58 @@
         }
         .page-btn:hover { background: var(--md-surface-variant); }
         .page-btn.active { background: var(--md-primary); color: #fff; border-color: var(--md-primary); }
+        
+        /* ── Form validation states ───────────────────────────────── */
+        .field-wrap input.field-valid,
+        .field-wrap textarea.field-valid,
+        .field-wrap select.field-valid {
+            border-bottom-color: #16A34A;
+        }
+
+        .field-wrap input.field-invalid,
+        .field-wrap textarea.field-invalid,
+        .field-wrap select.field-invalid {
+            border-bottom-color: var(--md-error);
+            background: #FFF8F8;
+        }
+
+        .field-wrap input.field-valid ~ label,
+        .field-wrap textarea.field-valid ~ label {
+            color: #16A34A;
+        }
+
+        .field-wrap input.field-invalid ~ label,
+        .field-wrap textarea.field-invalid ~ label {
+            color: var(--md-error);
+        }
+
+        /* Required asterisk */
+        .required-mark {
+            color: var(--md-error);
+            font-weight: 800;
+            margin-left: 2px;
+        }
+
+        /* Inline validation message */
+        .field-validation-msg {
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 4px;
+            padding-left: 16px;
+            display: none;
+        }
+
+        .field-validation-msg.show {
+            display: block;
+        }
+
+        .field-validation-msg.valid {
+            color: #16A34A;
+        }
+
+        .field-validation-msg.invalid {
+            color: var(--md-error);
+        }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -787,6 +839,125 @@
 
         // Check the clear checkbox so Django knows to delete the image
         if (clearCb) clearCb.checked = true;
+    }
+    // ── Form validation ─────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find all field-wrap inputs and add blur validation
+        document.querySelectorAll('.field-wrap input, .field-wrap textarea, .field-wrap select').forEach(function(input) {
+            // Skip file inputs and hidden inputs
+            if (input.type === 'file' || input.type === 'hidden') return;
+
+            input.addEventListener('blur', function() {
+                validateField(this);
+            });
+
+            input.addEventListener('input', function() {
+                // Clear invalid state as user types
+                if (this.classList.contains('field-invalid')) {
+                    if (this.value.trim()) {
+                        this.classList.remove('field-invalid');
+                        this.classList.add('field-valid');
+                        showFieldMsg(this, '', '');
+                    }
+                }
+            });
+        });
+
+        // Add submit validation to all forms with class 'validated-form'
+        // or data-validate attribute
+        document.querySelectorAll('form[data-validate]').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                let hasErrors = false;
+                form.querySelectorAll('.field-wrap input[required], .field-wrap textarea[required], .field-wrap select[required]').forEach(function(input) {
+                    if (!validateField(input)) {
+                        hasErrors = true;
+                    }
+                });
+                if (hasErrors) {
+                    e.preventDefault();
+                    // Scroll to first error
+                    const firstError = form.querySelector('.field-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        });
+    });
+
+    function validateField(input) {
+        if (input.type === 'file' || input.type === 'hidden') return true;
+
+        const value = input.value.trim();
+        const isRequired = input.hasAttribute('required');
+
+        // Empty required field
+        if (isRequired && !value) {
+            input.classList.remove('field-valid');
+            input.classList.add('field-invalid');
+            showFieldMsg(input, 'This field is required.', 'invalid');
+            return false;
+        }
+
+        // Email validation
+        if (input.type === 'email' && value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                input.classList.remove('field-valid');
+                input.classList.add('field-invalid');
+                showFieldMsg(input, 'Please enter a valid email address.', 'invalid');
+                return false;
+            }
+        }
+
+        // Phone validation (Bangladesh numbers)
+        if (input.name && input.name.includes('phone') && value) {
+            if (!/^01[0-9]{9}$/.test(value)) {
+                input.classList.remove('field-valid');
+                input.classList.add('field-invalid');
+                showFieldMsg(input, 'Enter a valid 11-digit phone number starting with 01.', 'invalid');
+                return false;
+            }
+        }
+
+        // bKash number validation
+        if (input.name && input.name.includes('bkash') && value) {
+            if (!/^01[0-9]{9}$/.test(value)) {
+                input.classList.remove('field-valid');
+                input.classList.add('field-invalid');
+                showFieldMsg(input, 'Enter a valid bKash number starting with 01.', 'invalid');
+                return false;
+            }
+        }
+
+        // Valid
+        if (value) {
+            input.classList.remove('field-invalid');
+            input.classList.add('field-valid');
+            showFieldMsg(input, '', '');
+        }
+        return true;
+    }
+
+    function showFieldMsg(input, message, type) {
+        // Find or create validation message element
+        const wrap = input.closest('.field-wrap');
+        if (!wrap) return;
+
+        let msg = wrap.parentElement.querySelector('.field-validation-msg');
+        if (!msg) {
+            msg = document.createElement('p');
+            msg.className = 'field-validation-msg';
+            wrap.insertAdjacentElement('afterend', msg);
+        }
+
+        if (message) {
+            msg.textContent = message;
+            msg.className = `field-validation-msg show ${type}`;
+        } else {
+            msg.className = 'field-validation-msg';
+            msg.textContent = '';
+        }
     }
 </script>
 

@@ -43,7 +43,7 @@
         </div>
         {% endif %}
 
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" data-validate="true">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next_url }}">
             <input type="hidden" name="context"

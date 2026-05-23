@@ -45,7 +45,7 @@
                 Send us a message
             </h2>
 
-            <form method="post">
+            <form method="post" data-validate="true">
                 {% csrf_token %}
                 <div style="display:flex; flex-direction:column; gap:16px;">
 
@@ -68,7 +68,7 @@
                     <div>
                         <div class="field-wrap">
                             <input type="text" name="subject"
-                                   placeholder=" ">
+                                   placeholder=" " required>
                             <label>Subject (optional)</label>
                         </div>
                     </div>

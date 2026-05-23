@@ -109,14 +109,14 @@
         </div>
 
         <!-- Payment form -->
-        <form method="post">
+        <form method="post" data-validate="true">
             {% csrf_token %}
             <div style="display:flex; flex-direction:column; gap:16px;">
 
                 <div>
                     <div class="field-wrap">
                         <input type="tel" name="bkash_number"
-                               placeholder=" " maxlength="11">
+                               placeholder=" " maxlength="11" required>
                         <label>Your bKash number</label>
                     </div>
                     <p class="field-hint">
@@ -129,7 +129,7 @@
                         <input type="text" name="transaction_id"
                                placeholder=" " maxlength="12"
                                style="text-transform:uppercase;"
-                               oninput="this.value=this.value.toUpperCase()">
+                               oninput="this.value=this.value.toUpperCase()" required>
                         <label>Transaction ID (TrxID)</label>
                     </div>
                     <p class="field-hint">
