@@ -12,7 +12,7 @@
     </div>
 
     <div class="admin-card">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div style="display:flex; flex-direction:column; gap:16px;">
 
@@ -32,6 +32,16 @@
                     <p class="field-hint">
                         Write in plain text. Published immediately upon saving.
                     </p>
+                </div>
+
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        FEATURED IMAGE (optional)
+                    </div>
+                    <input type="file" name="featured_image" accept="image/*"
+                        style="font-family:'Nunito',sans-serif; font-size:0.875rem;">
+                    <p class="field-hint">Recommended: 1200×600px.</p>
                 </div>
 
                 <div style="display:flex; gap:10px; justify-content:flex-end;">

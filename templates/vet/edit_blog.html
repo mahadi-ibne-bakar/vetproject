@@ -55,6 +55,21 @@
                     </p>
                 </div>
 
+                <div>
+                    <div style="font-size:0.8rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        FEATURED IMAGE
+                        <span style="font-weight:500; opacity:0.7;">(optional)</span>
+                    </div>
+                    {% load image_upload %}
+                    {% image_upload_field form.featured_image "Upload cover image" %}
+                    {% if post.featured_image %}
+                    <p class="field-hint">
+                        Current image will be kept unless you upload a new one.
+                    </p>
+                    {% endif %}
+                </div>
+
                 <div style="display:flex; gap:10px; justify-content:flex-end;">
                     <a href="{% url 'blog:my_blog_posts' %}"
                        class="btn btn-outlined">Cancel</a>

@@ -938,23 +938,23 @@ def reject_blog(request, post_id):
 @login_required_admin
 def create_blog(request):
     if request.method == 'POST':
-        title = request.POST.get('title', '').strip()
+        title   = request.POST.get('title', '').strip()
         content = request.POST.get('content', '').strip()
 
         if not title or not content:
             messages.error(request, "Title and content are required.")
-            return redirect('dashboard:blog_list')
+            return render(request, 'dashboard/create_blog.html',
+                         admin_context(request))
 
         from django.utils.text import slugify
         slug = slugify(title)
-        # Ensure slug is unique
         base_slug = slug
         counter = 1
         while BlogPost.objects.filter(slug=slug).exists():
             slug = f"{base_slug}-{counter}"
             counter += 1
 
-        BlogPost.objects.create(
+        post = BlogPost.objects.create(
             title=title,
             slug=slug,
             content=content,
@@ -962,10 +962,26 @@ def create_blog(request):
             status=BlogPost.Status.PUBLISHED,
             published_at=timezone.now(),
         )
-        messages.success(request, f"Blog post '{title}' published successfully.")
+
+        if 'featured_image' in request.FILES:
+            from core.image_utils import compress_if_image, rename_image
+            new_name = rename_image(
+                request.FILES['featured_image'],
+                prefix='blog',
+                identifier=title,
+            )
+            post.featured_image = compress_if_image(
+                request.FILES['featured_image'],
+                image_type='blog',
+                new_name=new_name,
+            )
+            post.save()
+
+        messages.success(request, f"Blog post '{title}' published.")
         return redirect('dashboard:blog_list')
 
-    return render(request, 'dashboard/create_blog.html', admin_context(request))
+    return render(request, 'dashboard/create_blog.html',
+                 admin_context(request))
 
 
 @login_required_admin

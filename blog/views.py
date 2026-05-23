@@ -6,6 +6,35 @@ from django.utils.text import slugify
 from accounts.decorators import login_required_vet, login_required_user
 from .models import BlogPost, Review
 
+from django import forms as django_forms
+from core.widgets import ImageUploadWidget
+
+class BlogSubmitForm(django_forms.Form):
+    title   = django_forms.CharField(
+        max_length=200,
+        widget=django_forms.TextInput(attrs={'placeholder': ' '})
+    )
+    content = django_forms.CharField(
+        widget=django_forms.Textarea(attrs={'placeholder': ' ', 'rows': 18})
+    )
+    featured_image = django_forms.ImageField(
+        required=False,
+        widget=ImageUploadWidget(),
+    )
+
+class BlogEditForm(django_forms.Form):
+    title   = django_forms.CharField(
+        max_length=200,
+        widget=django_forms.TextInput(attrs={'placeholder': ' '})
+    )
+    content = django_forms.CharField(
+        widget=django_forms.Textarea(attrs={'placeholder': ' ', 'rows': 18})
+    )
+    featured_image = django_forms.ImageField(
+        required=False,
+        widget=ImageUploadWidget(),
+    )
+
 
 # ── Public views ───────────────────────────────────────────────────────────────
 
@@ -47,39 +76,51 @@ def blog_post(request, slug):
 @login_required_vet
 def submit_blog_post(request):
     if request.method == 'POST':
-        title   = request.POST.get('title', '').strip()
-        content = request.POST.get('content', '').strip()
+        form = BlogSubmitForm(request.POST, request.FILES)
+        if form.is_valid():
+            title   = form.cleaned_data['title']
+            content = form.cleaned_data['content']
 
-        if not title or not content:
-            messages.error(request, "Title and content are required.")
-            return render(request, 'vet/submit_blog.html', {
-                'title': title,
-                'content': content,
-            })
+            slug = slugify(title)
+            base_slug = slug
+            counter = 1
+            while BlogPost.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
 
-        # Generate unique slug
-        slug = slugify(title)
-        base_slug = slug
-        counter = 1
-        while BlogPost.objects.filter(slug=slug).exists():
-            slug = f"{base_slug}-{counter}"
-            counter += 1
+            post = BlogPost.objects.create(
+                title=title,
+                slug=slug,
+                content=content,
+                author=request.user,
+                status=BlogPost.Status.PENDING,
+            )
 
-        BlogPost.objects.create(
-            title=title,
-            slug=slug,
-            content=content,
-            author=request.user,
-            status=BlogPost.Status.PENDING,
-        )
-        messages.success(
-            request,
-            "Your post has been submitted for review. "
-            "We'll publish it once approved."
-        )
-        return redirect('blog:my_blog_posts')
+            if form.cleaned_data.get('featured_image'):
+                from core.image_utils import compress_if_image, rename_image
+                new_name = rename_image(
+                    request.FILES['featured_image'],
+                    prefix='blog',
+                    identifier=title,
+                )
+                post.featured_image = compress_if_image(
+                    request.FILES['featured_image'],
+                    image_type='blog',
+                    new_name=new_name,
+                )
+                post.save()
 
-    return render(request, 'vet/submit_blog.html', {})
+            messages.success(
+                request,
+                "Your post has been submitted for review."
+            )
+            return redirect('blog:my_blog_posts')
+        else:
+            messages.error(request, "Please fix the errors below.")
+    else:
+        form = BlogSubmitForm()
+
+    return render(request, 'vet/submit_blog.html', {'form': form})
 
 
 @login_required_vet
@@ -95,39 +136,51 @@ def my_blog_posts(request):
 @login_required_vet
 def edit_blog_post(request, post_id):
     post = get_object_or_404(
-        BlogPost,
-        id=post_id,
-        author=request.user,
+        BlogPost, id=post_id, author=request.user
     )
 
-    # Can only edit drafts or rejected posts
     if post.status not in ['draft', 'rejected']:
         messages.error(
             request,
-            "You can only edit draft or rejected posts. "
-            "Published and pending posts cannot be edited."
+            "You can only edit draft or rejected posts."
         )
         return redirect('blog:my_blog_posts')
 
     if request.method == 'POST':
-        title   = request.POST.get('title', '').strip()
-        content = request.POST.get('content', '').strip()
+        form = BlogEditForm(request.POST, request.FILES)
+        if form.is_valid():
+            post.title   = form.cleaned_data['title']
+            post.content = form.cleaned_data['content']
+            post.status  = BlogPost.Status.PENDING
 
-        if not title or not content:
-            messages.error(request, "Title and content are required.")
-            return render(request, 'vet/edit_blog.html', {
-                'post': post,
-            })
+            if form.cleaned_data.get('featured_image'):
+                from core.image_utils import compress_if_image, rename_image
+                from core.storage_utils import delete_file
+                if post.featured_image:
+                    delete_file(post.featured_image)
+                new_name = rename_image(
+                    request.FILES['featured_image'],
+                    prefix='blog',
+                    identifier=post.title,
+                )
+                post.featured_image = compress_if_image(
+                    request.FILES['featured_image'],
+                    image_type='blog',
+                    new_name=new_name,
+                )
 
-        post.title   = title
-        post.content = content
-        post.status  = BlogPost.Status.PENDING
-        post.save()
+            post.save()
+            messages.success(request, "Post updated and resubmitted for review.")
+            return redirect('blog:my_blog_posts')
+        else:
+            messages.error(request, "Please fix the errors below.")
+    else:
+        form = BlogEditForm(initial={
+            'title':   post.title,
+            'content': post.content,
+        })
 
-        messages.success(
-            request,
-            "Post updated and resubmitted for review."
-        )
-        return redirect('blog:my_blog_posts')
-
-    return render(request, 'vet/edit_blog.html', {'post': post})
+    return render(request, 'vet/edit_blog.html', {
+        'form': form,
+        'post': post,
+    })
