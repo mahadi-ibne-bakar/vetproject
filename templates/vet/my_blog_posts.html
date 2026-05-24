@@ -28,55 +28,27 @@
                     {{ post.content|truncatechars:120 }}
                 </div>
 
-                <div style="display:flex; align-items:center; gap:10px;
-                            flex-wrap:wrap;">
+                <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
                     {% if post.status == 'published' %}
-                        <span class="status-chip chip-green">Published</span>
-                        <span style="font-size:0.78rem; font-weight:600;
-                                     color:var(--md-on-surface-variant);">
-                            {{ post.published_at|date:"M d, Y" }}
-                        </span>
-                        <span style="color:var(--md-outline);">·</span>
-                        <span style="display:inline-flex; align-items:center; gap:3px;
-                                    font-size:0.78rem; font-weight:600;
-                                    color:var(--md-on-surface-variant);">
-                            <span class="ms sm" style="font-size:14px;">visibility</span>
-                            {{ post.view_count }} view{{ post.view_count|pluralize }}
-                        </span>
                         <a href="{% url 'blog:blog_post' post.slug %}"
-                           target="_blank"
-                           style="font-size:0.82rem; font-weight:700;
-                                  color:var(--md-primary); text-decoration:none;
-                                  display:flex; align-items:center; gap:4px;">
-                            <span class="ms sm">open_in_new</span> View live
+                        target="_blank"
+                        class="btn btn-sm btn-tonal" style="text-decoration:none;">
+                            <span class="ms sm">open_in_new</span> View
                         </a>
-                    {% elif post.status == 'pending' %}
-                        <span class="status-chip chip-yellow">Pending Review</span>
-                        <span style="font-size:0.78rem; font-weight:600;
-                                     color:var(--md-on-surface-variant);">
-                            Submitted {{ post.created_at|date:"M d, Y" }}
-                        </span>
-                    {% elif post.status == 'rejected' %}
-                        <span class="status-chip chip-red">Rejected</span>
-                        {% if post.rejection_note %}
+                    {% endif %}
+                    {% if post.status == 'draft' or post.status == 'rejected' %}
+                        <a href="{% url 'blog:edit_blog_post' post.id %}"
+                        class="btn btn-sm btn-tonal" style="text-decoration:none;">
+                            <span class="ms sm">edit</span> Edit & Resubmit
+                        </a>
+                    {% endif %}
+                    {% if post.status == 'pending' %}
                         <span style="font-size:0.82rem; font-weight:600;
-                                     color:var(--md-error);">
-                            "{{ post.rejection_note|truncatechars:60 }}"
+                                    color:var(--md-on-surface-variant);">
+                            Awaiting review
                         </span>
-                        {% endif %}
-                    {% else %}
-                        <span class="status-chip chip-gray">Draft</span>
                     {% endif %}
                 </div>
-            </div>
-
-            <div style="display:flex; gap:8px; flex-shrink:0;">
-                {% if post.status in 'draft,rejected' %}
-                <a href="{% url 'blog:edit_blog_post' post.id %}"
-                   class="btn btn-sm btn-tonal" style="text-decoration:none;">
-                    <span class="ms sm">edit</span> Edit & Resubmit
-                </a>
-                {% endif %}
             </div>
         </div>
 
