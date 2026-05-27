@@ -16,22 +16,19 @@ from django.utils import timezone
 
 
 def _send(subject: str, message: str, recipient_email: str) -> bool:
-    """
-    Internal helper. Sends a plain-text email.
-    Returns True on success, False on failure.
-    Never raises — email failure should never crash the main flow.
-    """
     try:
-        send_mail(
+        from django.core.mail import EmailMessage
+        from django.conf import settings as django_settings
+
+        email = EmailMessage(
             subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[recipient_email],
-            fail_silently=False,
+            body=message,
+            from_email=django_settings.DEFAULT_FROM_EMAIL,
+            to=[recipient_email],
         )
+        email.send(fail_silently=True)
         return True
     except Exception as e:
-        # Log the error but don't crash
         import logging
         logger = logging.getLogger(__name__)
         logger.error(f"Email send failed to {recipient_email}: {e}")
