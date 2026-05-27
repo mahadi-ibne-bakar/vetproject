@@ -887,14 +887,6 @@ def book_appointment(request, vet_id):
             + urlencode({'next': booking_next, 'context': 'booking'})
         )
 
-    if 'symptom_photo' in request.FILES:
-        from core.image_utils import compress_if_image
-        appointment.symptom_photo = compress_if_image(
-            request.FILES['symptom_photo'],
-            image_type='symptom'
-        )
-        appointment.save()
-
     if request.method == 'POST':
         pet_id = request.POST.get('pet_id')
         primary_complaint = request.POST.get('primary_complaint')
@@ -920,44 +912,58 @@ def book_appointment(request, vet_id):
                 pet = None
 
             if pet:
-                # Double-check slot still available
                 if start_str not in available_starts:
                     messages.error(
                         request,
-                        "That slot is no longer available. Please choose another."
+                        "That slot was just booked. Please choose another."
                     )
-                    from django.urls import reverse
+                    return redirect('consultations:vet_detail', vet_id=vet_id)
+
+                try:
+                    # Parse time strings to time objects
+                    from datetime import time as time_cls
+                    start_parts = start_str.split(':')
+                    end_parts   = end_str.split(':')
+                    start_time  = time_cls(int(start_parts[0]), int(start_parts[1]))
+                    end_time    = time_cls(int(end_parts[0]), int(end_parts[1]))
+
+                    appointment = Appointment.objects.create(
+                        pet=pet,
+                        vet=vet,
+                        user=request.user,
+                        date=selected_date,
+                        start_time=start_time,
+                        end_time=end_time,
+                        status=Appointment.Status.PENDING_PAYMENT,
+                        primary_complaint=primary_complaint,
+                        complaint_description=description,
+                    )
+
+                    if 'symptom_photo' in request.FILES:
+                        from core.image_utils import compress_if_image
+                        appointment.symptom_photo = compress_if_image(
+                            request.FILES['symptom_photo'],
+                            image_type='symptom'
+                        )
+                        appointment.save()
+
+                    messages.success(
+                        request,
+                        "Appointment created. Please complete payment to confirm."
+                    )
                     return redirect(
-                        reverse('consultations:vet_detail', args=[vet_id])
-                        + f"?date={date_str}"
+                        'consultations:submit_payment',
+                        appointment_id=appointment.id
                     )
 
-                # Create appointment in pending_payment status
-                appointment = Appointment.objects.create(
-                    pet=pet,
-                    vet=vet,
-                    user=request.user,
-                    date=selected_date,
-                    start_time=start_str,
-                    end_time=end_str,
-                    status=Appointment.Status.PENDING_PAYMENT,
-                    primary_complaint=primary_complaint,
-                    complaint_description=description,
-                )
-
-                # Handle symptom photo if uploaded
-                if 'symptom_photo' in request.FILES:
-                    appointment.symptom_photo = request.FILES['symptom_photo']
-                    appointment.save()
-
-                messages.success(
-                    request,
-                    "Appointment created. Please complete payment to confirm."
-                )
-                return redirect(
-                    'consultations:submit_payment',
-                    appointment_id=appointment.id
-                )
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Appointment creation failed: {e}", exc_info=True)
+                    messages.error(
+                        request,
+                        f"Something went wrong: {str(e)}"
+                    )
 
     # Complaint choices for the form
     complaint_choices = Appointment.PrimaryComplaint.choices
