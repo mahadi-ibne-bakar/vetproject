@@ -2,8 +2,7 @@
 {% block title %}Blog — VetProject{% endblock %}
 
 {% block content %}
-
-<div style="max-width:900px; margin:0 auto;">
+<div style="max-width:960px; margin:0 auto;">
 
     <div style="margin-bottom:28px;">
         <h1 style="font-size:1.8rem; font-weight:800; margin:0 0 6px;">
@@ -16,10 +15,88 @@
     </div>
 
     {% if posts %}
-    <div style="display:grid;
-                grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
-                gap:20px;">
+
+    <!-- Featured post — first/latest -->
+    {% with featured=posts.0 %}
+    <a href="{% url 'blog:blog_post' featured.slug %}"
+       style="text-decoration:none; display:block; margin-bottom:32px;">
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); overflow:hidden;
+                    transition:box-shadow 0.2s;"
+             onmouseover="this.style.boxShadow='var(--md-elev-3)'"
+             onmouseout="this.style.boxShadow='var(--md-elev-1)'">
+
+            {% if featured.featured_image %}
+            <img src="{{ featured.featured_image.url }}"
+                 alt="{{ featured.title }}"
+                 style="width:100%; height:320px; object-fit:cover;">
+            {% else %}
+            <div style="width:100%; height:240px;
+                        background:var(--md-primary-container);
+                        display:flex; align-items:center; justify-content:center;">
+                <span class="ms" style="font-size:64px; color:var(--md-primary);
+                                        opacity:0.4;">article</span>
+            </div>
+            {% endif %}
+
+            <div style="padding:28px 32px;">
+                <div style="display:inline-flex; align-items:center; gap:6px;
+                            background:var(--md-primary-container);
+                            color:var(--md-on-primary-container);
+                            padding:4px 12px; border-radius:var(--md-shape-full);
+                            font-size:0.78rem; font-weight:700; margin-bottom:12px;">
+                    <span class="ms sm filled">star</span>
+                    Featured Article
+                </div>
+                <h2 style="font-size:1.5rem; font-weight:800;
+                           color:var(--md-on-surface); margin:0 0 12px;
+                           line-height:1.3;">
+                    {{ featured.title }}
+                </h2>
+                <p style="font-size:0.95rem; color:var(--md-on-surface-variant);
+                           font-weight:500; line-height:1.7; margin:0 0 16px;">
+                    {{ featured.content|truncatechars:200 }}
+                </p>
+                <div style="display:flex; align-items:center; gap:10px;
+                            font-size:0.85rem; font-weight:600;
+                            color:var(--md-on-surface-variant);">
+                    <div style="width:32px; height:32px;
+                                border-radius:var(--md-shape-full);
+                                background:var(--md-primary-container);
+                                color:var(--md-on-primary-container);
+                                display:flex; align-items:center;
+                                justify-content:center; font-weight:800;
+                                font-size:0.8rem; flex-shrink:0;">
+                        {{ featured.author.first_name|first|upper }}
+                    </div>
+                    Dr. {{ featured.author.get_full_name }}
+                    <span style="color:var(--md-outline);">·</span>
+                    {{ featured.published_at|date:"F j, Y" }}
+                    <span style="color:var(--md-outline);">·</span>
+                    <span style="display:inline-flex; align-items:center; gap:3px;">
+                        <span class="ms sm" style="font-size:15px;">visibility</span>
+                        {{ featured.view_count }} view{{ featured.view_count|pluralize }}
+                    </span>
+                    <span style="margin-left:auto; color:var(--md-primary);
+                                 font-weight:700; display:flex; align-items:center; gap:4px;">
+                        Read article
+                        <span class="ms sm">arrow_forward</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endwith %}
+
+    <!-- Rest of posts — 2-column grid -->
+    {% if posts|length > 1 %}
+    <h3 style="font-size:1.1rem; font-weight:800; margin:0 0 16px;
+               color:var(--md-on-surface-variant);">
+        More Articles
+    </h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
         {% for post in posts %}
+        {% if not forloop.first %}
         <a href="{% url 'blog:blog_post' post.slug %}"
            style="text-decoration:none; display:block;
                   background:var(--md-surface); border-radius:var(--md-shape-xl);
@@ -29,31 +106,30 @@
            onmouseout="this.style.boxShadow='var(--md-elev-1)'">
 
             {% if post.featured_image %}
-            <img src="{{ post.featured_image.url }}"
-                 alt="{{ post.title }}"
-                 style="width:100%; height:160px; object-fit:cover;">
+            <img src="{{ post.featured_image.url }}" alt="{{ post.title }}"
+                 style="width:100%; height:180px; object-fit:cover;">
             {% else %}
             <div style="width:100%; height:120px;
                         background:var(--md-primary-container);
                         display:flex; align-items:center; justify-content:center;">
-                <span class="ms lg filled" style="color:var(--md-primary);">
-                    article
-                </span>
+                <span class="ms lg filled"
+                      style="color:var(--md-primary); opacity:0.5;">article</span>
             </div>
             {% endif %}
 
-            <div style="padding:18px 20px;">
-                <div style="font-weight:800; font-size:1rem; margin-bottom:8px;
-                            color:var(--md-on-surface); line-height:1.3;">
-                    {{ post.title }}
-                </div>
-                <p style="font-size:0.85rem; color:var(--md-on-surface-variant);
-                           font-weight:500; line-height:1.5; margin:0 0 12px;">
-                    {{ post.content|truncatechars:100 }}
+            <div style="padding:20px 22px;">
+                <h3 style="font-size:1.05rem; font-weight:800;
+                           color:var(--md-on-surface); margin:0 0 8px;
+                           line-height:1.3;">
+                    {{ post.title|truncatechars:70 }}
+                </h3>
+                <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                           font-weight:500; line-height:1.6; margin:0 0 14px;">
+                    {{ post.content|truncatechars:120 }}
                 </p>
                 <div style="display:flex; align-items:center; gap:8px;
-                            font-size:0.78rem; font-weight:600;
-                            color:var(--md-on-surface-variant);">
+                            font-size:0.8rem; font-weight:600;
+                            color:var(--md-on-surface-variant); flex-wrap:wrap;">
                     <div style="width:24px; height:24px;
                                 border-radius:var(--md-shape-full);
                                 background:var(--md-primary-container);
@@ -68,14 +144,16 @@
                     {{ post.published_at|date:"M d, Y" }}
                     <span style="color:var(--md-outline);">·</span>
                     <span style="display:inline-flex; align-items:center; gap:2px;">
-                        <span class="ms sm" style="font-size:14px;">visibility</span>
+                        <span class="ms sm" style="font-size:13px;">visibility</span>
                         {{ post.view_count }}
                     </span>
                 </div>
             </div>
         </a>
+        {% endif %}
         {% endfor %}
     </div>
+    {% endif %}
 
     {% else %}
     <div style="text-align:center; padding:60px;
@@ -92,5 +170,4 @@
     {% endif %}
 
 </div>
-
 {% endblock %}

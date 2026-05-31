@@ -248,7 +248,6 @@
 </div>
 {% endif %}
 
-<!-- ── Recent Blog Posts ──────────────────────────────────────────────────── -->
 {% if recent_posts %}
 <div style="margin-bottom:40px;">
     <div style="display:flex; align-items:center; justify-content:space-between;
@@ -268,9 +267,7 @@
         </a>
     </div>
 
-    <div style="display:grid;
-                grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
-                gap:20px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
         {% for post in recent_posts %}
         <a href="{% url 'blog:blog_post' post.slug %}"
            style="text-decoration:none; display:block;
@@ -282,36 +279,36 @@
 
             {% if post.featured_image %}
             <img src="{{ post.featured_image.url }}" alt="{{ post.title }}"
-                 style="width:100%; height:140px; object-fit:cover;">
+                 style="width:100%; height:160px; object-fit:cover;">
             {% else %}
             <div style="width:100%; height:100px;
                         background:var(--md-primary-container);
                         display:flex; align-items:center; justify-content:center;">
                 <span class="ms lg filled"
-                      style="color:var(--md-primary);">article</span>
+                      style="color:var(--md-primary); opacity:0.5;">article</span>
             </div>
             {% endif %}
 
-            <div style="padding:16px 18px;">
-                <div style="font-weight:800; font-size:0.95rem;
-                            color:var(--md-on-surface); margin-bottom:6px;
-                            line-height:1.3;">
-                    {{ post.title|truncatechars:60 }}
-                </div>
-                <p style="font-size:0.82rem; color:var(--md-on-surface-variant);
-                           font-weight:500; line-height:1.5; margin:0 0 10px;">
-                    {{ post.content|truncatechars:90 }}
+            <div style="padding:18px 20px;">
+                <h3 style="font-weight:800; font-size:1rem;
+                           color:var(--md-on-surface); margin:0 0 8px;
+                           line-height:1.3;">
+                    {{ post.title|truncatechars:65 }}
+                </h3>
+                <p style="font-size:0.85rem; color:var(--md-on-surface-variant);
+                           font-weight:500; line-height:1.6; margin:0 0 12px;">
+                    {{ post.content|truncatechars:110 }}
                 </p>
                 <div style="display:flex; align-items:center; gap:6px;
-                            font-size:0.75rem; font-weight:600;
+                            font-size:0.78rem; font-weight:600;
                             color:var(--md-on-surface-variant);">
-                    <div style="width:20px; height:20px;
+                    <div style="width:22px; height:22px;
                                 border-radius:var(--md-shape-full);
                                 background:var(--md-primary-container);
                                 color:var(--md-on-primary-container);
                                 display:flex; align-items:center;
                                 justify-content:center; font-weight:800;
-                                font-size:0.65rem;">
+                                font-size:0.65rem; flex-shrink:0;">
                         {{ post.author.first_name|first|upper }}
                     </div>
                     Dr. {{ post.author.get_full_name }}
@@ -319,7 +316,7 @@
                     {{ post.published_at|date:"M d" }}
                     <span style="color:var(--md-outline);">·</span>
                     <span style="display:inline-flex; align-items:center; gap:2px;">
-                        <span class="ms sm" style="font-size:13px;">visibility</span>
+                        <span class="ms sm" style="font-size:12px;">visibility</span>
                         {{ post.view_count }}
                     </span>
                 </div>
