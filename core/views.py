@@ -276,12 +276,6 @@ def shop(request):
 
 @csrf_exempt
 def send_reminders_endpoint(request):
-    """
-    Protected endpoint called by cron-job.org every 5 minutes.
-    Sends 30-minute appointment reminders.
-    Protected by a secret key in the Authorization header or query param.
-    """
-    # Verify secret
     secret = (
         request.GET.get('secret') or
         request.headers.get('X-Reminder-Secret', '')
@@ -292,14 +286,19 @@ def send_reminders_endpoint(request):
     from django.utils import timezone
     from datetime import timedelta
     from consultations.models import Appointment
-    from consultations.emails import send_appointment_reminder
+    from consultations.emails import (
+        send_appointment_reminder,
+        send_cancellation_confirm,
+    )
 
-    now          = timezone.localtime()
-    today        = now.date()
+    now   = timezone.localtime()
+    today = now.date()
+
+    # ── Send 30-minute reminders ───────────────────────────────────────────────
     window_start = (now + timedelta(minutes=25)).time()
     window_end   = (now + timedelta(minutes=35)).time()
 
-    appointments = Appointment.objects.filter(
+    reminders = Appointment.objects.filter(
         date=today,
         status='confirmed',
         reminder_sent=False,
@@ -307,16 +306,43 @@ def send_reminders_endpoint(request):
         start_time__lte=window_end,
     ).select_related('user', 'vet__user', 'pet', 'meet_link')
 
-    sent = []
-    for appt in appointments:
+    reminder_ids = []
+    for appt in reminders:
         send_appointment_reminder(appt)
         appt.reminder_sent = True
         appt.save(update_fields=['reminder_sent'])
-        sent.append(appt.id)
+        reminder_ids.append(appt.id)
+
+    # ── Auto-cancel unpaid appointments older than 1 hour ─────────────────────
+    cutoff = now - timedelta(hours=1)
+
+    stale = Appointment.objects.filter(
+        status='pending_payment',
+        created_at__lt=cutoff,
+    ).select_related('user', 'vet__user', 'pet')
+
+    cancelled_ids = []
+    for appt in stale:
+        appt.status = Appointment.Status.CANCELLED
+        appt.cancellation_reason = (
+            'Automatically cancelled — booking payment not received within 1 hour.'
+        )
+        appt.save()
+
+        # Free meet link if somehow assigned
+        if appt.meet_link:
+            appt.meet_link.is_in_use = False
+            appt.meet_link.save()
+
+        # Notify user
+        send_cancellation_confirm(appt, refund_amount=None)
+        cancelled_ids.append(appt.id)
 
     return JsonResponse({
-        'status': 'ok',
-        'reminders_sent': len(sent),
-        'appointment_ids': sent,
-        'checked_at': now.isoformat(),
+        'status':          'ok',
+        'reminders_sent':  len(reminder_ids),
+        'auto_cancelled':  len(cancelled_ids),
+        'appointment_ids': reminder_ids,
+        'cancelled_ids':   cancelled_ids,
+        'checked_at':      now.isoformat(),
     })

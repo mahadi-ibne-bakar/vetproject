@@ -281,16 +281,18 @@
     </div>
 
     <!-- Cancel / Reschedule -->
-    {% if appointment.status in 'confirmed,rescheduled' %}
+    {% if appointment.status == 'confirmed' or appointment.status == 'rescheduled' or appointment.status == 'pending_payment' %}
     <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
                 box-shadow:var(--md-elev-1); padding:20px; margin-bottom:16px;">
         <div style="font-weight:800; margin-bottom:12px;">Manage Appointment</div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            {% if appointment.status == 'confirmed' or appointment.status == 'rescheduled' %}
             {% if appointment.reschedule_count < 1 %}
             <a href="{% url 'consultations:reschedule_appointment' appointment.id %}"
-               class="btn btn-tonal" style="text-decoration:none;">
+            class="btn btn-tonal" style="text-decoration:none;">
                 <span class="ms sm">schedule</span> Reschedule
             </a>
+            {% endif %}
             {% endif %}
             <button onclick="document.getElementById('cancelForm').style.display='block'"
                     class="btn btn-danger btn-sm">

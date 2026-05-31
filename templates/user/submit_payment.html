@@ -157,4 +157,44 @@
 
     </div>
 </div>
+
+<div style="text-align:center; margin-top:16px;">
+    <p style="font-size:0.85rem; color:var(--md-on-surface-variant);
+               font-weight:600; margin:0 0 10px;">
+        Changed your mind?
+    </p>
+    <button onclick="document.getElementById('cancelPaymentForm').style.display='block'"
+            class="btn btn-outlined btn-sm"
+            style="color:var(--md-error); border-color:var(--md-error);">
+        <span class="ms sm">cancel</span> Cancel Appointment
+    </button>
+
+    <div id="cancelPaymentForm"
+         style="display:none; margin-top:12px; padding:16px;
+                background:var(--md-error-container);
+                border-radius:var(--md-shape-md); text-align:left;">
+        <p style="font-size:0.875rem; font-weight:600; margin:0 0 10px;
+                   color:var(--md-on-error-container);">
+            Cancel this appointment? The slot will be released.
+        </p>
+        <form method="post"
+              action="{% url 'consultations:cancel_appointment' appointment.id %}">
+            {% csrf_token %}
+            <div class="field-wrap" style="margin-bottom:10px;">
+                <textarea name="reason" placeholder=" " rows="2"></textarea>
+                <label>Reason (optional)</label>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button type="submit" class="btn btn-sm btn-danger">
+                    Confirm Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-outlined"
+                        onclick="document.getElementById('cancelPaymentForm').style.display='none'">
+                    Keep Appointment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
