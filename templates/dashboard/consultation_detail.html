@@ -78,13 +78,29 @@
                        margin:8px 0 0; line-height:1.5; font-weight:500;">
                 {{ appointment.complaint_description }}
             </p>
-            {% if appointment.symptom_photo %}
-            <div style="margin-top:10px;">
-                <img src="{{ appointment.symptom_photo.url }}"
-                     style="max-width:100%; border-radius:var(--md-shape-md);
-                            border:1px solid var(--md-outline-variant);">
+            {% with photos=appointment.symptom_photos.all %}
+            {% if photos %}
+            <div style="margin-top:12px;">
+                <div style="font-size:0.78rem; font-weight:700;
+                            color:var(--md-on-surface-variant); margin-bottom:6px;">
+                    SYMPTOM PHOTOS ({{ photos|length }})
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    {% for photo in photos %}
+                    <a href="{{ photo.photo.url }}" target="_blank">
+                        <img src="{{ photo.photo.url }}"
+                            style="width:80px; height:80px; border-radius:var(--md-shape-md);
+                                    object-fit:cover;
+                                    border:2px solid var(--md-outline-variant);
+                                    transition:border-color 0.15s;"
+                            onmouseover="this.style.borderColor='var(--md-primary)'"
+                            onmouseout="this.style.borderColor='var(--md-outline-variant)'">
+                    </a>
+                    {% endfor %}
+                </div>
             </div>
             {% endif %}
+            {% endwith %}
         </div>
 
         <!-- Consultation notes -->

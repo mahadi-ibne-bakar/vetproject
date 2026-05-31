@@ -273,6 +273,20 @@ class Appointment(models.Model):
     class Meta:
         ordering = ['-date', '-start_time']
 
+class AppointmentPhoto(models.Model):
+    appointment = models.ForeignKey(
+        Appointment,
+        on_delete=models.CASCADE,
+        related_name='symptom_photos',
+    )
+    photo       = models.ImageField(upload_to='symptom_photos/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['uploaded_at']
+
+    def __str__(self):
+        return f"Photo for appointment {self.appointment.id}"
 
 class Payment(models.Model):
     """

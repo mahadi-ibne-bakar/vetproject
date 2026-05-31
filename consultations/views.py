@@ -11,6 +11,7 @@ from .forms import (
     VetProfileForm, PetForm, PrescriptionForm,
     RecurringAvailabilityForm, SpecificDateAvailabilityForm, BlockedDateForm,
 )
+from consultations.models import AppointmentPhoto
 
 import json
 from django.http import JsonResponse
@@ -939,13 +940,24 @@ def book_appointment(request, vet_id):
                         complaint_description=description,
                     )
 
-                    if 'symptom_photo' in request.FILES:
-                        from core.image_utils import compress_if_image
-                        appointment.symptom_photo = compress_if_image(
-                            request.FILES['symptom_photo'],
-                            image_type='symptom'
-                        )
-                        appointment.save()
+                    # Handle up to 5 symptom photos
+                    photos = request.FILES.getlist('symptom_photos')
+                    if photos:
+                        from core.image_utils import compress_if_image, rename_image
+                        for i, photo_file in enumerate(photos[:5]):
+                            compressed = compress_if_image(
+                                photo_file,
+                                image_type='symptom',
+                                new_name=rename_image(
+                                    photo_file,
+                                    prefix='symptom',
+                                    identifier=f"{pet.name}-{i+1}",
+                                )
+                            )
+                            AppointmentPhoto.objects.create(
+                                appointment=appointment,
+                                photo=compressed,
+                            )
 
                     messages.success(
                         request,

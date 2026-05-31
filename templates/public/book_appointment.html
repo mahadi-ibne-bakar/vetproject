@@ -151,68 +151,55 @@
                     </div>
                 </div>
 
-                <!-- Symptom photo (optional) -->
+                <!-- Symptom photos (optional, up to 5) -->
                 <div>
                     <div style="font-size:0.8rem; font-weight:700;
                                 color:var(--md-on-surface-variant); margin-bottom:8px;">
-                        SYMPTOM PHOTO
-                        <span style="font-weight:500; opacity:0.7;">(optional)</span>
+                        SYMPTOM PHOTOS
+                        <span style="font-weight:500; opacity:0.7;">(optional, up to 5)</span>
                     </div>
 
-                    <!-- Preview area -->
-                    <div id="preview-area-symptom"
-                        style="display:none; margin-bottom:10px;">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <img src="" id="preview-img-symptom"
-                                style="width:64px; height:64px; border-radius:8px;
-                                        object-fit:cover;
-                                        border:2px solid var(--md-primary-container);">
-                            <div style="font-size:0.82rem; font-weight:700;
-                                        color:var(--md-on-surface);">
-                                Photo selected
+                    <div id="photoSlots"
+                        style="display:flex; flex-direction:column; gap:10px;">
+                        <!-- Slot 1 always visible -->
+                        <div class="photo-slot" id="slot-1">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div id="preview-area-slot-1"
+                                    style="display:none;">
+                                    <img src="" id="preview-img-slot-1"
+                                        style="width:56px; height:56px; border-radius:8px;
+                                                object-fit:cover;
+                                                border:2px solid var(--md-primary-container);">
+                                </div>
+                                <input type="file" name="symptom_photos"
+                                    id="slot-input-1" accept="image/*"
+                                    style="display:none;"
+                                    onchange="handleSlotChange(this, 1)">
+                                <label for="slot-input-1"
+                                    style="display:inline-flex; align-items:center; gap:6px;
+                                            padding:8px 16px; border-radius:var(--md-shape-full);
+                                            border:1.5px solid var(--md-outline);
+                                            background:var(--md-surface); cursor:pointer;
+                                            font-family:'Nunito',sans-serif; font-weight:700;
+                                            font-size:0.85rem; color:var(--md-primary);
+                                            transition:background 0.15s;"
+                                    onmouseover="this.style.background='var(--md-primary-container)'"
+                                    onmouseout="this.style.background='var(--md-surface)'">
+                                    <span class="ms sm">add_photo_alternate</span>
+                                    <span id="slot-label-1">Add photo 1</span>
+                                </label>
+                                <button type="button" id="remove-slot-1"
+                                        onclick="removeSlotPhoto(1)"
+                                        style="display:none; background:none; border:none;
+                                            cursor:pointer; color:var(--md-error); padding:4px;">
+                                    <span class="ms sm">close</span>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Hidden real input -->
-                    <input type="file" name="symptom_photo"
-                        id="id_symptom_photo"
-                        accept="image/*"
-                        style="display:none;"
-                        onchange="previewSymptom(this)">
-
-                    <!-- Styled buttons -->
-                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                        <label for="id_symptom_photo"
-                            style="display:inline-flex; align-items:center; gap:6px;
-                                    padding:8px 16px; border-radius:var(--md-shape-full);
-                                    border:1.5px solid var(--md-outline);
-                                    background:var(--md-surface); cursor:pointer;
-                                    font-family:'Nunito',sans-serif; font-weight:700;
-                                    font-size:0.85rem; color:var(--md-primary);
-                                    transition:background 0.15s, border-color 0.15s;"
-                            onmouseover="this.style.background='var(--md-primary-container)';
-                                            this.style.borderColor='var(--md-primary)'"
-                            onmouseout="this.style.background='var(--md-surface)';
-                                        this.style.borderColor='var(--md-outline)'">
-                            <span class="ms sm">photo_camera</span>
-                            <span id="symptom-upload-label">Upload symptom photo</span>
-                        </label>
-
-                        <button type="button" id="remove-symptom-btn"
-                                onclick="removeSymptom()"
-                                style="display:none; align-items:center; gap:4px;
-                                    padding:8px 14px; border-radius:var(--md-shape-full);
-                                    border:1.5px solid var(--md-error);
-                                    background:transparent; cursor:pointer;
-                                    font-family:'Nunito',sans-serif; font-weight:700;
-                                    font-size:0.82rem; color:var(--md-error);">
-                            <span class="ms sm">delete</span> Remove
-                        </button>
-                    </div>
-
-                    <p class="field-hint" style="margin-top:6px;">
-                        Upload a photo of the symptom to help the vet.
+                    <p class="field-hint" style="margin-top:8px;">
+                        Upload photos of symptoms to help the vet assess the situation.
                     </p>
                 </div>
             </div>
@@ -342,6 +329,76 @@
         document.getElementById('preview-area-symptom').style.display = 'none';
         document.getElementById('symptom-upload-label').textContent = 'Upload symptom photo';
         document.getElementById('remove-symptom-btn').style.display = 'none';
+    }
+
+    // ── Multi-photo symptom upload ──────────────────────────────
+    let slotCount = 1;
+    const MAX_SLOTS = 5;
+
+    function handleSlotChange(input, slotNum) {
+        if (!input.files || !input.files[0]) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(`preview-img-slot-${slotNum}`).src = e.target.result;
+            document.getElementById(`preview-area-slot-${slotNum}`).style.display = 'block';
+            document.getElementById(`slot-label-${slotNum}`).textContent = `Photo ${slotNum} selected`;
+            document.getElementById(`remove-slot-${slotNum}`).style.display = 'inline-flex';
+
+            // Add next slot if under limit
+            if (slotNum === slotCount && slotCount < MAX_SLOTS) {
+                slotCount++;
+                addPhotoSlot(slotCount);
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+
+    function addPhotoSlot(num) {
+        const container = document.getElementById('photoSlots');
+        const div = document.createElement('div');
+        div.className = 'photo-slot';
+        div.id = `slot-${num}`;
+        div.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div id="preview-area-slot-${num}" style="display:none;">
+                    <img src="" id="preview-img-slot-${num}"
+                        style="width:56px; height:56px; border-radius:8px;
+                                object-fit:cover;
+                                border:2px solid var(--md-primary-container);">
+                </div>
+                <input type="file" name="symptom_photos"
+                    id="slot-input-${num}" accept="image/*"
+                    style="display:none;"
+                    onchange="handleSlotChange(this, ${num})">
+                <label for="slot-input-${num}"
+                    style="display:inline-flex; align-items:center; gap:6px;
+                            padding:8px 16px; border-radius:var(--md-shape-full);
+                            border:1.5px solid var(--md-outline);
+                            background:var(--md-surface); cursor:pointer;
+                            font-family:'Nunito',sans-serif; font-weight:700;
+                            font-size:0.85rem; color:var(--md-primary);"
+                    onmouseover="this.style.background='var(--md-primary-container)'"
+                    onmouseout="this.style.background='var(--md-surface)'">
+                    <span class="ms sm">add_photo_alternate</span>
+                    <span id="slot-label-${num}">Add photo ${num}</span>
+                </label>
+                <button type="button" id="remove-slot-${num}"
+                        onclick="removeSlotPhoto(${num})"
+                        style="display:none; background:none; border:none;
+                            cursor:pointer; color:var(--md-error); padding:4px;">
+                    <span class="ms sm">close</span>
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+
+    function removeSlotPhoto(num) {
+        document.getElementById(`slot-input-${num}`).value = '';
+        document.getElementById(`preview-area-slot-${num}`).style.display = 'none';
+        document.getElementById(`slot-label-${num}`).textContent = `Add photo ${num}`;
+        document.getElementById(`remove-slot-${num}`).style.display = 'none';
     }
 
 </script>
