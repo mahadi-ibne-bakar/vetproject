@@ -18,7 +18,30 @@
     <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
     <link rel="icon" type="image/png" href="{% static 'img/favicon.svg' %}">
     <meta name="theme-color" content="#2D6A4F">
-    
+
+    <!-- OpenGraph / Social sharing -->
+    {% block og_title %}
+    <meta property="og:title" content="VetProject — Online Vet Consultations in Bangladesh">
+    {% endblock %}
+
+    {% block og_description %}
+    <meta property="og:description"
+        content="Connect with certified veterinarians in Bangladesh via video call. Expert care for your cats and dogs from home.">
+    {% endblock %}
+
+    {% block og_image %}
+    <meta property="og:image"
+        content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-image.svg' %}">
+    {% endblock %}
+
+    <meta property="og:type"         content="website">
+    <meta property="og:site_name"    content="VetProject">
+    <meta property="og:url"          content="{{ request.build_absolute_uri }}">
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:site"        content="@vetproject">
+    <meta name="description"
+        content="Connect with certified veterinarians in Bangladesh via video call. Expert care for your cats and dogs from home.">
+
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
     <link rel="stylesheet" href="{% static 'css/icons.css' %}">
     

@@ -1,6 +1,21 @@
 {% extends 'base.html' %}
 {% block title %}Dr. {{ vet.user.get_full_name }} — VetProject{% endblock %}
 
+{% block og_title %}
+<meta property="og:title" content="Dr. {{ vet.user.get_full_name }} — VetProject">
+{% endblock %}
+
+{% block og_description %}
+<meta property="og:description"
+      content="{{ vet.bio|truncatechars:160|default:'Book an online consultation with Dr. '|add:vet.user.get_full_name }}">
+{% endblock %}
+
+{% block og_image %}
+{% if vet.profile_photo %}
+<meta property="og:image" content="{{ vet.profile_photo.url }}">
+{% endif %}
+{% endblock %}
+
 {% block content %}
 
 <div style="margin-bottom:16px;">

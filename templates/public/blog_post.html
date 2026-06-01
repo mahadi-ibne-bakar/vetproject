@@ -1,6 +1,23 @@
 {% extends 'base.html' %}
 {% block title %}{{ post.title }} — VetProject{% endblock %}
 
+{% block og_title %}
+<meta property="og:title" content="{{ post.title }} — VetProject">
+{% endblock %}
+
+{% block og_description %}
+<meta property="og:description" content="{{ post.content|truncatechars:160 }}">
+{% endblock %}
+
+{% block og_image %}
+{% if post.featured_image %}
+<meta property="og:image" content="{{ post.featured_image.url }}">
+{% else %}
+<meta property="og:image"
+      content="{{ request.scheme }}://{{ request.get_host }}{% load static %}{% static 'img/og-image.svg' %}">
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div style="max-width:1100px; margin:0 auto;
             display:grid; grid-template-columns:2fr 1fr; gap:32px;
