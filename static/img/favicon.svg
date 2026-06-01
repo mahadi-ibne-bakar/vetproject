@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="50" fill="#2D6A4F"/>
+  <!-- Paw print: main pad -->
+  <ellipse cx="50" cy="62" rx="16" ry="13" fill="white"/>
+  <!-- Four toe beans -->
+  <ellipse cx="30" cy="45" rx="7" ry="9" fill="white"/>
+  <ellipse cx="43" cy="38" rx="7" ry="9" fill="white"/>
+  <ellipse cx="57" cy="38" rx="7" ry="9" fill="white"/>
+  <ellipse cx="70" cy="45" rx="7" ry="9" fill="white"/>
+</svg>
