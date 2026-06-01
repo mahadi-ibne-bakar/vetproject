@@ -1027,6 +1027,14 @@
 
 <!-- ── Scripts ────────────────────────────────────────────────────── -->
 <script>
+    // ── Password visibility toggle ──────────────────────────────
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.querySelector('.ms').textContent = isHidden ? 'visibility_off' : 'visibility';
+    }
     // User menu dropdown
     function toggleUserMenu() {
         const dropdown = document.getElementById('userMenuDropdown');

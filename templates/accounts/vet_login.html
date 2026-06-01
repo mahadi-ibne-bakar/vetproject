@@ -35,9 +35,19 @@
                 </div>
 
                 <div>
-                    <div class="field-wrap">
-                        {{ form.password }}
-                        <label>Password</label>
+                    <div>
+                        <div class="field-wrap" style="position:relative;">
+                            <input type="password" name="password"
+                                id="id_password" placeholder=" " required>
+                            <label>Password</label>
+                            <button type="button"
+                                    onclick="togglePasswordVisibility('id_password', this)"
+                                    style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                                        background:none; border:none; cursor:pointer; padding:4px;
+                                        color:var(--md-on-surface-variant);">
+                                <span class="ms sm">visibility</span>
+                            </button>
+                        </div>
                     </div>
                     {% if form.password.errors %}
                         <p class="field-error">{{ form.password.errors.0 }}</p>

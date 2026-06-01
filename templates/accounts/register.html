@@ -66,9 +66,17 @@
                 </div>
 
                 <div>
-                    <div class="field-wrap">
-                        {{ form.password1 }}
+                    <div class="field-wrap" style="position:relative;">
+                        <input type="password" name="password1"
+                            id="id_password1" placeholder=" " required>
                         <label>Password</label>
+                        <button type="button"
+                                onclick="togglePasswordVisibility('id_password1', this)"
+                                style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                                    background:none; border:none; cursor:pointer; padding:4px;
+                                    color:var(--md-on-surface-variant);">
+                            <span class="ms sm">visibility</span>
+                        </button>
                     </div>
                     <p class="field-hint">At least 8 characters</p>
                     {% if form.password1.errors %}
@@ -77,9 +85,18 @@
                 </div>
 
                 <div>
-                    <div class="field-wrap">
-                        {{ form.password2 }}
+                    <!-- Confirm password field -->
+                    <div class="field-wrap" style="position:relative;">
+                        <input type="password" name="password2"
+                            id="id_password2" placeholder=" " required>
                         <label>Confirm password</label>
+                        <button type="button"
+                                onclick="togglePasswordVisibility('id_password2', this)"
+                                style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                                    background:none; border:none; cursor:pointer; padding:4px;
+                                    color:var(--md-on-surface-variant);">
+                            <span class="ms sm">visibility</span>
+                        </button>
                     </div>
                     {% if form.password2.errors %}
                         <p class="field-error">{{ form.password2.errors.0 }}</p>
