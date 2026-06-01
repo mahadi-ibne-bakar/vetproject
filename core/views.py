@@ -4,6 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings as django_settings
 from accounts.models import User
 from core.models import SiteSettings
+from blog.models import BlogPost, Review
+from django.db.models import Avg, Count, Q
 
 
 def home(request):
@@ -28,6 +30,17 @@ def home(request):
             filter=Q(appointments__status='completed')
         ),
     ).order_by('-consultation_count')[:3]
+
+    # Featured reviews — 4 stars and above, visible, with comments
+    featured_reviews = Review.objects.filter(
+        is_visible=True,
+        rating__gte=4,
+        comment__isnull=False,
+    ).exclude(
+        comment=''
+    ).select_related(
+        'reviewer', 'vet__user', 'appointment__pet'
+    ).order_by('-rating', '-created_at')[:6]
 
     # Recent blog posts
     recent_posts = BlogPost.objects.filter(
@@ -73,6 +86,7 @@ def home(request):
         'how_it_works': how_it_works,
         'featured_vets': featured_vets,
         'recent_posts': recent_posts,
+        'featured_reviews': featured_reviews,
     }
     return render(request, 'home.html', ctx)
 

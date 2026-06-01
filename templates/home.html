@@ -248,6 +248,93 @@
 </div>
 {% endif %}
 
+<!-- ── Reviews ───────────────────────────────────────────────────────────────── -->
+{% if featured_reviews %}
+<div style="margin-bottom:40px;">
+    <div style="display:flex; align-items:center; justify-content:space-between;
+                margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <div>
+            <h2 style="font-size:1.4rem; font-weight:800; margin:0 0 4px;">
+                What Pet Owners Say
+            </h2>
+            <p style="color:var(--md-on-surface-variant); font-weight:600;
+                      font-size:0.9rem; margin:0;">
+                Real experiences from our community
+            </p>
+        </div>
+    </div>
+
+    <div style="display:grid;
+                grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+                gap:16px;">
+        {% for review in featured_reviews %}
+        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                    box-shadow:var(--md-elev-1); padding:22px 24px;
+                    display:flex; flex-direction:column; gap:12px;">
+
+            <!-- Stars -->
+            <div style="display:flex; gap:2px;">
+                {% for i in "12345" %}
+                <span class="ms sm"
+                      style="font-size:18px;
+                             {% if forloop.counter <= review.rating %}
+                             color:#CA8A04;
+                             font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;
+                             {% else %}
+                             color:var(--md-outline-variant);
+                             {% endif %}">
+                    star
+                </span>
+                {% endfor %}
+            </div>
+
+            <!-- Comment -->
+            <p style="font-size:0.925rem; color:var(--md-on-surface);
+                       font-weight:500; line-height:1.6; margin:0;
+                       flex:1;">
+                "{{ review.comment|truncatechars:140 }}"
+            </p>
+
+            <!-- Reviewer and pet info -->
+            <div style="display:flex; align-items:center; gap:10px;
+                        padding-top:10px;
+                        border-top:1px solid var(--md-outline-variant);">
+                <div style="width:36px; height:36px;
+                            border-radius:var(--md-shape-full);
+                            background:var(--md-primary-container);
+                            color:var(--md-on-primary-container);
+                            display:flex; align-items:center;
+                            justify-content:center; font-weight:800;
+                            font-size:0.85rem; flex-shrink:0;">
+                    {{ review.reviewer.first_name|first|upper }}
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:800; font-size:0.875rem;
+                                color:var(--md-on-surface);">
+                        {% if review.appointment.pet %}
+                            {{ review.appointment.pet.name }}'s owner
+                            {{ review.reviewer.first_name }}
+                        {% else %}
+                            {{ review.reviewer.first_name }}
+                        {% endif %}
+                    </div>
+                    <div style="font-size:0.78rem; font-weight:600;
+                                color:var(--md-on-surface-variant); margin-top:1px;">
+                        Consulted Dr. {{ review.vet.user.last_name }}
+                    </div>
+                </div>
+                <div style="font-size:1.5rem; flex-shrink:0; opacity:0.4;">
+                    {% if review.appointment.pet.species == 'cat' %}🐱
+                    {% elif review.appointment.pet.species == 'dog' %}🐶
+                    {% else %}🐾{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {% if recent_posts %}
 <div style="margin-bottom:40px;">
     <div style="display:flex; align-items:center; justify-content:space-between;
