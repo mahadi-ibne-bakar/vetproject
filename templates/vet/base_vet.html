@@ -3,6 +3,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        (function() {
+            const t = localStorage.getItem('vetproject-theme') ||
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Vet Dashboard — VetProject{% endblock %}</title>
@@ -570,6 +577,18 @@
                 </div>
             {% endfor %}
         {% endif %}
+        <!-- Dark mode toggle -->
+        <button onclick="toggleDarkMode()"
+                id="darkModeBtn"
+                title="Toggle dark mode"
+                style="background:none; border:none; cursor:pointer;
+                    padding:6px; border-radius:var(--md-shape-full);
+                    color:var(--md-on-surface-variant);
+                    transition:background 0.15s;"
+                onmouseover="this.style.background='var(--md-surface-variant)'"
+                onmouseout="this.style.background='none'">
+            <span class="ms sm" id="darkModeIcon">dark_mode</span>
+        </button>
 
         <div style="display:flex; align-items:center; gap:8px; font-weight:600;
                     font-size:0.875rem; color:var(--md-on-surface-variant);">
@@ -787,6 +806,29 @@
             msg.textContent = '';
         }
     }
+    // ── Dark mode ────────────────────────────────────────────────
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const icon = document.getElementById('darkModeIcon');
+        if (icon) {
+            icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+        }
+    }
+
+    function toggleDarkMode() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next    = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('vetproject-theme', next);
+        applyTheme(next);
+    }
+
+    // Apply saved theme immediately on load
+    (function() {
+        const saved = localStorage.getItem('vetproject-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = saved || (prefersDark ? 'dark' : 'light');
+        applyTheme(theme);
+    })();
 </script>
 
 {% block extra_js %}{% endblock %}

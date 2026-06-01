@@ -3,6 +3,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        (function() {
+            const t = localStorage.getItem('vetproject-theme') ||
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}VetProject{% endblock %}</title>
@@ -55,6 +62,136 @@
             --md-elev-1: 0 1px 2px rgba(0,0,0,.08), 0 1px 3px 1px rgba(0,0,0,.06);
             --md-elev-2: 0 1px 2px rgba(0,0,0,.1),  0 2px 6px 2px rgba(0,0,0,.08);
             --md-elev-3: 0 4px 8px 3px rgba(0,0,0,.09), 0 1px 3px rgba(0,0,0,.1);
+        }
+        [data-theme="dark"] {
+            --md-primary:              #81C995;
+            --md-on-primary:           #00391A;
+            --md-primary-container:    #005229;
+            --md-on-primary-container: #9EF6B0;
+            --md-secondary:            #B3CCBA;
+            --md-on-secondary:         #1F352A;
+            --md-secondary-container:  #354B3F;
+            --md-on-secondary-container: #CFE9D5;
+
+            --md-surface:              #1A1C1A;
+            --md-surface-1:            #1F231F;
+            --md-surface-variant:      #404943;
+            --md-on-surface:           #E2E3DD;
+            --md-on-surface-variant:   #C1C9C2;
+            --md-outline:              #8B938C;
+            --md-outline-variant:      #404943;
+
+            --md-error:                #FFB4AB;
+            --md-on-error:             #690005;
+            --md-error-container:      #93000A;
+            --md-on-error-container:   #FFDAD6;
+
+            --md-elev-1: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+            --md-elev-2: 0 3px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+            --md-elev-3: 0 6px 12px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3);
+
+            color-scheme: dark;
+        }
+
+        [data-theme="dark"] body {
+            background: #121412;
+        }
+
+        [data-theme="dark"] .top-app-bar {
+            background: #1A1C1A;
+            border-bottom: 1px solid #2D302D;
+        }
+
+        [data-theme="dark"] footer {
+            background: #1A1C1A;
+            border-top: 1px solid #2D302D;
+        }
+
+        [data-theme="dark"] .admin-sidebar,
+        [data-theme="dark"] .vet-sidebar {
+            background: #0F1710;
+        }
+        [data-theme="dark"] .field-wrap input,
+        [data-theme="dark"] .field-wrap textarea,
+        [data-theme="dark"] .field-wrap select {
+            background: var(--md-surface-variant);
+            color: var(--md-on-surface);
+            border-bottom-color: var(--md-outline);
+        }
+
+        [data-theme="dark"] .field-wrap label {
+            color: var(--md-on-surface-variant);
+        }
+
+        [data-theme="dark"] .field-wrap input:focus,
+        [data-theme="dark"] .field-wrap textarea:focus {
+            border-bottom-color: var(--md-primary);
+        }
+
+        [data-theme="dark"] .alert-info {
+            background: rgba(129, 201, 149, 0.15);
+            border-color: rgba(129, 201, 149, 0.3);
+        }
+
+        [data-theme="dark"] .alert-warning {
+            background: rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        [data-theme="dark"] .alert-success {
+            background: rgba(22, 163, 74, 0.15);
+            border-color: rgba(22, 163, 74, 0.3);
+        }
+
+        [data-theme="dark"] .alert-error {
+            background: rgba(255, 180, 171, 0.15);
+            border-color: rgba(255, 180, 171, 0.3);
+        }
+
+        [data-theme="dark"] .btn-filled {
+            background: var(--md-primary);
+            color: var(--md-on-primary);
+        }
+
+        [data-theme="dark"] .btn-outlined {
+            border-color: var(--md-outline);
+            color: var(--md-primary);
+        }
+
+        [data-theme="dark"] .btn-tonal {
+            background: var(--md-primary-container);
+            color: var(--md-on-primary-container);
+        }
+
+        [data-theme="dark"] .status-chip {
+            opacity: 0.9;
+        }
+
+        [data-theme="dark"] .nav-link {
+            color: var(--md-on-surface-variant);
+        }
+
+        [data-theme="dark"] .nav-link:hover {
+            background: var(--md-surface-variant);
+        }
+
+        [data-theme="dark"] .admin-table th {
+            background: #1F231F;
+            color: var(--md-on-surface-variant);
+        }
+
+        [data-theme="dark"] .admin-table tr:hover {
+            background: #1F231F;
+        }
+
+        [data-theme="dark"] .sidebar-link {
+            color: var(--md-on-surface-variant);
+        }
+
+        [data-theme="dark"] .sidebar-link:hover,
+        [data-theme="dark"] .sidebar-link.active {
+            background: rgba(129, 201, 149, 0.15);
+            color: var(--md-primary);
         }
 
         /* ── Base ─────────────────────────────────────────────── */
@@ -638,6 +775,18 @@
             <span class="ms sm">article</span>
             Blog
         </a>
+        <!-- Dark mode toggle -->
+        <button onclick="toggleDarkMode()"
+                id="darkModeBtn"
+                title="Toggle dark mode"
+                style="background:none; border:none; cursor:pointer;
+                    padding:6px; border-radius:var(--md-shape-full);
+                    color:var(--md-on-surface-variant);
+                    transition:background 0.15s;"
+                onmouseover="this.style.background='var(--md-surface-variant)'"
+                onmouseout="this.style.background='none'">
+            <span class="ms sm" id="darkModeIcon">dark_mode</span>
+        </button>
 
         {% if user.is_authenticated %}
             {% if user.is_vet %}
@@ -701,6 +850,7 @@
             <a href="{% url 'accounts:register' %}"
             class="btn btn-filled btn-sm ripple">Get started</a>
         {% endif %}
+
     </nav>
 
     <!-- Hamburger (mobile) -->
@@ -1218,6 +1368,29 @@
             msg.textContent = '';
         }
     }
+    // ── Dark mode ────────────────────────────────────────────────
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const icon = document.getElementById('darkModeIcon');
+        if (icon) {
+            icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+        }
+    }
+
+    function toggleDarkMode() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next    = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('vetproject-theme', next);
+        applyTheme(next);
+    }
+
+    // Apply saved theme immediately on load
+    (function() {
+        const saved = localStorage.getItem('vetproject-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = saved || (prefersDark ? 'dark' : 'light');
+        applyTheme(theme);
+    })();
 </script>
 
 {% block extra_js %}{% endblock %}
