@@ -360,3 +360,22 @@ def send_reminders_endpoint(request):
         'cancelled_ids':   cancelled_ids,
         'checked_at':      now.isoformat(),
     })
+
+def health_check(request):
+    """
+    Simple health check endpoint.
+    Render uses this to verify the service is running.
+    Also checks database connectivity.
+    """
+    from django.db import connection
+    try:
+        connection.ensure_connection()
+        db_ok = True
+    except Exception:
+        db_ok = False
+
+    status = 200 if db_ok else 503
+    return JsonResponse({
+        'status':   'ok' if db_ok else 'degraded',
+        'database': 'ok' if db_ok else 'error',
+    }, status=status)

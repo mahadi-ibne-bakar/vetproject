@@ -232,3 +232,51 @@ if not DEBUG:
 # Whitenoise serves static files directly — no separate static file server needed
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
+
+# ── Logging ────────────────────────────────────────────────────────────────────
+LOGGING = {
+    'version':                  1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {message}',
+            'style':  '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style':  '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class':     'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level':    'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers':  ['console'],
+            'level':     config('DJANGO_LOG_LEVEL', default='WARNING'),
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers':  ['console'],
+            'level':     'ERROR',
+            'propagate': False,
+        },
+        'consultations': {
+            'handlers':  ['console'],
+            'level':     'INFO',
+            'propagate': False,
+        },
+        'core': {
+            'handlers':  ['console'],
+            'level':     'INFO',
+            'propagate': False,
+        },
+    },
+}
