@@ -567,7 +567,7 @@
             color: var(--md-on-surface-variant);
             font-weight: 600;
         }
-        
+
         .footer-copyright {
             display: flex;
             flex-wrap: wrap;
@@ -578,6 +578,12 @@
             .footer-copyright {
                 flex-direction: column;
                 gap: 2px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .blog-grid {
+                grid-template-columns: 1fr !important;
             }
         }
 

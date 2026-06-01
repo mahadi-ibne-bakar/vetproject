@@ -57,31 +57,48 @@
                            font-weight:500; line-height:1.7; margin:0 0 16px;">
                     {{ featured.content|truncatechars:200 }}
                 </p>
-                <div style="display:flex; align-items:center; gap:10px;
-                            font-size:0.85rem; font-weight:600;
-                            color:var(--md-on-surface-variant);">
-                    <div style="width:32px; height:32px;
-                                border-radius:var(--md-shape-full);
-                                background:var(--md-primary-container);
-                                color:var(--md-on-primary-container);
-                                display:flex; align-items:center;
-                                justify-content:center; font-weight:800;
-                                font-size:0.8rem; flex-shrink:0;">
-                        {{ featured.author.first_name|first|upper }}
+                <div style="margin-top:16px;">
+                    <!-- Row 1: Author + Read article -->
+                    <div style="display:flex; align-items:center;
+                                justify-content:space-between; gap:12px;
+                                margin-bottom:8px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                            <div style="width:32px; height:32px;
+                                        border-radius:var(--md-shape-full);
+                                        background:var(--md-primary-container);
+                                        color:var(--md-on-primary-container);
+                                        display:flex; align-items:center;
+                                        justify-content:center; font-weight:800;
+                                        font-size:0.8rem; flex-shrink:0;">
+                                {{ featured.author.first_name|first|upper }}
+                            </div>
+                            <span style="font-weight:700; font-size:0.875rem;
+                                        color:var(--md-on-surface); white-space:nowrap;">
+                                Dr. {{ featured.author.get_full_name }}
+                            </span>
+                        </div>
+                        <span style="color:var(--md-primary); font-weight:700;
+                                    font-size:0.875rem; display:flex; align-items:center;
+                                    gap:4px; white-space:nowrap; flex-shrink:0;">
+                            Read article
+                            <span class="ms sm">arrow_forward</span>
+                        </span>
                     </div>
-                    Dr. {{ featured.author.get_full_name }}
-                    <span style="color:var(--md-outline);">·</span>
-                    {{ featured.published_at|date:"F j, Y" }}
-                    <span style="color:var(--md-outline);">·</span>
-                    <span style="display:inline-flex; align-items:center; gap:3px;">
-                        <span class="ms sm" style="font-size:15px;">visibility</span>
-                        {{ featured.view_count }} view{{ featured.view_count|pluralize }}
-                    </span>
-                    <span style="margin-left:auto; color:var(--md-primary);
-                                 font-weight:700; display:flex; align-items:center; gap:4px;">
-                        Read article
-                        <span class="ms sm">arrow_forward</span>
-                    </span>
+
+                    <!-- Row 2: Date + views -->
+                    <div style="display:flex; align-items:center; gap:8px;
+                                font-size:0.82rem; font-weight:600;
+                                color:var(--md-on-surface-variant);">
+                        <span style="white-space:nowrap;">
+                            {{ featured.published_at|date:"F j, Y" }}
+                        </span>
+                        <span style="color:var(--md-outline);">·</span>
+                        <span style="display:inline-flex; align-items:center;
+                                    gap:3px; white-space:nowrap;">
+                            <span class="ms sm" style="font-size:15px;">visibility</span>
+                            {{ featured.view_count }} view{{ featured.view_count|pluralize }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
