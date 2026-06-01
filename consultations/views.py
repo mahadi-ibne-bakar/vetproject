@@ -1110,6 +1110,8 @@ def get_available_slots(request, vet_id):
 
 @login_required_user
 def submit_payment(request, appointment_id):
+    from core.ratelimit import RateLimiter
+
     appointment = get_object_or_404(
         Appointment,
         id=appointment_id,
@@ -1119,37 +1121,49 @@ def submit_payment(request, appointment_id):
     settings = SiteSettings.get()
 
     if request.method == 'POST':
+        # Rate limit: max 5 payment attempts per hour per user
+        limiter = RateLimiter(
+            request,
+            key=f'payment_submit_{appointment_id}',
+            limit=5,
+            window=3600,
+        )
+
+        if limiter.is_exceeded():
+            messages.error(
+                request,
+                "Too many payment attempts. Please wait an hour before trying again. "
+                "If you believe this is an error, contact support."
+            )
+            return redirect(
+                'consultations:submit_payment',
+                appointment_id=appointment_id
+            )
+
         bkash_number   = request.POST.get('bkash_number', '').strip()
         transaction_id = request.POST.get('transaction_id', '').strip().upper()
 
         errors = []
-
-        # Validate bKash number — must be 11 digits starting with 01
         import re
         if not re.match(r'^01[0-9]{9}$', bkash_number):
             errors.append(
                 "Invalid bKash number. Must be 11 digits starting with 01."
             )
-
-        # Validate transaction ID — bKash TrxIDs are alphanumeric, 8-12 chars
         if not re.match(r'^[A-Z0-9]{8,12}$', transaction_id):
             errors.append(
                 "Invalid transaction ID. "
-                "bKash transaction IDs are 8–12 characters (letters and numbers)."
+                "bKash transaction IDs are 8–12 characters."
             )
-
-        # Check transaction ID not already used
         if Payment.objects.filter(transaction_id=transaction_id).exists():
             errors.append(
-                "This transaction ID has already been submitted. "
-                "If this is a mistake, please contact support."
+                "This transaction ID has already been submitted."
             )
 
         if errors:
+            limiter.increment()  # Count failed attempts
             for e in errors:
                 messages.error(request, e)
         else:
-            # Create the pending payment record
             Payment.objects.create(
                 appointment=appointment,
                 payment_type=Payment.PaymentType.BOOKING,
@@ -1158,19 +1172,21 @@ def submit_payment(request, appointment_id):
                 transaction_id=transaction_id,
                 status=Payment.Status.PENDING,
             )
+            limiter.reset()  # Clear on success
             messages.success(
                 request,
-                "Payment submitted. We'll verify it shortly and confirm your booking."
+                "Payment submitted. "
+                "We'll verify it shortly and confirm your booking."
             )
-            return redirect('consultations:payment_done', appointment_id=appointment.id)
+            return redirect(
+                'consultations:payment_done',
+                appointment_id=appointment.id
+            )
 
-    # Get the bKash number to display from site settings
-    # We'll store it as a simple setting — for now hardcode and we'll
-    # add it to SiteSettings in a moment
     ctx = {
-        'appointment': appointment,
-        'vet': appointment.vet,
-        'booking_fee': settings.booking_fee,
+        'appointment':          appointment,
+        'vet':                  appointment.vet,
+        'booking_fee':          settings.booking_fee,
         'bkash_merchant_number': getattr(settings, 'bkash_merchant_number', ''),
     }
     return render(request, 'user/submit_payment.html', ctx)
@@ -1190,6 +1206,8 @@ def payment_done(request, appointment_id):
 
 @login_required_user
 def submit_second_payment(request, appointment_id):
+    from core.ratelimit import RateLimiter
+
     appointment = get_object_or_404(
         Appointment,
         id=appointment_id,
@@ -1198,22 +1216,37 @@ def submit_second_payment(request, appointment_id):
     )
 
     if request.method == 'POST':
-        bkash_number   = request.POST.get('bkash_number', '').strip()
-        transaction_id = request.POST.get('transaction_id', '').strip().upper()
+        limiter = RateLimiter(
+            request,
+            key=f'second_payment_{appointment_id}',
+            limit=5,
+            window=3600,
+        )
+
+        if limiter.is_exceeded():
+            messages.error(
+                request,
+                "Too many payment attempts. Please wait an hour before trying again."
+            )
+            return redirect(
+                'consultations:submit_second_payment',
+                appointment_id=appointment_id
+            )
 
         import re
         errors = []
+        bkash_number   = request.POST.get('bkash_number', '').strip()
+        transaction_id = request.POST.get('transaction_id', '').strip().upper()
 
         if not re.match(r'^01[0-9]{9}$', bkash_number):
             errors.append("Invalid bKash number.")
-
         if not re.match(r'^[A-Z0-9]{8,12}$', transaction_id):
             errors.append("Invalid transaction ID.")
-
         if Payment.objects.filter(transaction_id=transaction_id).exists():
             errors.append("This transaction ID has already been submitted.")
 
         if errors:
+            limiter.increment()
             for e in errors:
                 messages.error(request, e)
         else:
@@ -1225,6 +1258,7 @@ def submit_second_payment(request, appointment_id):
                 transaction_id=transaction_id,
                 status=Payment.Status.PENDING,
             )
+            limiter.reset()
             messages.success(
                 request,
                 "Payment submitted. "
@@ -1237,8 +1271,8 @@ def submit_second_payment(request, appointment_id):
 
     settings = SiteSettings.get()
     ctx = {
-        'appointment': appointment,
-        'consultation_fee': appointment.vet.consultation_fee,
+        'appointment':          appointment,
+        'consultation_fee':     appointment.vet.consultation_fee,
         'bkash_merchant_number': getattr(settings, 'bkash_merchant_number', ''),
     }
     return render(request, 'user/submit_second_payment.html', ctx)

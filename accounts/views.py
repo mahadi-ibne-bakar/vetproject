@@ -56,8 +56,26 @@ def user_login(request):
     """
     if request.user.is_authenticated:
         return redirect('core:home')
+    
+    from core.ratelimit import RateLimiter
 
     if request.method == 'POST':
+        # Rate limit: 10 login attempts per 5 minutes per IP
+        limiter = RateLimiter(
+            request,
+            key='login_attempt',
+            limit=10,
+            window=300,
+            by_user=False,  # Use IP since user isn't logged in yet
+        )
+
+        if limiter.is_exceeded():
+            messages.error(
+                request,
+                "Too many login attempts. Please wait 5 minutes before trying again."
+            )
+            return render(request, 'accounts/login.html', {})
+        
         form = UserLoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
@@ -75,6 +93,7 @@ def user_login(request):
             messages.success(request, f"Welcome back, {user.first_name}!")
             return redirect(next_url)
         else:
+            limiter.increment()
             messages.error(request, "Invalid email or password.")
     else:
         form = UserLoginForm()
