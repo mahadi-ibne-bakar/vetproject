@@ -77,18 +77,22 @@
 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
             gap:20px;">
     {% for vet in vets %}
-    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
-                box-shadow:var(--md-elev-1); overflow:hidden;
-                transition:box-shadow 0.2s; cursor:pointer;"
-         onmouseover="this.style.boxShadow='var(--md-elev-3)'"
-         onmouseout="this.style.boxShadow='var(--md-elev-1)'">
+    <a href="{% url 'consultations:vet_detail' vet.id %}"
+    style="text-decoration:none; display:block;
+            background:var(--md-surface); border-radius:var(--md-shape-xl);
+            box-shadow:var(--md-elev-1); overflow:hidden;
+            transition:box-shadow 0.2s, transform 0.15s;"
+    onmouseover="this.style.boxShadow='var(--md-elev-3)';
+                    this.style.transform='translateY(-2px)'"
+    onmouseout="this.style.boxShadow='var(--md-elev-1)';
+                this.style.transform='translateY(0)'">
 
         <!-- Card header -->
         <div style="background:var(--md-primary-container); padding:24px 20px 16px;
                     display:flex; align-items:center; gap:16px;">
             {% if vet.profile_photo %}
                 <img src="{{ vet.profile_photo.url }}" alt="{{ vet }}"
-                     style="width:64px; height:64px; border-radius:var(--md-shape-full);
+                    style="width:64px; height:64px; border-radius:var(--md-shape-full);
                             object-fit:cover;
                             border:3px solid var(--md-on-primary-container);">
             {% else %}
@@ -146,7 +150,7 @@
 
             {% if vet.bio %}
             <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
-                      font-weight:500; line-height:1.5; margin:0 0 14px;">
+                    font-weight:500; line-height:1.5; margin:0 0 14px;">
                 {{ vet.bio|truncatechars:100 }}
             </p>
             {% endif %}
@@ -154,20 +158,23 @@
             <div style="display:flex; align-items:center; justify-content:space-between;">
                 <div>
                     <span style="font-size:0.78rem; color:var(--md-on-surface-variant);
-                                 font-weight:600;">Consultation fee</span>
+                                font-weight:600;">Consultation fee</span>
                     <div style="font-weight:800; font-size:1rem;
                                 color:var(--md-primary);">
                         ৳{{ vet.consultation_fee }}
                     </div>
                 </div>
-                <a href="{% url 'consultations:vet_detail' vet.id %}"
-                   class="btn btn-filled"
-                   style="text-decoration:none;">
+                <span style="display:inline-flex; align-items:center; gap:6px;
+                            padding:10px 20px; border-radius:var(--md-shape-full);
+                            background:var(--md-primary); color:#fff;
+                            font-family:'Nunito',sans-serif; font-weight:700;
+                            font-size:0.875rem;">
                     <span class="ms sm">person</span> View Profile
-                </a>
+                </span>
             </div>
         </div>
-    </div>
+
+    </a>
     {% endfor %}
 </div>
 
