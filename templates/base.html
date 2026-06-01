@@ -1450,6 +1450,12 @@
         const theme = saved || (prefersDark ? 'dark' : 'light');
         applyTheme(theme);
     })();
+    // Add lazy loading to all images that don't already have it
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('img:not([loading])').forEach(function(img) {
+            img.setAttribute('loading', 'lazy');
+        });
+    });
 </script>
 
 {% block extra_js %}{% endblock %}

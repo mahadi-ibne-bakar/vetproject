@@ -32,6 +32,7 @@
                         text-align:center;">
                 {% if pet.photo %}
                     <img src="{{ pet.photo.url }}"
+                         loading="lazy"
                          style="width:72px; height:72px;
                                 border-radius:var(--md-shape-full);
                                 object-fit:cover;

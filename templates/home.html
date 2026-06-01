@@ -171,6 +171,7 @@
                         padding:20px; display:flex; align-items:center; gap:14px;">
                 {% if vet.profile_photo %}
                     <img src="{{ vet.profile_photo.url }}"
+                         loading="lazy"
                          style="width:56px; height:56px;
                                 border-radius:var(--md-shape-full);
                                 object-fit:cover;
@@ -366,6 +367,7 @@
 
             {% if post.featured_image %}
             <img src="{{ post.featured_image.url }}" alt="{{ post.title }}"
+                 loading="lazy"
                  style="width:100%; height:160px; object-fit:cover;">
             {% else %}
             <div style="width:100%; height:100px;

@@ -92,6 +92,7 @@
                     display:flex; align-items:center; gap:16px;">
             {% if vet.profile_photo %}
                 <img src="{{ vet.profile_photo.url }}" alt="{{ vet }}"
+                    loading="lazy"
                     style="width:64px; height:64px; border-radius:var(--md-shape-full);
                             object-fit:cover;
                             border:3px solid var(--md-on-primary-container);">
