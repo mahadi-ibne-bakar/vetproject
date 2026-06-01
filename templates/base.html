@@ -567,6 +567,19 @@
             color: var(--md-on-surface-variant);
             font-weight: 600;
         }
+        
+        .footer-copyright {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 6px;
+        }
+
+        @media (max-width: 600px) {
+            .footer-copyright {
+                flex-direction: column;
+                gap: 2px;
+            }
+        }
 
         /* ── Mobile nav ───────────────────────────────────────── */
         .mobile-menu {
@@ -880,6 +893,18 @@
             {% else %}
                 <span style="font-weight:800; color:var(--md-primary);
                             font-size:1.1rem;">VetProject</span>
+                <!-- Dark mode toggle -->
+                <button onclick="toggleDarkMode()"
+                        id="darkModeBtn"
+                        title="Toggle dark mode"
+                        style="background:none; border:none; cursor:pointer;
+                            padding:6px; border-radius:var(--md-shape-full);
+                            color:var(--md-on-surface-variant);
+                            transition:background 0.15s;"
+                        onmouseover="this.style.background='var(--md-surface-variant)'"
+                        onmouseout="this.style.background='none'">
+                    <span class="ms sm" id="darkModeIcon">dark_mode</span>
+                </button>
                 <button onclick="closeMobileMenu()"
                         style="background:none; border:none; cursor:pointer;">
                     <span class="ms">close</span>
@@ -1152,11 +1177,12 @@
                     border-top:1px solid var(--md-outline-variant);
                     display:flex; justify-content:space-between;
                     align-items:center; flex-wrap:wrap; gap:12px;">
-            <div style="font-size:0.82rem; font-weight:600;
+            <div class="footer-copyright"
+                style="font-size:0.82rem; font-weight:600;
                         color:var(--md-on-surface-variant);">
-                © 2026 VetProject. All rights reserved.
-                Made with ❤️ for pets in Bangladesh.
-                Developed by Idaham Productions.
+                <span style="white-space:nowrap;">© 2026 VetProject. All rights reserved.</span>
+                <span style="white-space:nowrap;">Made with ❤️ for pets in Bangladesh.</span>
+                <span style="white-space:nowrap;">Developed by Idaham Productions.</span>
             </div>
             <div style="display:flex; gap:16px;">
                 <a href="{% url 'accounts:login' %}"
