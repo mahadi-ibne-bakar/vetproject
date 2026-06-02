@@ -57,7 +57,7 @@ class VetProfileSitemap(Sitemap):
         return VetProfile.objects.filter(
             application_status='approved',
             is_active=True,
-        ).select_related('user')
+        ).select_related('user').order_by('id')
 
     def lastmod(self, obj):
         return obj.updated_at if hasattr(obj, 'updated_at') else None

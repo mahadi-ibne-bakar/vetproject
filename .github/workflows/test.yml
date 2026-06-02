@@ -1,0 +1,64 @@
+name: VetProject Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Set up environment variables
+        run: |
+          echo "SECRET_KEY=ci-test-secret-key-not-used-in-production-$(openssl rand -hex 20)" >> $GITHUB_ENV
+          echo "DEBUG=False" >> $GITHUB_ENV
+          echo "DATABASE_URL=sqlite:///test_db.sqlite3" >> $GITHUB_ENV
+          echo "EMAIL_HOST_USER=test@test.com" >> $GITHUB_ENV
+          echo "EMAIL_HOST_PASSWORD=testpassword" >> $GITHUB_ENV
+          echo "SUPABASE_URL=" >> $GITHUB_ENV
+          echo "SUPABASE_S3_ACCESS_KEY=" >> $GITHUB_ENV
+          echo "SUPABASE_S3_SECRET_KEY=" >> $GITHUB_ENV
+          echo "SUPABASE_BUCKET=test-bucket" >> $GITHUB_ENV
+          echo "REMINDER_SECRET=test-secret" >> $GITHUB_ENV
+
+      - name: Run Django system check
+        run: uv run python manage.py check --settings=vetproject.settings_test
+
+      - name: Check for missing migrations
+        run: |
+          uv run python manage.py migrate \
+            --settings=vetproject.settings_test \
+            --run-syncdb
+
+      - name: Run tests
+        run: |
+          uv run python manage.py test \
+            accounts.tests \
+            consultations.tests \
+            core.tests \
+            --settings=vetproject.settings_test \
+            --verbosity=2
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_db.sqlite3
