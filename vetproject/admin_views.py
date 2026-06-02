@@ -64,7 +64,7 @@ def dashboard_home(request):
     # Recent consultations (last 5)
     recent_consultations = Appointment.objects.select_related(
         'user', 'vet__user', 'pet'
-    ).order_by('-created_at')[:5]
+    ).order_by('-created_at')[:10]
 
     # Consultations this week vs last week
     this_week = Appointment.objects.filter(
@@ -392,7 +392,7 @@ def consultation_list(request):
     search = request.GET.get('search', '').strip()
 
     base_qs = Appointment.objects.select_related(
-        'user', 'vet__user', 'pet'
+        'user', 'vet__user', 'pet', 'meet_link'
     ).order_by('-date', '-start_time')
 
     if search:
@@ -530,12 +530,11 @@ def cancel_consultation(request, appointment_id):
 def payment_list(request):
     status_filter = request.GET.get('status', 'pending')
 
-    payments = Payment.objects.filter(
-        status=status_filter
-    ).select_related(
+    payments = Payment.objects.select_related(
         'appointment__user',
-        'appointment__pet',
         'appointment__vet__user',
+        'appointment__pet',
+        'verified_by',
     ).order_by('-created_at')
 
     ctx = {

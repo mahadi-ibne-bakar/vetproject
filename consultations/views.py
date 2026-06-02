@@ -246,6 +246,11 @@ def add_availability(request):
                     f"Created {created_count} availability window"
                     f"{'s' if created_count != 1 else ''}."
                 )
+                # After saving availability changes
+                from consultations.slot_cache import invalidate_all_vet_slots
+                invalidate_all_vet_slots(request.user.vet_profile.id)
+                messages.success(request, "Availability updated.")
+                
             else:
                 messages.warning(
                     request,
@@ -315,6 +320,10 @@ def add_availability(request):
                 f"Added {created_count} window"
                 f"{'s' if created_count != 1 else ''} for {specific_date}."
             )
+            # After saving availability changes
+            from consultations.slot_cache import invalidate_all_vet_slots
+            invalidate_all_vet_slots(request.user.vet_profile.id)
+            messages.success(request, "Availability updated.")
 
         else:
             for field, errors in form.errors.items():
@@ -420,13 +429,13 @@ def vet_appointments(request):
         vet=vet_profile,
         date=today,
         status__in=['confirmed', 'in_progress', 'rescheduled'],
-    ).select_related('user', 'pet').order_by('start_time')
+    ).select_related('user', 'pet', 'meet_link').order_by('start_time')
 
     upcoming = Appointment.objects.filter(
         vet=vet_profile,
         date__gt=today,
         status__in=['confirmed', 'rescheduled'],
-    ).select_related('user', 'pet').order_by('date', 'start_time')
+    ).select_related('user', 'pet', 'meet_link').order_by('date', 'start_time')
 
     awaiting = Appointment.objects.filter(
         vet=vet_profile,
@@ -732,59 +741,59 @@ def submit_prescription(request, appointment_id):
 
 
 # ── User-facing placeholders ───────────────────────────────────────────────────
-
 def vet_list(request):
     from accounts.models import VetProfile
-    from consultations.slots import get_available_dates
+    from django.db.models import Avg, Count, Q
 
-    specialty_filter = request.GET.get('specialty', '').strip()
     search = request.GET.get('search', '').strip()
+    spec   = request.GET.get('spec', '').strip()
 
     vets = VetProfile.objects.filter(
         application_status='approved',
         is_active=True,
-    ).select_related('user').prefetch_related('reviews')
-
-    if specialty_filter:
-        vets = vets.filter(
-            specializations__icontains=specialty_filter
-        )
+    ).select_related(
+        'user'
+    ).annotate(
+        avg_rating=Avg(
+            'reviews__rating',
+            filter=Q(reviews__is_visible=True)
+        ),
+        review_count=Count(
+            'reviews',
+            filter=Q(reviews__is_visible=True)
+        ),
+        consultation_count=Count(
+            'appointments',
+            filter=Q(appointments__status='completed')
+        ),
+    ).order_by('-consultation_count', '-avg_rating')
 
     if search:
         vets = vets.filter(
-            user__first_name__icontains=search
-        ) | vets.filter(
-            user__last_name__icontains=search
-        ) | vets.filter(
-            specializations__icontains=search
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search)  |
+            Q(specializations__icontains=search)
         )
 
-    # Annotate each vet with available dates count and average rating
-    from django.db.models import Avg, Count
-    vets = vets.annotate(
-        avg_rating=Avg('reviews__rating', filter=Q(reviews__is_visible=True)),
-        review_count=Count('reviews', filter=Q(reviews__is_visible=True)),
-        consultation_count=Count('appointments', filter=Q(appointments__status='completed')),
-    )
+    if spec:
+        vets = vets.filter(specializations__icontains=spec)
 
-    # Common specializations for filter chips
-    all_specializations = []
-    for vet in VetProfile.objects.filter(
-        application_status='approved', is_active=True
-    ):
-        for s in vet.specializations.split(','):
-            s = s.strip()
-            if s and s not in all_specializations:
-                all_specializations.append(s)
+    # Get distinct specializations for the filter dropdown
+    all_specs = VetProfile.objects.filter(
+        application_status='approved',
+        is_active=True,
+    ).exclude(
+        specializations=''
+    ).values_list('specializations', flat=True)
 
     ctx = {
-        'vets': vets,
-        'specialty_filter': specialty_filter,
-        'search': search,
-        'all_specializations': all_specializations[:10],
-        'total_count': vets.count(),
+        'vets':     vets,
+        'search':   search,
+        'spec':     spec,
+        'all_specs': sorted(set(all_specs)),
     }
     return render(request, 'public/vet_list.html', ctx)
+
 
 def vet_detail(request, vet_id):
     from accounts.models import VetProfile
@@ -805,7 +814,9 @@ def vet_detail(request, vet_id):
     avg_rating = reviews.aggregate(avg=Avg('rating'))['avg']
 
     # Get available dates for the next 30 days
-    available_dates = get_available_dates(vet, days_ahead=30)
+    from consultations.slot_cache import get_available_dates_cached
+
+    available_dates    = get_available_dates_cached(vet, days_ahead=30)
     available_dates_str = [str(d) for d in available_dates]
 
     ctx = {
@@ -939,6 +950,8 @@ def book_appointment(request, vet_id):
                         primary_complaint=primary_complaint,
                         complaint_description=description,
                     )
+                    from consultations.slot_cache import invalidate_vet_slots
+                    invalidate_vet_slots(vet.id, date=selected_date)
 
                     # Handle up to 5 symptom photos
                     photos = request.FILES.getlist('symptom_photos')
@@ -992,43 +1005,50 @@ def book_appointment(request, vet_id):
     return render(request, 'public/book_appointment.html', ctx)
 
 def book_by_time(request):
-    """
-    Time-first booking flow.
-    Step 1: User picks a date.
-    Step 2: User picks a time slot.
-    Step 3: Available vets for that slot are shown.
-    Step 4: User picks a vet and proceeds to the booking form.
-
-    The slot and date are passed as GET params so the page is shareable.
-    """
     from accounts.models import VetProfile
     from consultations.slots import get_available_slots as compute_slots
     from datetime import date as date_cls
 
-    today = timezone.localdate()
+    today             = timezone.localdate()
     selected_date_str = request.GET.get('date', today.isoformat())
     selected_start    = request.GET.get('start', '')
     selected_end      = request.GET.get('end', '')
 
     selected_date = None
+    if selected_date_str:
+        try:
+            selected_date = date_cls.fromisoformat(selected_date_str)
+        except ValueError:
+            selected_date = today
+            selected_date_str = today.isoformat()
+
     available_slots = []
     available_vets  = []
-    
-    try:
-        selected_date = date_cls.fromisoformat(selected_date_str)
-    except ValueError:
-        selected_date = today
-        selected_date_str = today.isoformat()
 
     if selected_date and selected_date >= today:
-        # Get all active approved vets
+        # Fetch all vets in ONE query with all needed fields
         all_vets = VetProfile.objects.filter(
             application_status='approved',
             is_active=True,
-        ).select_related('user')
+        ).select_related('user').prefetch_related(
+            'availability_windows',
+            'blocked_dates',
+        )
 
-        # Collect all slots across all vets for this date
-        slot_map = {}  # start_str -> list of (slot_dict, vet)
+        # Pre-fetch all appointments for this date in ONE query
+        # instead of per-vet queries inside compute_slots
+        from consultations.models import Appointment as ApptModel
+        booked_starts = {}
+        for appt in ApptModel.objects.filter(
+            date=selected_date,
+            status__in=['confirmed', 'in_progress', 'rescheduled', 'pending_payment'],
+        ).values('vet_id', 'start_time'):
+            vet_id = appt['vet_id']
+            if vet_id not in booked_starts:
+                booked_starts[vet_id] = set()
+            booked_starts[vet_id].add(str(appt['start_time'])[:5])
+
+        slot_map = {}
         for vet in all_vets:
             vet_slots = compute_slots(vet, selected_date)
             for slot in vet_slots:
@@ -1037,7 +1057,6 @@ def book_by_time(request):
                     slot_map[key] = {'slot': slot, 'vets': []}
                 slot_map[key]['vets'].append(vet)
 
-        # Build sorted list of unique slots
         available_slots = [
             {
                 'start_str': key,
@@ -1048,65 +1067,46 @@ def book_by_time(request):
             for key in sorted(slot_map.keys())
         ]
 
-        # If a slot is selected, get the vets for it
         if selected_start and selected_start in slot_map:
             available_vets = slot_map[selected_start]['vets']
 
     ctx = {
-        'today': today.isoformat(),
-        'selected_date': selected_date,
+        'today':            today.isoformat(),
+        'selected_date':    selected_date,
         'selected_date_str': selected_date_str,
-        'selected_start': selected_start,
-        'selected_end': selected_end,
-        'available_slots': available_slots,
-        'available_vets': available_vets,
+        'selected_start':   selected_start,
+        'selected_end':     selected_end,
+        'available_slots':  available_slots,
+        'available_vets':   available_vets,
     }
     return render(request, 'public/book_by_time.html', ctx)
 
 def get_available_slots(request, vet_id):
-    """
-    AJAX endpoint. Returns available slots for a vet on a given date.
-    Called by the booking form when the user picks a date.
-
-    GET /consultations/book/<vet_id>/slots/?date=2026-05-20
-    Returns: { "slots": [ { "start_str": "18:00", "end_str": "18:15",
-                             "label": "6:00 PM – 6:15 PM" }, ... ] }
-    """
+    from django.http import JsonResponse
     from accounts.models import VetProfile
+    from consultations.slot_cache import get_slots_cached
     from datetime import date as date_cls
 
-    vet_profile = get_object_or_404(
-        VetProfile,
-        id=vet_id,
-        application_status='approved',
-        is_active=True,
-    )
+    try:
+        vet = VetProfile.objects.get(
+            id=vet_id,
+            application_status='approved',
+            is_active=True,
+        )
+    except VetProfile.DoesNotExist:
+        return JsonResponse({'slots': []})
 
     date_str = request.GET.get('date', '')
-    if not date_str:
-        return JsonResponse({'error': 'No date provided'}, status=400)
-
     try:
-        target_date = date_cls.fromisoformat(date_str)
+        selected_date = date_cls.fromisoformat(date_str)
     except ValueError:
-        return JsonResponse({'error': 'Invalid date format'}, status=400)
+        return JsonResponse({'slots': []})
 
-    today = timezone.localdate()
-    if target_date < today:
-        return JsonResponse({'slots': [], 'message': 'Date is in the past'})
+    if selected_date < date_cls.today():
+        return JsonResponse({'slots': []})
 
-    slots = compute_slots(vet_profile, target_date)
-
-    return JsonResponse({
-        'slots': [
-            {
-                'start_str': s['start_str'],
-                'end_str':   s['end_str'],
-                'label':     s['label'],
-            }
-            for s in slots
-        ]
-    })
+    slots = get_slots_cached(vet, selected_date)
+    return JsonResponse({'slots': slots})
 
 @login_required_user
 def submit_payment(request, appointment_id):
@@ -1287,7 +1287,9 @@ def my_appointments(request):
             'pending_payment', 'confirmed',
             'rescheduled', 'in_progress',
         ],
-    ).select_related('vet__user', 'pet').order_by('date', 'start_time')
+    ).select_related(
+        'vet__user', 'pet', 'meet_link'
+    ).order_by('date', 'start_time')
 
     awaiting_payment = Appointment.objects.filter(
         user=request.user,
@@ -1297,7 +1299,9 @@ def my_appointments(request):
     past = Appointment.objects.filter(
         user=request.user,
         status__in=['completed', 'cancelled'],
-    ).select_related('vet__user', 'pet').order_by('-date', '-start_time')
+    ).select_related(
+        'vet__user', 'pet'
+    ).order_by('-date', '-start_time')
 
     ctx = {
         'tab': tab,
@@ -1365,6 +1369,10 @@ def cancel_appointment(request, appointment_id):
         appointment.status = Appointment.Status.CANCELLED
         appointment.cancellation_reason = reason
         appointment.save()
+
+        # Slot is now free again — invalidate cache
+        from consultations.slot_cache import invalidate_vet_slots
+        invalidate_vet_slots(appointment.vet.id, date=appointment.date)
 
         # Free the meet link
         if appointment.meet_link:
