@@ -25,6 +25,10 @@ def home(request):
             'reviews__rating',
             filter=Q(reviews__is_visible=True)
         ),
+        review_count=Count(
+            'reviews',
+            filter=Q(reviews__is_visible=True)
+        ),
         consultation_count=Count(
             'appointments',
             filter=Q(appointments__status='completed')

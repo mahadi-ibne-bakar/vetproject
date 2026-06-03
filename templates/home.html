@@ -161,52 +161,58 @@
                 grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
                 gap:20px;">
         {% for vet in featured_vets %}
-        <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
-                    box-shadow:var(--md-elev-1); overflow:hidden;
-                    transition:box-shadow 0.2s;"
-             onmouseover="this.style.boxShadow='var(--md-elev-3)'"
-             onmouseout="this.style.boxShadow='var(--md-elev-1)'">
+        <a href="{% url 'consultations:vet_detail' vet.id %}"
+        style="text-decoration:none; display:block;
+                background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); overflow:hidden;
+                transition:box-shadow 0.2s, transform 0.15s;"
+        onmouseover="this.style.boxShadow='var(--md-elev-3)';
+                        this.style.transform='translateY(-2px)'"
+        onmouseout="this.style.boxShadow='var(--md-elev-1)';
+                    this.style.transform='translateY(0)'">
 
-            <div style="background:var(--md-primary-container);
-                        padding:20px; display:flex; align-items:center; gap:14px;">
+            <!-- Card header -->
+            <div style="background:var(--md-primary-container); padding:24px 20px 16px;
+                        display:flex; align-items:center; gap:16px;">
                 {% if vet.profile_photo %}
-                    <img src="{{ vet.profile_photo.url }}"
-                         loading="lazy"
-                         style="width:56px; height:56px;
+                    <img src="{{ vet.profile_photo.url }}" alt="{{ vet }}"
+                        loading="lazy"
+                        style="width:64px; height:64px;
                                 border-radius:var(--md-shape-full);
                                 object-fit:cover;
-                                border:3px solid var(--md-primary);">
+                                border:3px solid var(--md-on-primary-container);">
                 {% else %}
-                    <div style="width:56px; height:56px;
+                    <div style="width:64px; height:64px;
                                 border-radius:var(--md-shape-full);
                                 background:var(--md-primary); color:#fff;
                                 display:flex; align-items:center;
                                 justify-content:center; font-weight:800;
-                                font-size:1.2rem; flex-shrink:0;">
+                                font-size:1.4rem; flex-shrink:0;">
                         {{ vet.user.first_name|first|upper }}
                     </div>
                 {% endif %}
                 <div>
-                    <div style="font-weight:800; font-size:1rem;
+                    <div style="font-weight:800; font-size:1.05rem;
                                 color:var(--md-on-primary-container);">
                         Dr. {{ vet.user.get_full_name }}
                     </div>
                     <div style="font-size:0.82rem; font-weight:600;
                                 color:var(--md-primary); margin-top:3px;">
-                        {{ vet.specializations|truncatechars:35|default:"General Practice" }}
+                        {{ vet.specializations|truncatechars:40|default:"General Practice" }}
                     </div>
                 </div>
             </div>
 
+            <!-- Card body -->
             <div style="padding:16px 20px;">
-                <div style="display:flex; gap:16px; margin-bottom:14px;
-                            flex-wrap:wrap;">
+                <div style="display:flex; gap:16px; margin-bottom:12px; flex-wrap:wrap;">
                     <div style="display:flex; align-items:center; gap:5px;
                                 font-size:0.82rem; font-weight:600;
                                 color:var(--md-on-surface-variant);">
                         <span class="ms sm filled" style="color:#CA8A04;">star</span>
                         {% if vet.avg_rating %}
                             {{ vet.avg_rating|floatformat:1 }}
+                            <span style="opacity:0.7;">({{ vet.review_count }})</span>
                         {% else %}
                             New
                         {% endif %}
@@ -214,36 +220,46 @@
                     <div style="display:flex; align-items:center; gap:5px;
                                 font-size:0.82rem; font-weight:600;
                                 color:var(--md-on-surface-variant);">
-                        <span class="ms sm filled"
-                              style="color:var(--md-primary);">check_circle</span>
+                        <span class="ms sm filled" style="color:var(--md-primary);">
+                            check_circle
+                        </span>
                         {{ vet.consultation_count }} consultation{{ vet.consultation_count|pluralize }}
                     </div>
                     <div style="display:flex; align-items:center; gap:5px;
                                 font-size:0.82rem; font-weight:600;
                                 color:var(--md-on-surface-variant);">
-                        <span class="ms sm filled"
-                              style="color:var(--md-primary);">work</span>
-                        {{ vet.years_of_experience }}yr exp
+                        <span class="ms sm filled" style="color:var(--md-primary);">work</span>
+                        {{ vet.years_of_experience }} yr{{ vet.years_of_experience|pluralize }}
                     </div>
                 </div>
 
-                <div style="display:flex; align-items:center;
-                            justify-content:space-between;">
+                {% if vet.bio %}
+                <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
+                        font-weight:500; line-height:1.5; margin:0 0 14px;">
+                    {{ vet.bio|truncatechars:100 }}
+                </p>
+                {% endif %}
+
+                <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
                         <span style="font-size:0.78rem; color:var(--md-on-surface-variant);
-                                     font-weight:600;">Consultation fee</span>
-                        <div style="font-weight:800; color:var(--md-primary);">
+                                    font-weight:600;">Consultation fee</span>
+                        <div style="font-weight:800; font-size:1rem;
+                                    color:var(--md-primary);">
                             ৳{{ vet.consultation_fee }}
                         </div>
                     </div>
-                    <a href="{% url 'consultations:vet_detail' vet.id %}"
-                       class="btn btn-tonal btn-sm"
-                       style="text-decoration:none;">
-                        View Profile
-                    </a>
+                    <span style="display:inline-flex; align-items:center; gap:6px;
+                                padding:10px 20px; border-radius:var(--md-shape-full);
+                                background:var(--md-primary); color:#fff;
+                                font-family:'Nunito',sans-serif; font-weight:700;
+                                font-size:0.875rem;">
+                        <span class="ms sm">person</span> View Profile
+                    </span>
                 </div>
             </div>
-        </div>
+
+        </a>
         {% endfor %}
     </div>
 </div>
@@ -275,18 +291,12 @@
 
             <!-- Stars -->
             <div style="display:flex; gap:2px;">
-                {% for i in "12345" %}
-                <span class="ms sm"
-                      style="font-size:18px;
-                             {% if forloop.counter <= review.rating %}
-                             color:#CA8A04;
-                             font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;
-                             {% else %}
-                             color:var(--md-outline-variant);
-                             {% endif %}">
-                    star
+                <span style="font-size:0.82rem; font-weight:700;
+                                color:#CA8A04;">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
                 </span>
-                {% endfor %}
             </div>
 
             <!-- Comment -->
