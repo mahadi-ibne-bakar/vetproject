@@ -809,7 +809,10 @@ def vet_detail(request, vet_id):
     reviews = Review.objects.filter(
         vet=vet,
         is_visible=True,
-    ).select_related('reviewer').order_by('-created_at')[:10]
+    ).select_related(
+        'reviewer',
+        'appointment__pet',
+    ).order_by('-created_at')[:10]
 
     avg_rating = reviews.aggregate(avg=Avg('rating'))['avg']
 

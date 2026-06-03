@@ -255,61 +255,92 @@
                 Patient Reviews
                 {% if avg_rating %}
                     <span style="font-size:0.875rem; font-weight:700;
-                                 color:var(--md-on-surface-variant);">
+                                color:var(--md-on-surface-variant);">
                         {{ avg_rating }}★ ({{ reviews|length }})
                     </span>
                 {% endif %}
             </div>
 
-            {% for review in reviews %}
-            <div style="padding:14px 0; border-bottom:1px solid var(--md-outline-variant);">
-                <div style="display:flex; align-items:center;
-                            justify-content:space-between; margin-bottom:6px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
+            {% if reviews %}
+            <div style="display:grid;
+                        grid-template-columns:repeat(auto-fill, minmax(260px,1fr));
+                        gap:14px;">
+                {% for review in reviews %}
+                <div style="background:var(--md-surface-1); border-radius:var(--md-shape-lg);
+                            padding:18px 20px; display:flex; flex-direction:column; gap:10px;">
+
+                    <!-- Stars + date -->
+                    <div style="display:flex; align-items:center;
+                                justify-content:space-between; gap:8px;">
+                        <span style="font-size:0.9rem; font-weight:700; color:#CA8A04;">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                        <span style="font-size:0.75rem; font-weight:600;
+                                    color:var(--md-on-surface-variant); white-space:nowrap;">
+                            {{ review.created_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                    <!-- Comment -->
+                    {% if review.comment %}
+                    <p style="font-size:0.875rem; color:var(--md-on-surface);
+                            font-weight:500; line-height:1.6; margin:0; flex:1;">
+                        "{{ review.comment|truncatechars:140 }}"
+                    </p>
+                    {% endif %}
+
+                    <!-- Reviewer info -->
+                    <div style="display:flex; align-items:center; gap:10px;
+                                padding-top:10px;
+                                border-top:1px solid var(--md-outline-variant);">
                         <div style="width:32px; height:32px;
                                     border-radius:var(--md-shape-full);
                                     background:var(--md-primary-container);
                                     color:var(--md-on-primary-container);
                                     display:flex; align-items:center;
-                                    justify-content:center;
-                                    font-weight:800; font-size:0.82rem;">
+                                    justify-content:center; font-weight:800;
+                                    font-size:0.8rem; flex-shrink:0;">
                             {{ review.reviewer.first_name|first|upper }}
                         </div>
-                        <span style="font-weight:700; font-size:0.875rem;">
-                            {{ review.reviewer.get_full_name|default:review.reviewer.username }}
-                        </span>
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-weight:800; font-size:0.85rem;
+                                        color:var(--md-on-surface);">
+                                {% if review.appointment.pet %}
+                                    {{ review.appointment.pet.name }}'s owner
+                                    {{ review.reviewer.first_name }}
+                                {% else %}
+                                    {{ review.reviewer.get_full_name|default:review.reviewer.username }}
+                                {% endif %}
+                            </div>
+                            <div style="font-size:0.75rem; font-weight:600;
+                                        color:var(--md-on-surface-variant); margin-top:1px;">
+                                Verified patient
+                            </div>
+                        </div>
+                        <div style="font-size:1.3rem; flex-shrink:0; opacity:0.4;">
+                            {% if review.appointment.pet.species == 'cat' %}🐱
+                            {% elif review.appointment.pet.species == 'dog' %}🐶
+                            {% else %}🐾{% endif %}
+                        </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:0.82rem; font-weight:700;
-                                     color:#CA8A04;">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
-                            {% endfor %}
-                        </span>
-                        <span style="font-size:0.78rem;
-                                     color:var(--md-on-surface-variant);
-                                     font-weight:600;">
-                            {{ review.created_at|date:"M d, Y" }}
-                        </span>
-                    </div>
+
                 </div>
-                {% if review.comment %}
-                <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
-                          font-weight:500; line-height:1.5; margin:0;">
-                    {{ review.comment }}
-                </p>
-                {% endif %}
+                {% endfor %}
             </div>
-            {% empty %}
+
+            {% else %}
             <div style="text-align:center; padding:32px;
                         color:var(--md-on-surface-variant);">
                 <span class="ms lg filled"
-                      style="display:block; margin-bottom:10px; opacity:0.3;">
+                    style="display:block; margin-bottom:10px; opacity:0.3;">
                     rate_review
                 </span>
                 <p style="font-weight:600; margin:0;">No reviews yet.</p>
             </div>
-            {% endfor %}
+            {% endif %}
+
         </div>
 
     </div>
