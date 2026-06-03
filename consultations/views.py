@@ -1073,14 +1073,28 @@ def book_by_time(request):
         if selected_start and selected_start in slot_map:
             available_vets = slot_map[selected_start]['vets']
 
+    # Format times for 12-hour display
+    def fmt_time_str(t_str):
+        if not t_str:
+            return ''
+        try:
+            from datetime import time as time_cls
+            parts = t_str.split(':')
+            t = time_cls(int(parts[0]), int(parts[1]))
+            return t.strftime('%I:%M %p').lstrip('0')
+        except Exception:
+            return t_str
+
     ctx = {
-        'today':            today.isoformat(),
-        'selected_date':    selected_date,
-        'selected_date_str': selected_date_str,
-        'selected_start':   selected_start,
-        'selected_end':     selected_end,
-        'available_slots':  available_slots,
-        'available_vets':   available_vets,
+        'today':                today.isoformat(),
+        'selected_date':        selected_date,
+        'selected_date_str':    selected_date_str,
+        'selected_start':       selected_start,
+        'selected_end':         selected_end,
+        'selected_start_display': fmt_time_str(selected_start),
+        'selected_end_display':   fmt_time_str(selected_end),
+        'available_slots':      available_slots,
+        'available_vets':       available_vets,
     }
     return render(request, 'public/book_by_time.html', ctx)
 
