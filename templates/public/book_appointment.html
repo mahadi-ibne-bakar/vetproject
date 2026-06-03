@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load species_tags %}
 {% block title %}Book with Dr. {{ vet.user.get_full_name }} — VetProject{% endblock %}
 
 {% block content %}
@@ -85,9 +86,7 @@
                                style="display:none;"
                                {% if forloop.first %}checked{% endif %}>
                         <div style="font-size:2rem; margin-bottom:6px;">
-                            {% if pet.species == 'cat' %}🐱
-                            {% elif pet.species == 'dog' %}🐶
-                            {% else %}🐾{% endif %}
+                            {{ pet.species|species_emoji }}
                         </div>
                         <div style="font-weight:800; font-size:0.9rem;">
                             {{ pet.name }}

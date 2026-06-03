@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load species_tags %}
 {% block title %}Appointment — VetProject{% endblock %}
 
 {% block content %}
@@ -63,9 +64,7 @@
                 Pet
             </div>
             <div style="font-size:2rem; margin-bottom:6px;">
-                {% if appointment.pet.species == 'cat' %}🐱
-                {% elif appointment.pet.species == 'dog' %}🐶
-                {% else %}🐾{% endif %}
+                {{ appointment.pet.species|species_emoji }}
             </div>
             <div style="font-weight:800;">{{ appointment.pet.name }}</div>
             <div style="font-size:0.82rem; color:var(--md-on-surface-variant);

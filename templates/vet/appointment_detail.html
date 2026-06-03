@@ -1,4 +1,5 @@
 {% extends 'vet/base_vet.html' %}
+{% load species_tags %}
 {% block title %}Consultation — VetProject{% endblock %}
 {% block page_title %}Consultation Detail{% endblock %}
 
@@ -18,9 +19,7 @@
             padding:20px 24px; margin-bottom:20px;
             display:flex; align-items:center; gap:16px;">
     <div style="font-size:3rem; line-height:1; flex-shrink:0;">
-        {% if appointment.pet.species == 'cat' %}🐱
-        {% elif appointment.pet.species == 'dog' %}🐶
-        {% else %}🐾{% endif %}
+        {{ appointment.pet.species|species_emoji }}
     </div>
     <div style="flex:1;">
         <div style="font-weight:800; font-size:1.2rem;

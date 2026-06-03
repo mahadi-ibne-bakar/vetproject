@@ -10,9 +10,12 @@ class Pet(models.Model):
     """
 
     class Species(models.TextChoices):
-        CAT = 'cat', 'Cat'
-        DOG = 'dog', 'Dog'
-        OTHER = 'other', 'Other'
+        CAT       = 'cat',       'Cat'
+        DOG       = 'dog',       'Dog'
+        BIRD      = 'bird',      'Bird'
+        RABBIT    = 'rabbit',    'Rabbit'
+        LIVESTOCK = 'livestock', 'Livestock'
+        OTHER     = 'other',     'Other'
 
     owner = models.ForeignKey(
         'accounts.User',

@@ -805,6 +805,20 @@
 
     <!-- Desktop Nav -->
     <nav class="top-app-bar__nav">
+
+        <button onclick="toggleDarkMode()"
+                id="darkModeBtn"
+                title="Toggle dark mode"
+                style="background:none; border:none; cursor:pointer;
+                    padding:6px; border-radius:var(--md-shape-full);
+                    color:var(--md-on-surface-variant);
+                    transition:background 0.15s;
+                    margin-right: 16px;" 
+                onmouseover="this.style.background='var(--md-surface-variant)'"
+                onmouseout="this.style.background='none'">
+            <span class="ms sm theme-toggle-icon">dark_mode</span>
+        </button>
+        
         {% if site_settings.booking_enabled %}
         <a href="{% url 'consultations:book_by_time' %}" class="nav-link ripple"
         style="background:var(--md-primary); color:var(--md-on-primary);
@@ -821,18 +835,7 @@
             <span class="ms sm">article</span>
             Blog
         </a>
-        <!-- Dark mode toggle -->
-        <button onclick="toggleDarkMode()"
-                id="darkModeBtn"
-                title="Toggle dark mode"
-                style="background:none; border:none; cursor:pointer;
-                    padding:6px; border-radius:var(--md-shape-full);
-                    color:var(--md-on-surface-variant);
-                    transition:background 0.15s;"
-                onmouseover="this.style.background='var(--md-surface-variant)'"
-                onmouseout="this.style.background='none'">
-            <span class="ms sm" id="darkModeIcon">dark_mode</span>
-        </button>
+        
 
         {% if user.is_authenticated %}
             {% if user.is_vet %}
@@ -911,6 +914,18 @@
     <div class="mobile-menu__backdrop" onclick="closeMobileMenu()"></div>
     <div class="mobile-menu__drawer">
         <div class="mobile-menu__header">
+            <button onclick="toggleDarkMode()"
+                    id="darkModeBtn"
+                    title="Toggle dark mode"
+                    style="background:none; border:none; cursor:pointer;
+                        padding:6px; border-radius:var(--md-shape-full);
+                        color:var(--md-on-surface-variant);
+                        transition:background 0.15s;
+                        margin-right: 0px;" 
+                    onmouseover="this.style.background='var(--md-surface-variant)'"
+                    onmouseout="this.style.background='none'">
+                <span class="ms sm theme-toggle-icon">dark_mode</span>
+            </button>
             {% if user.is_authenticated %}
                 <div>
                     <div style="font-weight:700; color:var(--md-on-surface);">
@@ -925,19 +940,8 @@
                 </div>
             {% else %}
                 <span style="font-weight:800; color:var(--md-primary);
-                            font-size:1.1rem;">VetProject</span>
-                <!-- Dark mode toggle -->
-                <button onclick="toggleDarkMode()"
-                        id="darkModeBtn"
-                        title="Toggle dark mode"
-                        style="background:none; border:none; cursor:pointer;
-                            padding:6px; border-radius:var(--md-shape-full);
-                            color:var(--md-on-surface-variant);
-                            transition:background 0.15s;"
-                        onmouseover="this.style.background='var(--md-surface-variant)'"
-                        onmouseout="this.style.background='none'">
-                    <span class="ms sm" id="darkModeIcon">dark_mode</span>
-                </button>
+                            font-size:1.1rem;">Menu</span>
+
                 <button onclick="closeMobileMenu()"
                         style="background:none; border:none; cursor:pointer;">
                     <span class="ms">close</span>
@@ -1430,15 +1434,20 @@
     // ── Dark mode ────────────────────────────────────────────────
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
-        const icon = document.getElementById('darkModeIcon');
-        if (icon) {
-            icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
-        }
+        
+        // 1. Determine which icon to show
+        const iconText = theme === 'dark' ? 'light_mode' : 'dark_mode';
+        
+        // 2. Find ALL icons and update them together
+        document.querySelectorAll('.theme-toggle-icon').forEach(icon => {
+            icon.textContent = iconText;
+        });
     }
 
     function toggleDarkMode() {
         const current = document.documentElement.getAttribute('data-theme');
         const next    = current === 'dark' ? 'light' : 'dark';
+        
         localStorage.setItem('vetproject-theme', next);
         applyTheme(next);
     }

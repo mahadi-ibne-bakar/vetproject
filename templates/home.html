@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load species_tags %}
 {% block title %}VetProject — Online Vet Consultations in Bangladesh{% endblock %}
 
 {% block content %}
@@ -335,8 +336,8 @@
                     </div>
                 </div>
                 <div style="font-size:1.5rem; flex-shrink:0; opacity:0.4;">
-                    {% if review.appointment.pet.species == 'cat' %}🐱
-                    {% elif review.appointment.pet.species == 'dog' %}🐶
+                    {% if review.appointment.pet %}
+                        {{ review.appointment.pet.species|species_emoji }}
                     {% else %}🐾{% endif %}
                 </div>
             </div>

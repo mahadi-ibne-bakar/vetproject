@@ -1,4 +1,5 @@
 {% extends 'dashboard/base_admin.html' %}
+{% load species_tags %}
 {% block title %}Consultation Detail — VetProject Admin{% endblock %}
 {% block page_title %}Consultation Detail{% endblock %}
 
@@ -17,9 +18,7 @@
             margin-bottom:20px; display:flex; align-items:center;
             gap:16px; flex-wrap:wrap;">
     <div style="font-size:2.5rem;">
-        {% if appointment.pet.species == 'cat' %}🐱
-        {% elif appointment.pet.species == 'dog' %}🐶
-        {% else %}🐾{% endif %}
+        {{ appointment.pet.species|species_emoji }}
     </div>
     <div style="flex:1;">
         <div style="font-weight:800; font-size:1.15rem;

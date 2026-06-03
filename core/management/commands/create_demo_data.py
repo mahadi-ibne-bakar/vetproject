@@ -188,12 +188,12 @@ class Command(BaseCommand):
         ]
 
         pet_data = [
-            {'name': 'Milo',   'species': 'cat', 'breed': 'Persian',         'age_years': 3, 'weight': 4.2},
-            {'name': 'Bella',  'species': 'dog', 'breed': 'Labrador',        'age_years': 5, 'weight': 28.0},
-            {'name': 'Luna',   'species': 'cat', 'breed': 'Siamese',         'age_years': 2, 'weight': 3.5},
-            {'name': 'Bruno',  'species': 'dog', 'breed': 'German Shepherd', 'age_years': 4, 'weight': 32.0},
-            {'name': 'Coco',   'species': 'cat', 'breed': 'Mixed',           'age_years': 1, 'weight': 2.8},
-            {'name': 'Max',    'species': 'dog', 'breed': 'Golden Retriever','age_years': 6, 'weight': 30.0},
+            {'name': 'Milo',   'species': 'cat',      'breed': 'Persian',          'age_years': 3, 'weight': 4.2},
+            {'name': 'Bella',  'species': 'dog',       'breed': 'Labrador',         'age_years': 5, 'weight': 28.0},
+            {'name': 'Luna',   'species': 'cat',       'breed': 'Siamese',          'age_years': 2, 'weight': 3.5},
+            {'name': 'Bruno',  'species': 'dog',       'breed': 'German Shepherd',  'age_years': 4, 'weight': 32.0},
+            {'name': 'Tweety', 'species': 'bird',      'breed': 'Budgerigar',       'age_years': 1, 'weight': 0.03},
+            {'name': 'Snowy',  'species': 'rabbit',    'breed': 'Dutch',            'age_years': 2, 'weight': 1.8},
         ]
 
         owners = []

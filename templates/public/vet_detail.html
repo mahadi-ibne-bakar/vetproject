@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load species_tags %}
 {% block title %}Dr. {{ vet.user.get_full_name }} — VetProject{% endblock %}
 
 {% block og_title %}
@@ -320,8 +321,8 @@
                             </div>
                         </div>
                         <div style="font-size:1.3rem; flex-shrink:0; opacity:0.4;">
-                            {% if review.appointment.pet.species == 'cat' %}🐱
-                            {% elif review.appointment.pet.species == 'dog' %}🐶
+                            {% if review.appointment.pet %}
+                                {{ review.appointment.pet.species|species_emoji }}
                             {% else %}🐾{% endif %}
                         </div>
                     </div>
