@@ -53,6 +53,136 @@
             --vet-sidebar-active: #2D6A4F;
             --vet-sidebar-width:  230px;
         }
+        [data-theme="dark"] {
+            --md-primary:              #81C995;
+            --md-on-primary:           #00391A;
+            --md-primary-container:    #005229;
+            --md-on-primary-container: #9EF6B0;
+            --md-secondary:            #B3CCBA;
+            --md-on-secondary:         #1F352A;
+            --md-secondary-container:  #354B3F;
+            --md-on-secondary-container: #CFE9D5;
+
+            --md-surface:              #1A1C1A;
+            --md-surface-1:            #1F231F;
+            --md-surface-variant:      #404943;
+            --md-on-surface:           #E2E3DD;
+            --md-on-surface-variant:   #C1C9C2;
+            --md-outline:              #8B938C;
+            --md-outline-variant:      #404943;
+
+            --md-error:                #FFB4AB;
+            --md-on-error:             #690005;
+            --md-error-container:      #93000A;
+            --md-on-error-container:   #FFDAD6;
+
+            --md-elev-1: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+            --md-elev-2: 0 3px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+            --md-elev-3: 0 6px 12px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3);
+
+            color-scheme: dark;
+        }
+
+        [data-theme="dark"] body {
+            background: #121412;
+        }
+
+        [data-theme="dark"] .top-app-bar {
+            background: #1A1C1A;
+            border-bottom: 1px solid #2D302D;
+        }
+
+        [data-theme="dark"] footer {
+            background: #1A1C1A;
+            border-top: 1px solid #2D302D;
+        }
+
+        [data-theme="dark"] .admin-sidebar,
+        [data-theme="dark"] .vet-sidebar {
+            background: #0F1710;
+        }
+        [data-theme="dark"] .field-wrap input,
+        [data-theme="dark"] .field-wrap textarea,
+        [data-theme="dark"] .field-wrap select {
+            background: var(--md-surface-variant);
+            color: var(--md-on-surface);
+            border-bottom-color: var(--md-outline);
+        }
+
+        [data-theme="dark"] .field-wrap label {
+            color: var(--md-on-surface-variant);
+        }
+
+        [data-theme="dark"] .field-wrap input:focus,
+        [data-theme="dark"] .field-wrap textarea:focus {
+            border-bottom-color: var(--md-primary);
+        }
+
+        [data-theme="dark"] .alert-info {
+            background: rgba(129, 201, 149, 0.15);
+            border-color: rgba(129, 201, 149, 0.3);
+        }
+
+        [data-theme="dark"] .alert-warning {
+            background: rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        [data-theme="dark"] .alert-success {
+            background: rgba(22, 163, 74, 0.15);
+            border-color: rgba(22, 163, 74, 0.3);
+        }
+
+        [data-theme="dark"] .alert-error {
+            background: rgba(255, 180, 171, 0.15);
+            border-color: rgba(255, 180, 171, 0.3);
+        }
+
+        [data-theme="dark"] .btn-filled {
+            background: var(--md-primary);
+            color: var(--md-on-primary);
+        }
+
+        [data-theme="dark"] .btn-outlined {
+            border-color: var(--md-outline);
+            color: var(--md-primary);
+        }
+
+        [data-theme="dark"] .btn-tonal {
+            background: var(--md-primary-container);
+            color: var(--md-on-primary-container);
+        }
+
+        [data-theme="dark"] .status-chip {
+            opacity: 0.9;
+        }
+
+        [data-theme="dark"] .nav-link {
+            color: var(--md-on-surface-variant);
+        }
+
+        [data-theme="dark"] .nav-link:hover {
+            background: var(--md-surface-variant);
+        }
+
+        [data-theme="dark"] .admin-table th {
+            background: #1F231F;
+            color: var(--md-on-surface-variant);
+        }
+
+        [data-theme="dark"] .admin-table tr:hover {
+            background: #1F231F;
+        }
+
+        [data-theme="dark"] .sidebar-link {
+            color: var(--md-on-surface-variant);
+        }
+
+        [data-theme="dark"] .sidebar-link:hover,
+        [data-theme="dark"] .sidebar-link.active {
+            background: rgba(129, 201, 149, 0.15);
+            color: var(--md-primary);
+        }
 
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -179,10 +309,11 @@
             display: flex;
             align-items: center;
             padding: 0 24px;
-            gap: 12px;
+            gap: 8px;          /* reduced from 12px */
             position: sticky;
             top: 0;
             z-index: 40;
+            overflow: hidden;  /* add this */
         }
 
         .vet-topbar__title {
@@ -391,7 +522,11 @@
                 padding: 12px;
             }
             .vet-topbar {
-                padding: 0 12px;
+                padding: 0 10px;
+                gap: 6px;
+            }
+            .vet-topbar__title {
+                font-size: 0.875rem;
             }
             /* Stack two-column grids */
             .vet-content [style*="grid-template-columns:1fr 1fr"],
@@ -410,12 +545,18 @@
             .vet-table-wrap {
                 overflow-x: auto;
             }
+            .dashboard-mobile-hide { display: none !important; }
+            .dashboard-mobile-cards { display: flex !important; }
+            .dashboard-col-hide-mobile { display: none; }
         }
 
         @media (max-width: 480px) {
             .vet-content [style*="grid-template-columns"] {
                 grid-template-columns: 1fr !important;
             }
+        }
+        @media (min-width: 901px) {
+            .dashboard-mobile-cards { display: none !important; }
         }
 
         /* ── Form validation states ───────────────────────────────── */
@@ -563,20 +704,12 @@
                 id="vetSidebarToggle">
             <span class="ms">menu</span>
         </button>
-        <div class="vet-topbar__title">{% block page_title %}Dashboard{% endblock %}</div>
+        <div class="vet-topbar__title"
+            style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+                    min-width:0; flex:1;">
+            {% block page_title %}Dashboard{% endblock %}
+        </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert
-                    {% if message.tags == 'error' %}alert-error
-                    {% elif message.tags == 'success' %}alert-success
-                    {% elif message.tags == 'warning' %}alert-warning
-                    {% else %}alert-info{% endif %}"
-                    style="margin:0; padding:6px 12px; font-size:0.8rem;">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
         <!-- Dark mode toggle -->
         <button onclick="toggleDarkMode()"
                 id="darkModeBtn"
@@ -584,25 +717,36 @@
                 style="background:none; border:none; cursor:pointer;
                     padding:6px; border-radius:var(--md-shape-full);
                     color:var(--md-on-surface-variant);
-                    transition:background 0.15s;"
+                    transition:background 0.15s;
+                    margin-right: 16px;" 
                 onmouseover="this.style.background='var(--md-surface-variant)'"
                 onmouseout="this.style.background='none'">
-            <span class="ms sm" id="darkModeIcon">dark_mode</span>
+            <span class="ms sm theme-toggle-icon">dark_mode</span>
         </button>
 
-        <div style="display:flex; align-items:center; gap:8px; font-weight:600;
-                    font-size:0.875rem; color:var(--md-on-surface-variant);">
-            <div style="width:32px; height:32px; border-radius:var(--md-shape-full);
-                        background:var(--md-primary); color:#fff;
-                        display:flex; align-items:center; justify-content:center;
-                        font-weight:800; font-size:0.8rem;">
-                {{ request.user.first_name|first|upper }}
-            </div>
-            Dr. {{ request.user.get_full_name|default:request.user.username }}
+        <div title="Dr. {{ request.user.get_full_name|default:request.user.username }}"
+            style="width:34px; height:34px; border-radius:var(--md-shape-full);
+                    background:var(--md-primary); color:#fff;
+                    display:flex; align-items:center; justify-content:center;
+                    font-weight:800; font-size:0.85rem; flex-shrink:0; cursor:default;">
+            {{ request.user.first_name|first|upper }}
         </div>
     </div>
 
     <div class="vet-content">
+        {% if messages %}
+        <div style="margin-bottom:12px;">
+            {% for message in messages %}
+            <div class="alert
+                {% if message.tags == 'error' %}alert-error
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'warning' %}alert-warning
+                {% else %}alert-info{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </div>
 
@@ -809,15 +953,20 @@
     // ── Dark mode ────────────────────────────────────────────────
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
-        const icon = document.getElementById('darkModeIcon');
-        if (icon) {
-            icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
-        }
+        
+        // 1. Determine which icon to show
+        const iconText = theme === 'dark' ? 'light_mode' : 'dark_mode';
+        
+        // 2. Find ALL icons and update them together
+        document.querySelectorAll('.theme-toggle-icon').forEach(icon => {
+            icon.textContent = iconText;
+        });
     }
 
     function toggleDarkMode() {
         const current = document.documentElement.getAttribute('data-theme');
         const next    = current === 'dark' ? 'light' : 'dark';
+        
         localStorage.setItem('vetproject-theme', next);
         applyTheme(next);
     }

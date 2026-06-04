@@ -6,13 +6,14 @@
 
 <!-- Greeting -->
 <div style="margin-bottom:24px;">
-    <h2 style="font-size:1.4rem; font-weight:800; margin:0 0 4px;">
+    <h2 style="font-size:clamp(1.1rem, 4vw, 1.4rem); font-weight:800; margin:0 0 4px;">
         Good
         {% now "H" as current_hour %}
         {% if current_hour < "12" %}morning{% elif current_hour < "17" %}afternoon{% else %}evening{% endif %},
         Dr. {{ request.user.last_name|default:request.user.first_name }} 👋
     </h2>
-    <p style="color:var(--md-on-surface-variant); font-weight:600; margin:0; font-size:0.9rem;">
+    <p style="color:var(--md-on-surface-variant); font-weight:600;
+              margin:0; font-size:0.9rem;">
         {{ today|date:"l, F j, Y" }}
     </p>
 </div>
@@ -83,16 +84,16 @@
 <div class="vet-table-wrap" style="margin-bottom:20px;">
     <div class="vet-table-header">
         <span class="vet-table-title">
-            <span class="ms sm filled" style="color:var(--md-primary); margin-right:6px;">
-                today
-            </span>
+            <span class="ms sm filled" style="color:var(--md-primary); margin-right:6px;">today</span>
             Today's Appointments
         </span>
         <a href="{% url 'consultations:vet_appointments' %}" class="btn btn-sm btn-tonal">
             View all
         </a>
     </div>
-    <table class="vet-table">
+
+    <!-- Desktop table -->
+    <table class="vet-table dashboard-mobile-hide">
         <thead>
             <tr>
                 <th>Time</th>
@@ -147,6 +148,58 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Mobile cards -->
+    <div class="dashboard-mobile-cards"
+         style="flex-direction:column; gap:0; display:none;">
+        {% for appt in todays_appointments %}
+        <div style="padding:14px 16px;
+                    border-bottom:1px solid var(--md-outline-variant);
+                    display:flex; align-items:center; gap:12px;">
+            <div style="flex-shrink:0; text-align:center; min-width:52px;">
+                <div style="font-weight:800; font-size:0.9rem;
+                            color:var(--md-primary);">
+                    {{ appt.start_time|time:"g:i A" }}
+                </div>
+                <div style="font-size:0.72rem; font-weight:600;
+                            color:var(--md-on-surface-variant);">
+                    {{ appt.end_time|time:"g:i A" }}
+                </div>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-weight:800; font-size:0.9rem;
+                            white-space:nowrap; overflow:hidden;
+                            text-overflow:ellipsis;">
+                    {{ appt.pet.name }}
+                    <span style="font-weight:500; color:var(--md-on-surface-variant);
+                                 font-size:0.8rem;">
+                        · {{ appt.user.first_name }}
+                    </span>
+                </div>
+                <div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;">
+                    <span class="status-chip chip-blue" style="font-size:0.7rem;">
+                        {{ appt.get_primary_complaint_display }}
+                    </span>
+                    <span class="status-chip
+                        {% if appt.status == 'in_progress' %}chip-yellow
+                        {% else %}chip-green{% endif %}"
+                        style="font-size:0.7rem;">
+                        {{ appt.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <a href="{% url 'consultations:vet_appointment_detail' appt.id %}"
+               class="btn btn-sm btn-filled" style="flex-shrink:0;">
+                <span class="ms sm">open_in_new</span>
+            </a>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="padding:24px;">
+            <span class="ms filled">event_available</span>
+            <p>No appointments today.</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
 <!-- Bottom two columns -->
@@ -162,7 +215,7 @@
                 <tr>
                     <th>Date & Time</th>
                     <th>Pet / Owner</th>
-                    <th>Action</th>
+                    <th class="dashboard-col-hide-mobile">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -177,12 +230,15 @@
                         </div>
                     </td>
                     <td>
-                        <div style="font-weight:700;">{{ appt.pet.name }}</div>
-                        <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
-                            {{ appt.user.get_full_name|default:appt.user.username }}
-                        </div>
+                        <a href="{% url 'consultations:vet_appointment_detail' appt.id %}"
+                        style="text-decoration:none; color:inherit; display:block;">
+                            <div style="font-weight:700;">{{ appt.pet.name }}</div>
+                            <div style="font-size:0.78rem; color:var(--md-on-surface-variant);">
+                                {{ appt.user.get_full_name|default:appt.user.username }}
+                            </div>
+                        </a>
                     </td>
-                    <td>
+                    <td class="dashboard-col-hide-mobile">
                         <a href="{% url 'consultations:vet_appointment_detail' appt.id %}"
                            class="btn btn-sm btn-outlined">
                             View
