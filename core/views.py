@@ -212,83 +212,60 @@ def contact(request):
     })
 
 def shop(request):
-    notify_submitted = False
+    feedback_submitted = False
 
     if request.method == 'POST':
-        notify_email = request.POST.get('notify_email', '').strip()
-        if notify_email:
-            # Store in a simple log for now
-            # In future this connects to a mailing list
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.info(f"Shop notify request: {notify_email}")
+        email   = request.POST.get('email', '').strip()
+        message = request.POST.get('message', '').strip()
 
-            # Send a simple acknowledgement email
+        if email and message:
+            import logging
             from django.core.mail import send_mail
             from django.conf import settings as django_settings
+
+            logger = logging.getLogger(__name__)
+            logger.info(f"Shop feedback from {email}: {message}")
+
             try:
+                # Acknowledgement to user
                 send_mail(
-                    subject="VetProject Shop — You're on the list!",
+                    subject="Thanks for your feedback — VetProject Shop",
                     message=(
                         f"Hi,\n\n"
-                        f"You've been added to our shop launch notification list.\n"
-                        f"We'll email you as soon as the VetProject Shop goes live "
-                        f"with an exclusive launch discount.\n\n"
-                        f"Thank you for your interest!\n\n"
+                        f"Thank you for sharing what you'd like to see in the "
+                        f"VetProject Shop. We read every message and your input "
+                        f"directly shapes what we stock.\n\n"
+                        f"We'll let you know as soon as the shop is live!\n\n"
                         f"— The VetProject Team"
                     ),
                     from_email=django_settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[notify_email],
+                    recipient_list=[email],
                     fail_silently=True,
                 )
-                # Also notify admin
+                # Notify admin
                 send_mail(
-                    subject=f"Shop notify signup: {notify_email}",
-                    message=f"New shop notify signup: {notify_email}",
+                    subject=f"Shop feedback from {email}",
+                    message=f"Email: {email}\n\nMessage:\n{message}",
                     from_email=django_settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[django_settings.DEFAULT_FROM_EMAIL],
                     fail_silently=True,
                 )
             except Exception:
                 pass
-            notify_submitted = True
+            feedback_submitted = True
 
     coming_soon_items = [
-        {
-            'emoji': '🐱',
-            'name': 'Cat Food',
-            'description': 'Premium nutrition for cats',
-        },
-        {
-            'emoji': '🐶',
-            'name': 'Dog Food',
-            'description': 'Vet-approved dog nutrition',
-        },
-        {
-            'emoji': '💊',
-            'name': 'Medicines',
-            'description': 'Vet-prescribed medications',
-        },
-        {
-            'emoji': '🧸',
-            'name': 'Toys & Accessories',
-            'description': 'Keep your pet happy',
-        },
-        {
-            'emoji': '🛁',
-            'name': 'Grooming',
-            'description': 'Shampoos and grooming tools',
-        },
-        {
-            'emoji': '🏠',
-            'name': 'Pet Furniture',
-            'description': 'Beds, crates, and carriers',
-        },
+        {'emoji': '🐱', 'name': 'Cat Food',          'description': 'Premium nutrition for cats'},
+        {'emoji': '🐶', 'name': 'Dog Food',           'description': 'Vet-approved dog nutrition'},
+        {'emoji': '💊', 'name': 'Medicines',          'description': 'Vet-prescribed medications'},
+        {'emoji': '🧸', 'name': 'Toys & Accessories', 'description': 'Keep your pet happy'},
+        {'emoji': '🛁', 'name': 'Grooming',           'description': 'Shampoos and grooming tools'},
+        {'emoji': '🏠', 'name': 'Pet Furniture',      'description': 'Beds, crates, and carriers'},
     ]
 
     return render(request, 'public/shop.html', {
-        'coming_soon_items': coming_soon_items,
-        'notify_submitted': notify_submitted,
+        'coming_soon_items':  coming_soon_items,
+        'feedback_submitted': feedback_submitted,
     })
 
 

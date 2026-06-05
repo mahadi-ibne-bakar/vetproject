@@ -9,7 +9,7 @@
                 box-shadow:var(--md-elev-2); overflow:hidden;">
 
         <!-- Top banner -->
-        <div style="background:var(--md-primary); padding:48px 32px;
+        <div style="background:var(--md-primary); padding:clamp(28px, 6vw, 48px) clamp(16px, 5vw, 32px);
                     text-align:center; position:relative; overflow:hidden;">
 
             <!-- Decorative circles -->
@@ -34,7 +34,7 @@
         </div>
 
         <!-- Content -->
-        <div style="padding:36px 40px; text-align:center;">
+        <div style="padding:clamp(20px, 5vw, 36px) clamp(16px, 5vw, 40px); text-align:center;">
 
             <div style="display:inline-flex; align-items:center; gap:6px;
                         background:var(--md-primary-container);
@@ -59,8 +59,10 @@
             </p>
 
             <!-- Upcoming products teaser -->
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr);
-                        gap:16px; margin-bottom:32px;">
+            <div style="display:grid;
+                        grid-template-columns:repeat(3, 1fr);
+                        gap:12px; margin-bottom:32px;"
+                class="shop-items-grid">
                 {% for item in coming_soon_items %}
                 <div style="background:var(--md-surface-1);
                             border-radius:var(--md-shape-lg);
@@ -81,37 +83,44 @@
             </div>
 
             <!-- Notify form -->
+            <!-- Tell us what you want -->
             <div style="background:var(--md-surface-1);
                         border-radius:var(--md-shape-lg); padding:24px;
-                        margin-bottom:28px;">
-                <div style="font-weight:800; font-size:0.95rem; margin-bottom:6px;">
-                    Get notified when we launch
+                        margin-bottom:28px; text-align:left;">
+                <div style="font-weight:800; font-size:0.95rem; margin-bottom:4px;">
+                    Help us stock the right products
                 </div>
                 <p style="font-size:0.85rem; color:var(--md-on-surface-variant);
-                           font-weight:600; margin:0 0 14px;">
-                    Be the first to know and get an exclusive
-                    launch discount.
+                        font-weight:600; margin:0 0 16px;">
+                    Tell us what pet products you'd like to see in the shop.
+                    We read every message.
                 </p>
 
-                {% if notify_submitted %}
+                {% if feedback_submitted %}
                 <div class="alert alert-success" style="margin:0;">
                     <span class="ms sm filled">check_circle</span>
-                    You're on the list! We'll notify you when the shop launches.
+                    Thank you! We've received your message and will keep you in mind
+                    when stocking the shop.
                 </div>
                 {% else %}
-                <form method="post"
-                      style="display:flex; gap:10px; flex-wrap:wrap;">
+                <form method="post">
                     {% csrf_token %}
-                    <div class="field-wrap" style="flex:1; min-width:200px;">
-                        <input type="email" name="notify_email"
-                               placeholder=" " required>
-                        <label>Your email address</label>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <div class="field-wrap">
+                            <input type="email" name="email" placeholder=" " required>
+                            <label>Your email address</label>
+                        </div>
+                        <div class="field-wrap">
+                            <textarea name="message" placeholder=" " rows="3" required></textarea>
+                            <label>What products would you like us to stock?</label>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end;">
+                            <button type="submit" class="btn btn-filled">
+                                <span class="ms sm">send</span>
+                                Send Feedback
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-filled"
-                            style="flex-shrink:0;">
-                        <span class="ms sm">notifications</span>
-                        Notify Me
-                    </button>
                 </form>
                 {% endif %}
             </div>
