@@ -63,4 +63,12 @@ urlpatterns = [
     path('vets/<int:vet_id>/availability/add/', admin_views.admin_add_availability, name='admin_add_availability'),
     path('vets/<int:vet_id>/availability/<int:window_id>/delete/', admin_views.admin_delete_availability, name='admin_delete_availability'),
     path('vets/<int:vet_id>/blocked/<int:blocked_id>/delete/', admin_views.admin_delete_blocked, name='admin_delete_blocked'),
+
+    # Coupons
+    path('coupons/', admin_views.coupon_list, name='coupon_list'),
+    path('coupons/create/', admin_views.coupon_create, name='coupon_create'),
+    path('coupons/<int:coupon_id>/edit/', admin_views.coupon_edit, name='coupon_edit'),
+    path('coupons/<int:coupon_id>/toggle/', admin_views.coupon_toggle, name='coupon_toggle'),
+    path('coupons/<int:coupon_id>/delete/', admin_views.coupon_delete, name='coupon_delete'),
+
 ]

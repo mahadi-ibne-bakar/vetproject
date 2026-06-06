@@ -115,6 +115,87 @@
                     </p>
                 </div>
 
+                <!-- Sitewide discount -->
+                <div style="margin-top:20px; padding-top:20px;
+                            border-top:1px solid var(--md-outline-variant);">
+                    <div style="font-weight:800; font-size:0.9rem; margin-bottom:14px;
+                                display:flex; align-items:center; gap:6px;">
+                        <span class="ms sm filled" style="color:var(--md-primary);">
+                            local_offer
+                        </span>
+                        Sitewide Discount
+                    </div>
+
+                    <!-- Toggle -->
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+                        <label style="display:flex; align-items:center; gap:8px;
+                                    cursor:pointer; font-weight:700; font-size:0.9rem;">
+                            <input type="checkbox" name="sitewide_discount_enabled"
+                                id="sitewideToggle"
+                                {% if settings.sitewide_discount_enabled %}checked{% endif %}
+                                onchange="toggleSitewideFields()"
+                                style="width:18px; height:18px; cursor:pointer;">
+                            Enable sitewide discount on all consultation fees
+                        </label>
+                    </div>
+
+                    <div id="sitewideFields"
+                        style="display:{% if settings.sitewide_discount_enabled %}flex{% else %}none{% endif %};
+                                flex-direction:column; gap:12px;">
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div>
+                                <div style="font-size:0.78rem; font-weight:700;
+                                            color:var(--md-on-surface-variant); margin-bottom:6px;">
+                                    DISCOUNT TYPE
+                                </div>
+                                <select name="sitewide_discount_type"
+                                        style="width:100%; padding:10px 14px;
+                                            background:var(--md-surface-variant);
+                                            border:none; border-bottom:2px solid var(--md-outline);
+                                            border-radius:var(--md-shape-sm) var(--md-shape-sm) 0 0;
+                                            font-family:'Nunito',sans-serif; font-weight:600;
+                                            font-size:0.9rem; outline:none;">
+                                    <option value="percentage"
+                                        {% if settings.sitewide_discount_type == 'percentage' %}selected{% endif %}>
+                                        Percentage (%)
+                                    </option>
+                                    <option value="fixed"
+                                        {% if settings.sitewide_discount_type == 'fixed' %}selected{% endif %}>
+                                        Fixed Amount (৳)
+                                    </option>
+                                </select>
+                            </div>
+                            <div>
+                                <div class="field-wrap">
+                                    <input type="number" name="sitewide_discount_value"
+                                        value="{{ settings.sitewide_discount_value }}"
+                                        min="0" step="0.01" placeholder=" ">
+                                    <label>Discount value</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="field-wrap">
+                                <input type="text" name="sitewide_discount_label"
+                                    value="{{ settings.sitewide_discount_label }}"
+                                    placeholder=" " maxlength="100">
+                                <label>Discount label shown to users</label>
+                            </div>
+                            <p class="field-hint">e.g. "Eid Special — 15% off all consultations"</p>
+                        </div>
+
+                        {% if settings.sitewide_discount_enabled %}
+                        <div class="alert alert-warning" style="margin:0;">
+                            <span class="ms sm filled">warning</span>
+                            Sitewide discount is currently active. All consultation fees
+                            are being discounted for all users.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-filled" style="width:100%;">
                     <span class="ms sm">save</span> Save Fee Settings
                 </button>
@@ -201,4 +282,13 @@
 
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleSitewideFields() {
+    const enabled = document.getElementById('sitewideToggle').checked;
+    document.getElementById('sitewideFields').style.display = enabled ? 'flex' : 'none';
+}
+</script>
 {% endblock %}

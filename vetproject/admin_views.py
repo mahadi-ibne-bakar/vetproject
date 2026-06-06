@@ -12,6 +12,7 @@ from blog.models import BlogPost, Review
 from core.models import SiteSettings, MeetLink
 from accounts.decorators import login_required_admin
 from django.http import HttpResponse
+from consultations.models import CouponCode, CouponUsage
 
 # ── Context helper ─────────────────────────────────────────────────────────────
 # Adds sidebar badge counts to every admin view automatically
@@ -1128,21 +1129,18 @@ def site_settings(request):
 
         elif action == 'update_fees':
             try:
-                booking_fee = int(request.POST.get('booking_fee', 50))
-                cancellation_deduction = int(
-                    request.POST.get('cancellation_deduction', 10)
-                )
-                slot_duration = int(
-                    request.POST.get('slot_duration_minutes', 15)
-                )
-                if booking_fee < 0 or cancellation_deduction < 0:
-                    raise ValueError
-                settings.booking_fee = booking_fee
-                settings.cancellation_deduction = cancellation_deduction
-                settings.slot_duration_minutes = slot_duration
-                settings.bkash_merchant_number = request.POST.get(
-                    'bkash_merchant_number', ''
-                ).strip()
+                settings.booking_fee            = int(request.POST.get('booking_fee', 50))
+                settings.cancellation_deduction = int(request.POST.get('cancellation_deduction', 10))
+                settings.slot_duration_minutes  = int(request.POST.get('slot_duration_minutes', 15))
+                settings.bkash_merchant_number  = request.POST.get('bkash_merchant_number', '').strip()
+
+                # Sitewide discount
+                settings.sitewide_discount_enabled = 'sitewide_discount_enabled' in request.POST
+                settings.sitewide_discount_type     = request.POST.get('sitewide_discount_type', 'percentage')
+                settings.sitewide_discount_label    = request.POST.get('sitewide_discount_label', '').strip()
+                sitewide_value = request.POST.get('sitewide_discount_value', '0').strip()
+                settings.sitewide_discount_value    = float(sitewide_value) if sitewide_value else 0
+
                 settings.save()
                 messages.success(request, "Fee settings updated.")
             except (ValueError, TypeError):
@@ -1305,3 +1303,155 @@ def admin_delete_blocked(request, vet_id, blocked_id):
         blocked.delete()
         messages.success(request, f"Block removed for {date}.")
     return redirect('dashboard:vet_detail', vet_id=vet_id)
+
+
+@login_required_admin
+def coupon_list(request):
+    from django.db.models import Sum, Count
+    from django.utils import timezone
+
+    coupons = CouponCode.objects.annotate(
+        total_uses=Count('usages'),
+        total_saved=Sum('usages__discount_amount'),
+    ).order_by('-created_at')
+
+    ctx = {
+        **admin_context(request),
+        'coupons':       coupons,
+        'total_coupons': coupons.count(),
+        'active_count':  coupons.filter(is_active=True).count(),
+        'today':         timezone.localdate(),
+    }
+    return render(request, 'dashboard/coupon_list.html', ctx)
+
+
+@login_required_admin
+def coupon_create(request):
+    if request.method == 'POST':
+        code                = request.POST.get('code', '').strip().upper()
+        description         = request.POST.get('description', '').strip()
+        discount_type       = request.POST.get('discount_type', 'percentage')
+        discount_value      = request.POST.get('discount_value', '0')
+        max_discount_amount = request.POST.get('max_discount_amount', '').strip()
+        customer_type       = request.POST.get('customer_type', 'all')
+        expiry_date         = request.POST.get('expiry_date', '').strip()
+        max_uses            = request.POST.get('max_uses', '').strip()
+        max_uses_per_user   = request.POST.get('max_uses_per_user', '1')
+
+        errors = []
+
+        if not code:
+            errors.append("Coupon code is required.")
+        elif CouponCode.objects.filter(code=code).exists():
+            errors.append(f"Coupon code '{code}' already exists.")
+
+        try:
+            discount_value = float(discount_value)
+            if discount_value <= 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            errors.append("Discount value must be a positive number.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+        else:
+            CouponCode.objects.create(
+                code=code,
+                description=description,
+                discount_type=discount_type,
+                discount_value=discount_value,
+                max_discount_amount=float(max_discount_amount) if max_discount_amount else None,
+                customer_type=customer_type,
+                expiry_date=expiry_date if expiry_date else None,
+                max_uses=int(max_uses) if max_uses else None,
+                max_uses_per_user=int(max_uses_per_user) if max_uses_per_user else 1,
+                is_active=True,
+                created_by=request.user,
+            )
+            messages.success(request, f"Coupon '{code}' created successfully.")
+            return redirect('dashboard:coupon_list')
+
+    ctx = {
+        **admin_context(request),
+        'discount_type_choices': CouponCode.DiscountType.choices,
+        'customer_type_choices': CouponCode.CustomerType.choices,
+    }
+    return render(request, 'dashboard/coupon_form.html', ctx)
+
+
+@login_required_admin
+def coupon_edit(request, coupon_id):
+    coupon = get_object_or_404(CouponCode, id=coupon_id)
+
+    if request.method == 'POST':
+        description         = request.POST.get('description', '').strip()
+        discount_type       = request.POST.get('discount_type', 'percentage')
+        discount_value      = request.POST.get('discount_value', '0')
+        max_discount_amount = request.POST.get('max_discount_amount', '').strip()
+        customer_type       = request.POST.get('customer_type', 'all')
+        expiry_date         = request.POST.get('expiry_date', '').strip()
+        max_uses            = request.POST.get('max_uses', '').strip()
+        max_uses_per_user   = request.POST.get('max_uses_per_user', '1')
+
+        try:
+            discount_value = float(discount_value)
+            if discount_value <= 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            messages.error(request, "Discount value must be a positive number.")
+            return render(request, 'dashboard/coupon_form.html', {
+                **admin_context(request),
+                'coupon':                coupon,
+                'discount_type_choices': CouponCode.DiscountType.choices,
+                'customer_type_choices': CouponCode.CustomerType.choices,
+            })
+
+        coupon.description         = description
+        coupon.discount_type       = discount_type
+        coupon.discount_value      = discount_value
+        coupon.max_discount_amount = float(max_discount_amount) if max_discount_amount else None
+        coupon.customer_type       = customer_type
+        coupon.expiry_date         = expiry_date if expiry_date else None
+        coupon.max_uses            = int(max_uses) if max_uses else None
+        coupon.max_uses_per_user   = int(max_uses_per_user) if max_uses_per_user else 1
+        coupon.save()
+
+        messages.success(request, f"Coupon '{coupon.code}' updated.")
+        return redirect('dashboard:coupon_list')
+
+    ctx = {
+        **admin_context(request),
+        'coupon':                coupon,
+        'discount_type_choices': CouponCode.DiscountType.choices,
+        'customer_type_choices': CouponCode.CustomerType.choices,
+    }
+    return render(request, 'dashboard/coupon_form.html', ctx)
+
+
+@login_required_admin
+def coupon_toggle(request, coupon_id):
+    if request.method == 'POST':
+        coupon = get_object_or_404(CouponCode, id=coupon_id)
+        coupon.is_active = not coupon.is_active
+        coupon.save()
+        status = "activated" if coupon.is_active else "deactivated"
+        messages.success(request, f"Coupon '{coupon.code}' {status}.")
+    return redirect('dashboard:coupon_list')
+
+
+@login_required_admin
+def coupon_delete(request, coupon_id):
+    if request.method == 'POST':
+        coupon = get_object_or_404(CouponCode, id=coupon_id)
+        code = coupon.code
+        if coupon.usages.exists():
+            messages.error(
+                request,
+                f"Cannot delete '{code}' — it has been used "
+                f"{coupon.usages.count()} time(s). Deactivate it instead."
+            )
+        else:
+            coupon.delete()
+            messages.success(request, f"Coupon '{code}' deleted.")
+    return redirect('dashboard:coupon_list')

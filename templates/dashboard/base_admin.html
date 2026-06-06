@@ -694,6 +694,15 @@
         </a>
     </div>
 
+    <div class="sidebar-section">
+        <div class="sidebar-section__label">Promotions</div>
+        <a href="{% url 'dashboard:coupon_list' %}"
+        class="sidebar-link
+            {% if 'coupon' in request.resolver_match.url_name %}active{% endif %}">
+            <span class="ms filled">local_offer</span> Coupon Codes
+        </a>
+    </div>
+
     <!-- System -->
     <div class="sidebar-section">
         <div class="sidebar-section__label">System</div>

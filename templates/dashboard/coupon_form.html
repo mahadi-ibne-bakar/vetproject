@@ -1,0 +1,250 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}
+    {% if coupon %}Edit Coupon{% else %}Create Coupon{% endif %} — VetProject Admin
+{% endblock %}
+{% block page_title %}
+    {% if coupon %}Edit {{ coupon.code }}{% else %}Create Coupon{% endif %}
+{% endblock %}
+
+{% block content %}
+<div style="max-width:680px;">
+
+    <a href="{% url 'dashboard:coupon_list' %}"
+       class="btn btn-outlined btn-sm" style="margin-bottom:20px;">
+        <span class="ms sm">arrow_back</span> Back to Coupons
+    </a>
+
+    <div class="admin-card" style="padding:28px;">
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:18px;">
+
+                <!-- Code (read-only on edit) -->
+                <div>
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:6px;">
+                        COUPON CODE <span style="color:var(--md-error);">*</span>
+                    </div>
+                    {% if coupon %}
+                    <div style="font-family:monospace; font-size:1.2rem;
+                                font-weight:800; letter-spacing:2px;
+                                color:var(--md-primary); padding:12px 16px;
+                                background:var(--md-primary-container);
+                                border-radius:var(--md-shape-md);">
+                        {{ coupon.code }}
+                    </div>
+                    <p class="field-hint">Code cannot be changed after creation.</p>
+                    {% else %}
+                    <div class="field-wrap">
+                        <input type="text" name="code" placeholder=" "
+                               maxlength="50" required
+                               style="text-transform:uppercase; font-family:monospace;
+                                      font-weight:700; letter-spacing:1px;"
+                               oninput="this.value=this.value.toUpperCase()">
+                        <label>e.g. WELCOME20</label>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:6px;">
+                        DESCRIPTION (internal note)
+                    </div>
+                    <div class="field-wrap">
+                        <input type="text" name="description" placeholder=" "
+                               maxlength="200"
+                               value="{% if coupon %}{{ coupon.description }}{% endif %}">
+                        <label>e.g. Launch promo for new users</label>
+                    </div>
+                </div>
+
+                <!-- Discount type + value -->
+                <div>
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        DISCOUNT <span style="color:var(--md-error);">*</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                        <div>
+                            <select name="discount_type" id="discountType"
+                                    onchange="updateDiscountLabels()"
+                                    style="width:100%; padding:10px 14px;
+                                           background:var(--md-surface-variant);
+                                           border:none; border-bottom:2px solid var(--md-outline);
+                                           border-radius:var(--md-shape-sm) var(--md-shape-sm) 0 0;
+                                           font-family:'Nunito',sans-serif; font-weight:600;
+                                           font-size:0.9rem; outline:none;">
+                                {% for value, label in discount_type_choices %}
+                                <option value="{{ value }}"
+                                    {% if coupon and coupon.discount_type == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <div class="field-wrap">
+                                <input type="number" name="discount_value"
+                                       id="discountValue"
+                                       value="{% if coupon %}{{ coupon.discount_value|floatformat:0 }}{% endif %}"
+                                       min="0" step="1" placeholder=" " required>
+                                <label id="discountValueLabel">Value (%)</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="field-wrap">
+                                <input type="number" name="max_discount_amount"
+                                       value="{% if coupon and coupon.max_discount_amount %}{{ coupon.max_discount_amount|floatformat:0 }}{% endif %}"
+                                       min="0" step="1" placeholder=" ">
+                                <label>Max discount (৳)</label>
+                            </div>
+                            <p class="field-hint">Only for % discounts</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer type -->
+                <div>
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:8px;">
+                        ELIGIBLE CUSTOMERS
+                    </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        {% for value, label in customer_type_choices %}
+                        <label style="display:flex; align-items:center; gap:8px;
+                                      padding:10px 16px;
+                                      border:1.5px solid var(--md-outline-variant);
+                                      border-radius:var(--md-shape-full);
+                                      cursor:pointer; font-weight:700;
+                                      font-size:0.875rem; transition:all 0.15s;"
+                               class="type-chip">
+                            <input type="radio" name="customer_type"
+                                   value="{{ value }}" style="display:none;"
+                                   {% if coupon and coupon.customer_type == value %}checked
+                                   {% elif not coupon and value == 'all' %}checked{% endif %}>
+                            {{ label }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Expiry + limits -->
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                    <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant); margin-bottom:6px;">
+                            EXPIRY DATE
+                        </div>
+                        <div class="field-wrap">
+                            <input type="date" name="expiry_date" placeholder=" "
+                                   value="{% if coupon and coupon.expiry_date %}{{ coupon.expiry_date|date:'Y-m-d' }}{% endif %}">
+                            <label>Leave blank for no expiry</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-wrap">
+                            <input type="number" name="max_uses" placeholder=" "
+                                   min="1" step="1"
+                                   value="{% if coupon and coupon.max_uses %}{{ coupon.max_uses }}{% endif %}">
+                            <label>Max total uses</label>
+                        </div>
+                        <p class="field-hint">Leave blank for unlimited</p>
+                    </div>
+                    <div>
+                        <div class="field-wrap">
+                            <input type="number" name="max_uses_per_user"
+                                   placeholder=" " min="1" step="1"
+                                   value="{% if coupon %}{{ coupon.max_uses_per_user }}{% else %}1{% endif %}">
+                            <label>Uses per user</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div style="background:var(--md-primary-container);
+                            border-radius:var(--md-shape-md); padding:14px 16px;">
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:var(--md-on-primary-container); margin-bottom:6px;">
+                        DISCOUNT PREVIEW
+                    </div>
+                    <div style="font-size:0.9rem; font-weight:600;
+                                color:var(--md-primary);" id="discountPreview">
+                        Enter values above to see preview
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <a href="{% url 'dashboard:coupon_list' %}"
+                       class="btn btn-outlined">Cancel</a>
+                    <button type="submit" class="btn btn-filled">
+                        <span class="ms sm">save</span>
+                        {% if coupon %}Save Changes{% else %}Create Coupon{% endif %}
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Customer type chip highlight
+    document.querySelectorAll('.type-chip').forEach(chip => {
+        const radio = chip.querySelector('input[type=radio]');
+        function update() {
+            document.querySelectorAll('.type-chip').forEach(c => {
+                c.style.borderColor = 'var(--md-outline-variant)';
+                c.style.background  = '';
+                c.style.color       = '';
+            });
+            if (radio.checked) {
+                chip.style.borderColor = 'var(--md-primary)';
+                chip.style.background  = 'var(--md-primary-container)';
+                chip.style.color       = 'var(--md-on-primary-container)';
+            }
+        }
+        chip.addEventListener('click', () => { radio.checked = true; update(); updatePreview(); });
+        if (radio.checked) update();
+    });
+
+    function updateDiscountLabels() {
+        const type  = document.getElementById('discountType').value;
+        const label = document.getElementById('discountValueLabel');
+        label.textContent = type === 'percentage' ? 'Value (%)' : 'Value (৳)';
+        updatePreview();
+    }
+
+    function updatePreview() {
+        const type  = document.getElementById('discountType').value;
+        const value = parseFloat(document.getElementById('discountValue').value) || 0;
+        const preview = document.getElementById('discountPreview');
+
+        if (!value) {
+            preview.textContent = 'Enter values above to see preview';
+            return;
+        }
+
+        const sampleFee = 300;
+        let discount, text;
+
+        if (type === 'percentage') {
+            discount = Math.round(sampleFee * value / 100);
+            text = `${value}% off → ৳${discount} saved on a ৳${sampleFee} consultation (৳${sampleFee - discount} final price)`;
+        } else {
+            discount = Math.min(value, sampleFee);
+            text = `৳${discount} off → ৳${sampleFee - discount} final price on a ৳${sampleFee} consultation`;
+        }
+        preview.textContent = text;
+    }
+
+    document.getElementById('discountValue').addEventListener('input', updatePreview);
+    document.getElementById('discountType').addEventListener('change', updateDiscountLabels);
+    updateDiscountLabels();
+</script>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Coupon Codes — VetProject Admin{% endblock %}
+{% block page_title %}Coupon Codes{% endblock %}
+
+{% block content %}
+
+<!-- Stats -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+            gap:16px; margin-bottom:24px;">
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:var(--md-primary-container);">
+            <span class="ms filled" style="color:var(--md-primary);">local_offer</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ total_coupons }}</div>
+            <div class="stat-card__label">Total Coupons</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#DCFCE7;">
+            <span class="ms filled" style="color:#16A34A;">check_circle</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ active_count }}</div>
+            <div class="stat-card__label">Active</div>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<div style="display:flex; align-items:center; justify-content:space-between;
+            margin-bottom:16px;">
+    <h2 style="font-size:1.1rem; font-weight:800; margin:0;">All Coupons</h2>
+    <a href="{% url 'dashboard:coupon_create' %}" class="btn btn-filled">
+        <span class="ms sm">add</span> Create Coupon
+    </a>
+</div>
+
+<!-- Table -->
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Eligibility</th>
+                <th>Expiry</th>
+                <th>Uses</th>
+                <th>Total Saved</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for coupon in coupons %}
+            <tr>
+                <td>
+                    <div style="font-weight:800; font-family:monospace;
+                                font-size:0.95rem; letter-spacing:1px;">
+                        {{ coupon.code }}
+                    </div>
+                    {% if coupon.description %}
+                    <div style="font-size:0.75rem; color:var(--md-on-surface-variant);
+                                font-weight:600; margin-top:2px;">
+                        {{ coupon.description|truncatechars:40 }}
+                    </div>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if coupon.discount_type == 'percentage' %}
+                        <strong>{{ coupon.discount_value|floatformat:0 }}% off</strong>
+                        {% if coupon.max_discount_amount %}
+                        <div style="font-size:0.75rem; color:var(--md-on-surface-variant);">
+                            max ৳{{ coupon.max_discount_amount|floatformat:0 }}
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <strong>৳{{ coupon.discount_value|floatformat:0 }} off</strong>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="status-chip
+                        {% if coupon.customer_type == 'all' %}chip-blue
+                        {% elif coupon.customer_type == 'new' %}chip-green
+                        {% else %}chip-yellow{% endif %}">
+                        {{ coupon.get_customer_type_display }}
+                    </span>
+                </td>
+                <td style="font-size:0.85rem;">
+                    {% if coupon.expiry_date %}
+                        {{ coupon.expiry_date|date:"M d, Y" }}
+                        {% if coupon.expiry_date < today %}
+                            <span class="status-chip chip-red"
+                                  style="font-size:0.7rem; margin-left:4px;">
+                                Expired
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span style="color:var(--md-on-surface-variant);">No expiry</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="font-weight:700;">
+                        {{ coupon.total_uses|default:0 }}
+                        {% if coupon.max_uses %}
+                            / {{ coupon.max_uses }}
+                        {% endif %}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--md-on-surface-variant);">
+                        per user: {{ coupon.max_uses_per_user }}
+                    </div>
+                </td>
+                <td style="font-weight:700; color:var(--md-primary);">
+                    ৳{{ coupon.total_saved|default:0 }}
+                </td>
+                <td>
+                    <span class="status-chip
+                        {% if coupon.is_active %}chip-green{% else %}chip-gray{% endif %}">
+                        {% if coupon.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <a href="{% url 'dashboard:coupon_edit' coupon.id %}"
+                           class="btn btn-sm btn-outlined">
+                            <span class="ms sm">edit</span>
+                        </a>
+                        <form method="post"
+                              action="{% url 'dashboard:coupon_toggle' coupon.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-tonal">
+                                {% if coupon.is_active %}
+                                    <span class="ms sm">pause</span>
+                                {% else %}
+                                    <span class="ms sm">play_arrow</span>
+                                {% endif %}
+                            </button>
+                        </form>
+                        <form method="post"
+                              action="{% url 'dashboard:coupon_delete' coupon.id %}"
+                              onsubmit="return confirm('Delete coupon {{ coupon.code }}? This cannot be undone.')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <span class="ms sm">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">
+                    <div class="empty-state">
+                        <span class="ms filled">local_offer</span>
+                        <p>No coupon codes yet.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
