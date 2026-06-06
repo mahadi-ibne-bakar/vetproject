@@ -1140,6 +1140,8 @@ def site_settings(request):
                 settings.sitewide_discount_label    = request.POST.get('sitewide_discount_label', '').strip()
                 sitewide_value = request.POST.get('sitewide_discount_value', '0').strip()
                 settings.sitewide_discount_value    = float(sitewide_value) if sitewide_value else 0
+                sitewide_expiry = request.POST.get('sitewide_discount_expiry', '').strip()
+                settings.sitewide_discount_expiry = sitewide_expiry if sitewide_expiry else None
 
                 settings.save()
                 messages.success(request, "Fee settings updated.")

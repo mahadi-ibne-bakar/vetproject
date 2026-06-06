@@ -68,6 +68,10 @@ class SiteSettings(models.Model):
         max_length=100, blank=True, default='',
         help_text="Shown to users e.g. 'Eid Special — 15% off all consultations'",
     )
+    sitewide_discount_expiry = models.DateField(
+        null=True, blank=True,
+        help_text="Optional — discount automatically deactivates after this date",
+    )
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -90,11 +94,10 @@ class SiteSettings(models.Model):
         return obj
 
     def calculate_sitewide_discount(self, consultation_fee):
-        """
-        Returns the sitewide discount amount in Taka.
-        Returns 0 if sitewide discount is not enabled.
-        """
+        from django.utils import timezone
         if not self.sitewide_discount_enabled or not self.sitewide_discount_value:
+            return 0
+        if self.sitewide_discount_expiry and self.sitewide_discount_expiry < timezone.localdate():
             return 0
         fee = float(consultation_fee)
         if self.sitewide_discount_type == 'percentage':

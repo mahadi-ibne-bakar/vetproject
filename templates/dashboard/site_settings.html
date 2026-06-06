@@ -150,12 +150,12 @@
                                     DISCOUNT TYPE
                                 </div>
                                 <select name="sitewide_discount_type"
-                                        style="width:100%; padding:10px 14px;
+                                        style="width:100%; padding:20px 16px 8px;
                                             background:var(--md-surface-variant);
                                             border:none; border-bottom:2px solid var(--md-outline);
                                             border-radius:var(--md-shape-sm) var(--md-shape-sm) 0 0;
                                             font-family:'Nunito',sans-serif; font-weight:600;
-                                            font-size:0.9rem; outline:none;">
+                                            font-size:0.9rem; outline:none; height:56px;">
                                     <option value="percentage"
                                         {% if settings.sitewide_discount_type == 'percentage' %}selected{% endif %}>
                                         Percentage (%)
@@ -167,11 +167,15 @@
                                 </select>
                             </div>
                             <div>
+                                <div style="font-size:0.78rem; font-weight:700;
+                                            color:var(--md-on-surface-variant); margin-bottom:6px;">
+                                    DISCOUNT VALUE
+                                </div>
                                 <div class="field-wrap">
                                     <input type="number" name="sitewide_discount_value"
                                         value="{{ settings.sitewide_discount_value }}"
                                         min="0" step="0.01" placeholder=" ">
-                                    <label>Discount value</label>
+                                    <label>e.g. 20 for 20% or 100 for ৳100</label>
                                 </div>
                             </div>
                         </div>
@@ -184,6 +188,22 @@
                                 <label>Discount label shown to users</label>
                             </div>
                             <p class="field-hint">e.g. "Eid Special — 15% off all consultations"</p>
+                        </div>
+
+                        <div>
+                            <div style="font-size:0.78rem; font-weight:700;
+                                        color:var(--md-on-surface-variant); margin-bottom:6px;">
+                                DISCOUNT EXPIRY DATE
+                            </div>
+                            <div class="field-wrap">
+                                <input type="date" name="sitewide_discount_expiry"
+                                    placeholder=" "
+                                    value="{% if settings.sitewide_discount_expiry %}{{ settings.sitewide_discount_expiry|date:'Y-m-d' }}{% endif %}">
+                                <label>Leave blank for no expiry</label>
+                            </div>
+                            <p class="field-hint">
+                                Discount automatically deactivates after this date.
+                            </p>
                         </div>
 
                         {% if settings.sitewide_discount_enabled %}

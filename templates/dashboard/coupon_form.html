@@ -62,47 +62,53 @@
                 </div>
 
                 <!-- Discount type + value -->
-                <div>
-                    <div style="font-size:0.78rem; font-weight:700;
-                                color:var(--md-on-surface-variant); margin-bottom:8px;">
-                        DISCOUNT <span style="color:var(--md-error);">*</span>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                    <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant); margin-bottom:6px;">
+                            TYPE
+                        </div>
+                        <select name="discount_type" id="discountType"
+                                onchange="updateDiscountLabels()"
+                                style="width:100%; padding:20px 16px 8px;
+                                    background:var(--md-surface-variant);
+                                    border:none; border-bottom:2px solid var(--md-outline);
+                                    border-radius:var(--md-shape-sm) var(--md-shape-sm) 0 0;
+                                    font-family:'Nunito',sans-serif; font-weight:600;
+                                    font-size:0.9rem; outline:none; height:56px;">
+                            {% for value, label in discount_type_choices %}
+                            <option value="{{ value }}"
+                                {% if coupon and coupon.discount_type == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
-                        <div>
-                            <select name="discount_type" id="discountType"
-                                    onchange="updateDiscountLabels()"
-                                    style="width:100%; padding:10px 14px;
-                                           background:var(--md-surface-variant);
-                                           border:none; border-bottom:2px solid var(--md-outline);
-                                           border-radius:var(--md-shape-sm) var(--md-shape-sm) 0 0;
-                                           font-family:'Nunito',sans-serif; font-weight:600;
-                                           font-size:0.9rem; outline:none;">
-                                {% for value, label in discount_type_choices %}
-                                <option value="{{ value }}"
-                                    {% if coupon and coupon.discount_type == value %}selected{% endif %}>
-                                    {{ label }}
-                                </option>
-                                {% endfor %}
-                            </select>
+                    <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant); margin-bottom:6px;">
+                            VALUE
                         </div>
-                        <div>
-                            <div class="field-wrap">
-                                <input type="number" name="discount_value"
-                                       id="discountValue"
-                                       value="{% if coupon %}{{ coupon.discount_value|floatformat:0 }}{% endif %}"
-                                       min="0" step="1" placeholder=" " required>
-                                <label id="discountValueLabel">Value (%)</label>
-                            </div>
+                        <div class="field-wrap">
+                            <input type="number" name="discount_value"
+                                id="discountValue"
+                                value="{% if coupon %}{{ coupon.discount_value|floatformat:0 }}{% endif %}"
+                                min="0" step="1" placeholder=" " required>
+                            <label id="discountValueLabel">Amount</label>
                         </div>
-                        <div>
-                            <div class="field-wrap">
-                                <input type="number" name="max_discount_amount"
-                                       value="{% if coupon and coupon.max_discount_amount %}{{ coupon.max_discount_amount|floatformat:0 }}{% endif %}"
-                                       min="0" step="1" placeholder=" ">
-                                <label>Max discount (৳)</label>
-                            </div>
-                            <p class="field-hint">Only for % discounts</p>
+                    </div>
+                    <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant); margin-bottom:6px;">
+                            MAX DISCOUNT (৳)
                         </div>
+                        <div class="field-wrap">
+                            <input type="number" name="max_discount_amount"
+                                value="{% if coupon and coupon.max_discount_amount %}{{ coupon.max_discount_amount|floatformat:0 }}{% endif %}"
+                                min="0" step="1" placeholder=" ">
+                            <label>Cap amount</label>
+                        </div>
+                        <p class="field-hint">Only for % discounts</p>
                     </div>
                 </div>
 
@@ -140,25 +146,32 @@
                         </div>
                         <div class="field-wrap">
                             <input type="date" name="expiry_date" placeholder=" "
-                                   value="{% if coupon and coupon.expiry_date %}{{ coupon.expiry_date|date:'Y-m-d' }}{% endif %}">
-                            <label>Leave blank for no expiry</label>
+                                value="{% if coupon and coupon.expiry_date %}{{ coupon.expiry_date|date:'Y-m-d' }}{% endif %}">
+                            <label>No expiry if blank</label>
                         </div>
                     </div>
                     <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant); margin-bottom:6px;">
+                            MAX TOTAL USES
+                        </div>
                         <div class="field-wrap">
                             <input type="number" name="max_uses" placeholder=" "
-                                   min="1" step="1"
-                                   value="{% if coupon and coupon.max_uses %}{{ coupon.max_uses }}{% endif %}">
-                            <label>Max total uses</label>
+                                min="1" step="1"
+                                value="{% if coupon and coupon.max_uses %}{{ coupon.max_uses }}{% endif %}">
+                            <label>Blank for unlimited</label>
                         </div>
-                        <p class="field-hint">Leave blank for unlimited</p>
                     </div>
                     <div>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant); margin-bottom:6px;">
+                            USES PER USER
+                        </div>
                         <div class="field-wrap">
                             <input type="number" name="max_uses_per_user"
-                                   placeholder=" " min="1" step="1"
-                                   value="{% if coupon %}{{ coupon.max_uses_per_user }}{% else %}1{% endif %}">
-                            <label>Uses per user</label>
+                                placeholder=" " min="1" step="1"
+                                value="{% if coupon %}{{ coupon.max_uses_per_user }}{% else %}1{% endif %}">
+                            <label>Default: 1</label>
                         </div>
                     </div>
                 </div>
