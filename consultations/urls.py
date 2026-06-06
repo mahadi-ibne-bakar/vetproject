@@ -41,4 +41,5 @@ urlpatterns = [
     path('vet/appointments/<int:appointment_id>/end/', views.end_consultation, name='end_consultation'),
     path('vet/appointments/<int:appointment_id>/prescription/', views.submit_prescription, name='submit_prescription'),
     path('pet/<int:pet_id>/notes/', views.update_pet_notes, name='update_pet_notes'),
+    path('book/<int:vet_id>/validate-coupon/', views.validate_coupon_ajax, name='validate_coupon'),
 ]

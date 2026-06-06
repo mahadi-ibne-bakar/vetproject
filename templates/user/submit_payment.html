@@ -108,6 +108,24 @@
             </div>
         </div>
 
+        {% if appointment.discount_amount > 0 %}
+        <div style="background:#DCFCE7; border-radius:var(--md-shape-md);
+                    padding:12px 14px; margin-top:12px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:#16A34A;">local_offer</span>
+            <div style="font-size:0.85rem; font-weight:700; color:#166534;">
+                {% if appointment.coupon %}
+                    Coupon <strong>{{ appointment.coupon.code }}</strong> applied —
+                {% else %}
+                    Sitewide discount applied —
+                {% endif %}
+                ৳{{ appointment.discount_amount }} off your consultation fee.
+                You'll pay ৳{{ appointment.original_consultation_fee|add:-appointment.discount_amount }}
+                instead of ৳{{ appointment.original_consultation_fee }} after the session.
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Payment form -->
         <form method="post" data-validate="true">
             {% csrf_token %}

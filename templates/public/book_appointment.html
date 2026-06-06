@@ -204,39 +204,148 @@
             </div>
 
             <!-- Payment summary -->
+            <!-- Sitewide discount banner -->
+            {% if sitewide_pricing.discount_source == 'sitewide' %}
+            <div class="alert alert-success" style="margin-bottom:0;">
+                <span class="ms sm filled">local_offer</span>
+                <div>
+                    <strong>
+                        {% if sitewide_pricing.sitewide_label %}
+                            {{ sitewide_pricing.sitewide_label }}
+                        {% else %}
+                            Sitewide discount active
+                        {% endif %}
+                    </strong>
+                    — ৳{{ sitewide_pricing.final_discount }} off the consultation fee
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Coupon code -->
             <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
                         box-shadow:var(--md-elev-1); padding:20px 24px;">
                 <div style="font-weight:800; font-size:1rem; margin-bottom:14px;
                             display:flex; align-items:center; gap:8px;">
-                    <span class="ms sm filled"
-                          style="color:var(--md-primary);">payments</span>
+                    <span class="ms sm filled" style="color:var(--md-primary);">local_offer</span>
+                    Have a Coupon Code?
+                </div>
+                <div style="display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+                    <div class="field-wrap" style="flex:1; min-width:180px;">
+                        <input type="text" id="couponInput"
+                            name="coupon_code"
+                            placeholder=" " maxlength="50"
+                            style="text-transform:uppercase; font-family:monospace;
+                                    font-weight:700; letter-spacing:1px;"
+                            oninput="this.value=this.value.toUpperCase()">
+                        <label>Enter coupon code</label>
+                    </div>
+                    <button type="button" onclick="applyCoupon()"
+                            class="btn btn-tonal" style="flex-shrink:0;">
+                        <span class="ms sm">check_circle</span> Apply
+                    </button>
+                    <button type="button" onclick="removeCoupon()"
+                            id="removeCouponBtn"
+                            class="btn btn-outlined btn-sm"
+                            style="display:none; flex-shrink:0; color:var(--md-error);
+                                border-color:var(--md-error);">
+                        <span class="ms sm">close</span> Remove
+                    </button>
+                </div>
+
+                <!-- Coupon feedback -->
+                <div id="couponSuccess"
+                    style="display:none; margin-top:10px;"
+                    class="alert alert-success">
+                    <span class="ms sm filled">check_circle</span>
+                    <span id="couponSuccessMsg"></span>
+                </div>
+                <div id="couponError"
+                    style="display:none; margin-top:10px;"
+                    class="alert alert-error">
+                    <span class="ms sm filled">error</span>
+                    <span id="couponErrorMsg"></span>
+                </div>
+            </div>
+
+            <!-- Payment summary -->
+            <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                        box-shadow:var(--md-elev-1); padding:20px 24px;">
+                <div style="font-weight:800; font-size:1rem; margin-bottom:14px;
+                            display:flex; align-items:center; gap:8px;">
+                    <span class="ms sm filled" style="color:var(--md-primary);">payments</span>
                     Payment Summary
                 </div>
-                <div style="display:flex; flex-direction:column; gap:8px;
-                            font-size:0.9rem;">
+                <div style="display:flex; flex-direction:column; gap:10px; font-size:0.9rem;">
+
+                    <!-- Booking fee — never discounted -->
                     <div style="display:flex; justify-content:space-between;
                                 font-weight:600; color:var(--md-on-surface-variant);">
                         <span>Booking fee (pay now via bKash)</span>
-                        <span style="font-weight:800;
-                                     color:var(--md-on-surface);">৳50</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;
-                                font-weight:600; color:var(--md-on-surface-variant);">
-                        <span>Consultation fee (pay after session)</span>
-                        <span style="font-weight:800;
-                                     color:var(--md-on-surface);">
-                            ৳{{ vet.consultation_fee }}
+                        <span style="font-weight:800; color:var(--md-on-surface);">
+                            ৳{{ booking_fee }}
                         </span>
                     </div>
-                    <div style="height:1px; background:var(--md-outline-variant);
-                                margin:4px 0;"></div>
+
+                    <!-- Consultation fee with discount -->
+                    <div style="display:flex; justify-content:space-between;
+                                align-items:flex-start; font-weight:600;
+                                color:var(--md-on-surface-variant);">
+                        <span>Consultation fee (pay after session)</span>
+                        <div style="text-align:right;">
+                            <!-- Original price (shown crossed out when discount active) -->
+                            <span id="originalFeeDisplay"
+                                style="font-weight:800; color:var(--md-on-surface);">
+                                ৳{{ vet.consultation_fee }}
+                            </span>
+                            <!-- Discounted price (hidden until discount applied) -->
+                            <span id="discountedFeeDisplay"
+                                style="display:none;">
+                                <span style="text-decoration:line-through;
+                                            color:var(--md-on-surface-variant);
+                                            font-weight:600; font-size:0.85rem;">
+                                    ৳{{ vet.consultation_fee }}
+                                </span>
+                                <span id="finalFeeAmount"
+                                    style="font-weight:800; color:#16A34A; margin-left:6px;">
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Discount breakdown (shown when active) -->
+                    <div id="discountBreakdown" style="display:none;">
+                        <div style="background:#DCFCE7; border-radius:var(--md-shape-md);
+                                    padding:10px 14px; display:flex; align-items:center; gap:8px;">
+                            <span class="ms sm filled" style="color:#16A34A;">local_offer</span>
+                            <span id="discountBreakdownText"
+                                style="font-size:0.85rem; font-weight:700; color:#166534;">
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="height:1px; background:var(--md-outline-variant);"></div>
+
+                    <!-- Total -->
                     <div style="display:flex; justify-content:space-between;
                                 font-weight:800; font-size:1rem;">
                         <span>Total</span>
-                        <span style="color:var(--md-primary);">
-                            ৳{{ vet.consultation_fee|add:50 }}
-                        </span>
+                        <div style="text-align:right;">
+                            <span id="totalOriginal"
+                                style="color:var(--md-primary);">
+                                ৳{{ vet.consultation_fee|add:booking_fee }}
+                            </span>
+                            <span id="totalDiscounted" style="display:none;">
+                                <span style="text-decoration:line-through;
+                                            color:var(--md-on-surface-variant);
+                                            font-weight:600; font-size:0.85rem;">
+                                    ৳{{ vet.consultation_fee|add:booking_fee }}
+                                </span>
+                                <span id="totalFinalAmount"
+                                    style="color:#16A34A; margin-left:6px;"></span>
+                            </span>
+                        </div>
                     </div>
+
                 </div>
             </div>
 
@@ -399,6 +508,105 @@
         document.getElementById(`slot-label-${num}`).textContent = `Add photo ${num}`;
         document.getElementById(`remove-slot-${num}`).style.display = 'none';
     }
+
+    // ── Coupon code handling ─────────────────────────────────────
+    const vetId         = {{ vet.id }};
+    const originalFee   = {{ vet.consultation_fee }};
+    const bookingFee    = {{ booking_fee }};
+    let   appliedDiscount = 0;
+
+    {% if sitewide_pricing.discount_source == 'sitewide' %}
+    // Apply sitewide discount on page load
+    appliedDiscount = {{ sitewide_pricing.final_discount }};
+    showDiscount(
+        appliedDiscount,
+        'Sitewide discount: ৳{{ sitewide_pricing.final_discount }} off'
+    );
+    {% endif %}
+
+    function applyCoupon() {
+        const code = document.getElementById('couponInput').value.trim().toUpperCase();
+        if (!code) {
+            showCouponError('Please enter a coupon code.');
+            return;
+        }
+
+        fetch(`/consultations/book/${vetId}/validate-coupon/?code=${encodeURIComponent(code)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.valid) {
+                    appliedDiscount = data.discount_amount;
+                    showDiscount(
+                        data.discount_amount,
+                        `Coupon ${code}: ৳${data.discount_amount} off`
+                    );
+                    hideCouponError();
+                    document.getElementById('couponSuccess').style.display = 'flex';
+                    document.getElementById('couponSuccessMsg').textContent = data.message;
+                    document.getElementById('removeCouponBtn').style.display = 'inline-flex';
+                } else {
+                    showCouponError(data.error);
+                    document.getElementById('couponSuccess').style.display = 'none';
+                }
+            })
+            .catch(() => showCouponError('Could not validate coupon. Please try again.'));
+    }
+
+    function removeCoupon() {
+        appliedDiscount = 0;
+        document.getElementById('couponInput').value = '';
+        document.getElementById('couponSuccess').style.display = 'none';
+        document.getElementById('couponError').style.display = 'none';
+        document.getElementById('removeCouponBtn').style.display = 'none';
+        hideDiscount();
+
+        {% if sitewide_pricing.discount_source == 'sitewide' %}
+        // Restore sitewide discount if one is active
+        appliedDiscount = {{ sitewide_pricing.final_discount }};
+        showDiscount(
+            appliedDiscount,
+            'Sitewide discount: ৳{{ sitewide_pricing.final_discount }} off'
+        );
+        {% endif %}
+    }
+
+    function showDiscount(discountAmount, label) {
+        const finalFee   = originalFee - discountAmount;
+        const finalTotal = finalFee + bookingFee;
+
+        document.getElementById('originalFeeDisplay').style.display  = 'none';
+        document.getElementById('discountedFeeDisplay').style.display = 'inline';
+        document.getElementById('finalFeeAmount').textContent         = `৳${finalFee}`;
+
+        document.getElementById('discountBreakdown').style.display    = 'block';
+        document.getElementById('discountBreakdownText').textContent  = label;
+
+        document.getElementById('totalOriginal').style.display    = 'none';
+        document.getElementById('totalDiscounted').style.display  = 'inline';
+        document.getElementById('totalFinalAmount').textContent   = `৳${finalTotal}`;
+    }
+
+    function hideDiscount() {
+        document.getElementById('originalFeeDisplay').style.display  = 'inline';
+        document.getElementById('discountedFeeDisplay').style.display = 'none';
+        document.getElementById('discountBreakdown').style.display    = 'none';
+        document.getElementById('totalOriginal').style.display    = 'inline';
+        document.getElementById('totalDiscounted').style.display  = 'none';
+    }
+
+    function showCouponError(msg) {
+        document.getElementById('couponError').style.display    = 'flex';
+        document.getElementById('couponErrorMsg').textContent   = msg;
+    }
+
+    function hideCouponError() {
+        document.getElementById('couponError').style.display = 'none';
+    }
+
+    // Allow pressing Enter in coupon input
+    document.getElementById('couponInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); }
+    });
 
 </script>
 {% endblock %}

@@ -180,11 +180,19 @@
                     <div>
                         <div style="font-weight:700; font-size:0.875rem;">
                             Consultation Fee
+                            {% if appointment.discount_amount > 0 %}
+                                <span style="font-size:0.72rem; font-weight:600;
+                                            color:#16A34A; margin-left:4px;">
+                                    (৳{{ appointment.discount_amount }} discount applied)
+                                </span>
+                            {% endif %}
                         </div>
                         <div style="font-size:0.78rem; font-weight:600;
                                     color:var(--md-on-surface-variant);">
-                            {{ consultation_payment.bkash_number }}
-                            · TrxID: {{ consultation_payment.transaction_id }}
+                            TrxID: {{ consultation_payment.transaction_id }}
+                            {% if appointment.discount_amount > 0 %}
+                                · Original: ৳{{ appointment.original_consultation_fee }}
+                            {% endif %}
                         </div>
                     </div>
                     <div style="text-align:right;">

@@ -835,28 +835,23 @@ def vet_detail(request, vet_id):
 def book_appointment(request, vet_id):
     from accounts.models import VetProfile
     from core.models import SiteSettings
+    from consultations.pricing import get_effective_price
     from datetime import date as date_cls
 
-    # Check service is enabled
     settings = SiteSettings.get()
     if not settings.booking_enabled:
-        messages.error(request, "Booking is currently disabled. Please check back soon.")
+        messages.error(request, "Booking is currently disabled.")
         return redirect('core:home')
 
     vet = get_object_or_404(
-        VetProfile,
-        id=vet_id,
-        application_status='approved',
-        is_active=True,
+        VetProfile, id=vet_id,
+        application_status='approved', is_active=True
     )
 
-    # Get date and slot from URL params
-    date_str    = request.GET.get('date', '')
-    start_str   = request.GET.get('start', '')
-    end_str     = request.GET.get('end', '')
-    next_url    = request.GET.get('next', '')
+    date_str  = request.GET.get('date', '')
+    start_str = request.GET.get('start', '')
+    end_str   = request.GET.get('end', '')
 
-    # Validate date and slot
     selected_date = None
     if date_str:
         try:
@@ -868,46 +863,36 @@ def book_appointment(request, vet_id):
         messages.error(request, "Please select a date and time slot first.")
         return redirect('consultations:vet_detail', vet_id=vet_id)
 
-    # Confirm the slot is still available
     from consultations.slots import get_available_slots as compute_slots
-    available = compute_slots(vet, selected_date)
+    available       = compute_slots(vet, selected_date)
     available_starts = [s['start_str'] for s in available]
 
     if start_str not in available_starts:
-        messages.error(
-            request,
-            "That slot is no longer available. Please choose another."
-        )
+        messages.error(request, "That slot is no longer available.")
+        from django.urls import reverse
         return redirect(
-            f"{{% url 'consultations:vet_detail' vet_id %}}?"
-            f"date={date_str}"
+            reverse('consultations:vet_detail', args=[vet_id]) + f"?date={date_str}"
         )
 
-    # Smart pet redirect
     user_pets = Pet.objects.filter(owner=request.user)
     if not user_pets.exists():
         from django.urls import reverse
-        from urllib.parse import urlencode, quote
-        booking_next = (
-            f"{request.path}"
-            f"?date={date_str}&start={start_str}&end={end_str}"
-        )
-        messages.info(
-            request,
-            "First, tell us about your pet so we can get started."
-        )
+        from urllib.parse import urlencode
+        booking_next = f"{request.path}?date={date_str}&start={start_str}&end={end_str}"
         return redirect(
-            reverse('consultations:add_pet')
-            + '?'
-            + urlencode({'next': booking_next, 'context': 'booking'})
+            reverse('consultations:add_pet') + '?' +
+            urlencode({'next': booking_next, 'context': 'booking'})
         )
+
+    # Compute sitewide pricing for display
+    sitewide_pricing = get_effective_price(vet.consultation_fee)
 
     if request.method == 'POST':
-        pet_id = request.POST.get('pet_id')
+        pet_id            = request.POST.get('pet_id')
         primary_complaint = request.POST.get('primary_complaint')
-        description = request.POST.get('complaint_description', '').strip()
+        description       = request.POST.get('complaint_description', '').strip()
+        coupon_code       = request.POST.get('coupon_code', '').strip().upper()
 
-        # Validate
         errors = []
         if not pet_id:
             errors.append("Please select a pet.")
@@ -928,14 +913,17 @@ def book_appointment(request, vet_id):
 
             if pet:
                 if start_str not in available_starts:
-                    messages.error(
-                        request,
-                        "That slot was just booked. Please choose another."
-                    )
+                    messages.error(request, "That slot was just booked. Please choose another.")
                     return redirect('consultations:vet_detail', vet_id=vet_id)
 
+                # Compute final pricing with coupon
+                pricing = get_effective_price(
+                    vet.consultation_fee,
+                    user=request.user,
+                    coupon_code=coupon_code if coupon_code else None,
+                )
+
                 try:
-                    # Parse time strings to time objects
                     from datetime import time as time_cls
                     start_parts = start_str.split(':')
                     end_parts   = end_str.split(':')
@@ -952,14 +940,16 @@ def book_appointment(request, vet_id):
                         status=Appointment.Status.PENDING_PAYMENT,
                         primary_complaint=primary_complaint,
                         complaint_description=description,
+                        coupon=pricing['coupon'],
+                        discount_amount=pricing['final_discount'],
+                        original_consultation_fee=int(vet.consultation_fee),
                     )
-                    from consultations.slot_cache import invalidate_vet_slots
-                    invalidate_vet_slots(vet.id, date=selected_date)
 
-                    # Handle up to 5 symptom photos
+                    # Handle symptom photos
                     photos = request.FILES.getlist('symptom_photos')
                     if photos:
                         from core.image_utils import compress_if_image, rename_image
+                        from consultations.models import AppointmentPhoto
                         for i, photo_file in enumerate(photos[:5]):
                             compressed = compress_if_image(
                                 photo_file,
@@ -975,6 +965,9 @@ def book_appointment(request, vet_id):
                                 photo=compressed,
                             )
 
+                    from consultations.slot_cache import invalidate_vet_slots
+                    invalidate_vet_slots(vet.id, date=selected_date)
+
                     messages.success(
                         request,
                         "Appointment created. Please complete payment to confirm."
@@ -988,22 +981,20 @@ def book_appointment(request, vet_id):
                     import logging
                     logger = logging.getLogger(__name__)
                     logger.error(f"Appointment creation failed: {e}", exc_info=True)
-                    messages.error(
-                        request,
-                        f"Something went wrong: {str(e)}"
-                    )
+                    messages.error(request, f"Something went wrong: {str(e)}")
 
-    # Complaint choices for the form
     complaint_choices = Appointment.PrimaryComplaint.choices
 
     ctx = {
-        'vet': vet,
-        'user_pets': user_pets,
-        'selected_date': selected_date,
-        'date_str': date_str,
-        'start_str': start_str,
-        'end_str': end_str,
+        'vet':              vet,
+        'user_pets':        user_pets,
+        'selected_date':    selected_date,
+        'date_str':         date_str,
+        'start_str':        start_str,
+        'end_str':          end_str,
         'complaint_choices': complaint_choices,
+        'sitewide_pricing': sitewide_pricing,
+        'booking_fee':      settings.booking_fee,
     }
     return render(request, 'public/book_appointment.html', ctx)
 
@@ -1791,3 +1782,35 @@ def download_prescription(request, appointment_id):
         f'attachment; filename="prescription_{appointment.id}.pdf"'
     )
     return response
+
+
+def validate_coupon_ajax(request, vet_id):
+    from django.http import JsonResponse
+    from accounts.models import VetProfile
+    from consultations.pricing import validate_coupon
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'valid': False, 'error': 'Please log in first.'})
+
+    vet = get_object_or_404(
+        VetProfile, id=vet_id,
+        application_status='approved', is_active=True
+    )
+
+    code = request.GET.get('code', '').strip().upper()
+    if not code:
+        return JsonResponse({'valid': False, 'error': 'Please enter a coupon code.'})
+
+    result = validate_coupon(code, request.user, vet.consultation_fee)
+
+    if result['valid']:
+        final_fee = int(vet.consultation_fee) - result['discount_amount']
+        return JsonResponse({
+            'valid':           True,
+            'discount_amount': result['discount_amount'],
+            'final_fee':       final_fee,
+            'original_fee':    int(vet.consultation_fee),
+            'message':         f"Coupon applied! You save ৳{result['discount_amount']}",
+        })
+    else:
+        return JsonResponse({'valid': False, 'error': result['error']})
