@@ -50,6 +50,24 @@ class SiteSettings(models.Model):
         default='',
         help_text="Your bKash merchant/personal number shown to users for payment",
     )
+    # ── Sitewide discount ──────────────────────────────────────────────────────────
+    sitewide_discount_enabled = models.BooleanField(
+        default=False,
+        help_text="Enable a sitewide discount on all consultation fees",
+    )
+    sitewide_discount_type = models.CharField(
+        max_length=10,
+        choices=[('percentage', 'Percentage'), ('fixed', 'Fixed Amount')],
+        default='percentage',
+    )
+    sitewide_discount_value = models.DecimalField(
+        max_digits=8, decimal_places=2, default=0,
+        help_text="Percentage (e.g. 20 for 20%) or fixed amount in Taka",
+    )
+    sitewide_discount_label = models.CharField(
+        max_length=100, blank=True, default='',
+        help_text="Shown to users e.g. 'Eid Special — 15% off all consultations'",
+    )
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -70,6 +88,20 @@ class SiteSettings(models.Model):
         """Always use SiteSettings.get() to retrieve settings."""
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+    def calculate_sitewide_discount(self, consultation_fee):
+        """
+        Returns the sitewide discount amount in Taka.
+        Returns 0 if sitewide discount is not enabled.
+        """
+        if not self.sitewide_discount_enabled or not self.sitewide_discount_value:
+            return 0
+        fee = float(consultation_fee)
+        if self.sitewide_discount_type == 'percentage':
+            discount = fee * float(self.sitewide_discount_value) / 100
+        else:
+            discount = float(self.sitewide_discount_value)
+        return min(int(round(discount)), int(fee))
 
 
 class MeetLink(models.Model):

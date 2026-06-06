@@ -255,6 +255,22 @@ class Appointment(models.Model):
         help_text="True once the 30-minute reminder email has been sent",
     )
 
+    # ── Discount fields ────────────────────────────────────────────────────────────
+    coupon = models.ForeignKey(
+        'CouponCode',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='appointments',
+    )
+    discount_amount = models.PositiveIntegerField(
+        default=0,
+        help_text="Taka amount discounted from consultation fee",
+    )
+    original_consultation_fee = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text="Consultation fee at time of booking before any discount",
+    )
+
     # Cancellation
     cancellation_reason = models.TextField(blank=True)
 
@@ -396,3 +412,144 @@ class Prescription(models.Model):
 
     def __str__(self):
         return f"Prescription for {self.appointment}"
+
+
+class CouponCode(models.Model):
+
+    class DiscountType(models.TextChoices):
+        PERCENTAGE = 'percentage', 'Percentage'
+        FIXED      = 'fixed',      'Fixed Amount'
+
+    class CustomerType(models.TextChoices):
+        ALL        = 'all',        'All Customers'
+        NEW        = 'new',        'New Customers Only'
+        RETURNING  = 'returning',  'Returning Customers Only'
+
+    code                = models.CharField(max_length=50, unique=True)
+    description         = models.CharField(
+        max_length=200, blank=True, default='',
+        help_text="Internal admin note about this coupon"
+    )
+    discount_type       = models.CharField(
+        max_length=10,
+        choices=DiscountType.choices,
+        default=DiscountType.PERCENTAGE,
+    )
+    discount_value      = models.DecimalField(
+        max_digits=8, decimal_places=2,
+        help_text="Percentage (e.g. 20 for 20%) or fixed amount in Taka",
+    )
+    max_discount_amount = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True,
+        help_text="Optional cap — e.g. '20% off but maximum ৳100'",
+    )
+    customer_type       = models.CharField(
+        max_length=10,
+        choices=CustomerType.choices,
+        default=CustomerType.ALL,
+    )
+    expiry_date         = models.DateField(
+        null=True, blank=True,
+        help_text="Leave blank for no expiry",
+    )
+    max_uses            = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text="Global usage cap — leave blank for unlimited",
+    )
+    max_uses_per_user   = models.PositiveIntegerField(
+        default=1,
+        help_text="How many times one user can use this code",
+    )
+    is_active           = models.BooleanField(default=True)
+    created_at          = models.DateTimeField(auto_now_add=True)
+    created_by          = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='created_coupons',
+    )
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.code
+
+    def is_valid(self):
+        """Returns True if the coupon is currently usable."""
+        from django.utils import timezone
+        if not self.is_active:
+            return False
+        if self.expiry_date and self.expiry_date < timezone.localdate():
+            return False
+        if self.max_uses is not None:
+            if self.usages.count() >= self.max_uses:
+                return False
+        return True
+
+    def calculate_discount(self, consultation_fee):
+        """
+        Returns the discount amount in Taka for a given consultation fee.
+        Never exceeds the fee itself.
+        """
+        fee = float(consultation_fee)
+        if self.discount_type == self.DiscountType.PERCENTAGE:
+            discount = fee * float(self.discount_value) / 100
+            if self.max_discount_amount:
+                discount = min(discount, float(self.max_discount_amount))
+        else:
+            discount = float(self.discount_value)
+        return min(round(discount), int(fee))
+
+    def get_user_uses(self, user):
+        """Returns how many times a specific user has used this coupon."""
+        return self.usages.filter(user=user).count()
+
+    def check_customer_type(self, user):
+        """
+        Returns True if user matches the coupon's customer type restriction.
+        'new' = never completed a paid consultation.
+        'returning' = has at least one completed paid consultation.
+        """
+        if self.customer_type == self.CustomerType.ALL:
+            return True
+
+        has_completed = Appointment.objects.filter(
+            user=user,
+            status='completed',
+        ).exists()
+
+        if self.customer_type == self.CustomerType.NEW:
+            return not has_completed
+        if self.customer_type == self.CustomerType.RETURNING:
+            return has_completed
+        return True
+
+
+class CouponUsage(models.Model):
+    coupon          = models.ForeignKey(
+        CouponCode,
+        on_delete=models.CASCADE,
+        related_name='usages',
+    )
+    user            = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='coupon_usages',
+    )
+    appointment     = models.OneToOneField(
+        Appointment,
+        on_delete=models.CASCADE,
+        related_name='coupon_usage',
+        null=True, blank=True,
+    )
+    discount_amount = models.PositiveIntegerField(
+        help_text="Actual Taka amount discounted",
+    )
+    used_at         = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-used_at']
+
+    def __str__(self):
+        return f"{self.coupon.code} — {self.user.email} — ৳{self.discount_amount}"
