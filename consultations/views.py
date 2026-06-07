@@ -1196,6 +1196,7 @@ def submit_payment(request, appointment_id):
         'vet':                  appointment.vet,
         'booking_fee':          settings.booking_fee,
         'bkash_merchant_number': getattr(settings, 'bkash_merchant_number', ''),
+        'final_consultation_fee': ((appointment.original_consultation_fee or appointment.vet.consultation_fee)- appointment.discount_amount),
     }
     return render(request, 'user/submit_payment.html', ctx)
 

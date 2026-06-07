@@ -120,7 +120,7 @@
                     Sitewide discount applied —
                 {% endif %}
                 ৳{{ appointment.discount_amount }} off your consultation fee.
-                You'll pay ৳{{ appointment.original_consultation_fee|add:-appointment.discount_amount }}
+                You'll pay ৳৳{{ final_consultation_fee }}
                 instead of ৳{{ appointment.original_consultation_fee }} after the session.
             </div>
         </div>

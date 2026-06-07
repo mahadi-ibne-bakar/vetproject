@@ -132,7 +132,22 @@
                         {{ payment.get_payment_type_display }}
                     </span>
                 </td>
-                <td style="font-weight:700;">৳{{ payment.amount }}</td>
+                <td>
+                    <div style="font-weight:800;">৳{{ payment.amount }}</div>
+                    {% if payment.payment_type == 'consultation' and payment.appointment.discount_amount > 0 %}
+                    <div style="font-size:0.72rem; font-weight:700; color:#16A34A;
+                                margin-top:2px;">
+                        <span style="text-decoration:line-through;
+                                    color:var(--md-on-surface-variant);">
+                            ৳{{ payment.appointment.original_consultation_fee }}
+                        </span>
+                        — ৳{{ payment.appointment.discount_amount }} off
+                        {% if payment.appointment.coupon %}
+                            ({{ payment.appointment.coupon.code }})
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </td>
                 <td style="font-size:0.85rem; font-family:monospace;">
                     {{ payment.bkash_number }}
                 </td>
@@ -157,7 +172,8 @@
                                 {{ payment.id }},
                                 '{{ payment.bkash_number }}',
                                 '{{ payment.transaction_id }}',
-                                '{{ payment.amount }}'
+                                '{{ payment.amount }}',
+                                '{% if payment.payment_type == "consultation" and payment.appointment.discount_amount > 0 %}৳{{ payment.appointment.original_consultation_fee }} original — ৳{{ payment.appointment.discount_amount }} discount applied{% if payment.appointment.coupon %} ({{ payment.appointment.coupon.code }}){% endif %}{% endif %}'
                             )"
                             class="btn btn-sm"
                             style="background:#DCFCE7; color:#166534; white-space:nowrap;">
@@ -235,6 +251,14 @@
                     <div style="font-weight:700; font-family:monospace;"
                          id="qvTrxId">—</div>
                 </div>
+                <div style="grid-column:1/-1;" id="qvDiscountRow" style="display:none;">
+                    <div style="font-size:0.72rem; font-weight:700;
+                                color:var(--md-on-surface-variant);">
+                        DISCOUNT
+                    </div>
+                    <div style="font-weight:700; color:#16A34A; font-size:0.85rem;"
+                        id="qvDiscount">—</div>
+                </div>
             </div>
         </div>
 
@@ -269,10 +293,20 @@
 
 {% block extra_js %}
 <script>
-function openQuickVerify(paymentId, bkash, trxId, amount) {
+function openQuickVerify(paymentId, bkash, trxId, amount, discount) {
     document.getElementById('qvBkash').textContent  = bkash;
     document.getElementById('qvTrxId').textContent  = trxId;
     document.getElementById('qvAmount').textContent = '৳' + amount;
+
+    const discountRow = document.getElementById('qvDiscountRow');
+    const discountEl  = document.getElementById('qvDiscount');
+    if (discount) {
+        discountEl.textContent    = discount;
+        discountRow.style.display = 'block';
+    } else {
+        discountRow.style.display = 'none';
+    }
+
     document.getElementById('quickVerifyForm').action =
         `/dashboard/payments/${paymentId}/quick-verify/`;
     document.getElementById('quickVerifyModal').style.display = 'flex';
