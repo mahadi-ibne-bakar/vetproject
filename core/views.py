@@ -380,3 +380,52 @@ def error_404(request, exception=None):
 
 def error_500(request):
     return render(request, '500.html', status=500)
+
+
+def offline_page(request):
+    return render(request, 'offline.html')
+
+
+def service_worker(request):
+    from django.http import HttpResponse
+    js = """
+const CACHE_NAME = 'vetproject-v1';
+const OFFLINE_URL = '/offline/';
+
+// Pre-cache the offline page on install
+self.addEventListener('install', event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then(cache => {
+            return cache.add(OFFLINE_URL);
+        })
+    );
+    self.skipWaiting();
+});
+
+// Clean up old caches on activate
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(keys => {
+            return Promise.all(
+                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+            );
+        })
+    );
+    self.clients.claim();
+});
+
+// Network-first strategy — fall back to offline page if navigation fails
+self.addEventListener('fetch', event => {
+    if (event.request.mode !== 'navigate') return;
+
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            return caches.match(OFFLINE_URL);
+        })
+    );
+});
+"""
+    response = HttpResponse(js, content_type='application/javascript')
+    response['Service-Worker-Allowed'] = '/'
+    response['Cache-Control'] = 'no-cache'
+    return response

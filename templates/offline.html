@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}You're Offline — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:520px; margin:0 auto; padding:60px 16px; text-align:center;">
+
+    <div style="font-size:4.5rem; margin-bottom:20px; line-height:1;">🐾</div>
+
+    <h1 style="font-size:1.8rem; font-weight:800; margin:0 0 12px;">
+        You're offline
+    </h1>
+    <p style="color:var(--md-on-surface-variant); font-weight:600;
+               font-size:0.95rem; line-height:1.7; margin:0 0 32px;">
+        Please check your internet connection and try again.
+        Your appointments and data are safe.
+    </p>
+
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+                margin-bottom:40px;">
+        <button onclick="window.location.reload()"
+                class="btn btn-filled">
+            <span class="ms sm">refresh</span> Try Again
+        </button>
+        <button onclick="window.history.back()"
+                class="btn btn-tonal">
+            <span class="ms sm">arrow_back</span> Go Back
+        </button>
+    </div>
+
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                padding:20px 24px; box-shadow:var(--md-elev-1);">
+        <div style="font-weight:700; font-size:0.875rem; margin-bottom:8px;">
+            While you wait
+        </div>
+        <p style="font-size:0.85rem; color:var(--md-on-surface-variant);
+                   font-weight:500; line-height:1.6; margin:0;">
+            VetProject requires an internet connection to book consultations
+            and contact your vet. Once you're back online, everything will
+            work normally.
+        </p>
+    </div>
+
+</div>
+{% endblock %}

@@ -3,7 +3,8 @@
     font-style: normal;
     font-weight: 100 700;
     font-display: swap;
-    src: url('../fonts/material-symbols.ttf') format('truetype');
+    src: url('../fonts/material-symbols.woff2') format('woff2'),
+         url('../fonts/material-symbols.ttf')   format('truetype');
 }
 
 @font-face {
@@ -11,7 +12,8 @@
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('../fonts/nunito-400.ttf') format('truetype');
+    src: url('../fonts/nunito-400.woff2') format('woff2'),
+         url('../fonts/nunito-400.ttf')   format('truetype');
 }
 
 @font-face {
@@ -19,7 +21,8 @@
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url('../fonts/nunito-500.ttf') format('truetype');
+    src: url('../fonts/nunito-400.woff2') format('woff2'),
+         url('../fonts/nunito-400.ttf')   format('truetype');
 }
 
 @font-face {
@@ -27,7 +30,8 @@
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url('../fonts/nunito-600.ttf') format('truetype');
+    src: url('../fonts/nunito-400.woff2') format('woff2'),
+         url('../fonts/nunito-400.ttf')   format('truetype');
 }
 
 @font-face {
@@ -35,7 +39,8 @@
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url('../fonts/nunito-700.ttf') format('truetype');
+    src: url('../fonts/nunito-400.woff2') format('woff2'),
+         url('../fonts/nunito-400.ttf')   format('truetype');
 }
 
 @font-face {
@@ -43,5 +48,6 @@
     font-style: normal;
     font-weight: 800;
     font-display: swap;
-    src: url('../fonts/nunito-800.ttf') format('truetype');
+    src: url('../fonts/nunito-400.woff2') format('woff2'),
+         url('../fonts/nunito-400.ttf')   format('truetype');
 }
