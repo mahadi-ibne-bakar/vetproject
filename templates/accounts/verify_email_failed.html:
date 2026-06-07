@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Verification Failed — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:500px; margin:0 auto; padding:60px 16px; text-align:center;">
+    <div style="font-size:4rem; margin-bottom:16px;">📧</div>
+    <h1 style="font-size:1.6rem; font-weight:800; margin:0 0 12px;">
+        Link Expired or Invalid
+    </h1>
+    <p style="color:var(--md-on-surface-variant); font-weight:600;
+               font-size:0.95rem; line-height:1.7; margin:0 0 28px;">
+        This verification link has expired or is no longer valid.
+        Verification links are valid for 3 days.
+    </p>
+    {% if request.user.is_authenticated %}
+    <a href="{% url 'accounts:resend_verification' %}"
+       class="btn btn-filled" style="text-decoration:none;">
+        <span class="ms sm">send</span> Send a new verification email
+    </a>
+    {% else %}
+    <a href="{% url 'accounts:login' %}"
+       class="btn btn-filled" style="text-decoration:none;">
+        <span class="ms sm">login</span> Log in to resend
+    </a>
+    {% endif %}
+</div>
+{% endblock %}

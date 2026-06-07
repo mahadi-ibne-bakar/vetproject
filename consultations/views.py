@@ -842,6 +842,18 @@ def book_appointment(request, vet_id):
     if not settings.booking_enabled:
         messages.error(request, "Booking is currently disabled.")
         return redirect('core:home')
+    
+    # Check email verification
+    if not request.user.email_verified:
+        from core.models import SiteSettings as CoreSettings
+        site_settings = CoreSettings.get()
+        if site_settings.email_verification_enabled:
+            messages.warning(
+                request,
+                "Please verify your email address before booking a consultation. "
+                "Check your inbox for the verification link."
+            )
+            return redirect('core:home')
 
     vet = get_object_or_404(
         VetProfile, id=vet_id,

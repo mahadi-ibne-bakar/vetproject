@@ -27,6 +27,10 @@ class User(AbstractUser):
         blank=True,
         null=True,
     )
+    email_verified = models.BooleanField(
+        default=True,
+        help_text="False only when email verification is enabled and user hasn't verified yet.",
+    )
     is_banned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -815,6 +815,30 @@
         VetProject
     </a>
 
+    {% if request.user.is_authenticated and not request.user.email_verified %}
+    {% load species_tags %}
+    {% has_email_verification_enabled as verification_on %}
+    {% if verification_on %}
+    <div style="background:#FEF3C7; border-bottom:2px solid #F59E0B;
+                padding:10px 20px; text-align:center;
+                display:flex; align-items:center; justify-content:center;
+                gap:12px; flex-wrap:wrap; font-size:0.875rem; font-weight:600;">
+        <span style="display:flex; align-items:center; gap:6px; color:#78350F;">
+            <span class="ms sm filled" style="color:#F59E0B;">
+                mark_email_unread
+            </span>
+            Please verify your email address to unlock bookings.
+        </span>
+        <a href="{% url 'accounts:resend_verification' %}"
+        style="background:#F59E0B; color:#fff; padding:5px 14px;
+                border-radius:999px; text-decoration:none;
+                font-weight:700; font-size:0.8rem; white-space:nowrap;">
+            Resend verification email
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+
     <div class="top-app-bar__spacer"></div>
 
     <!-- Desktop Nav -->

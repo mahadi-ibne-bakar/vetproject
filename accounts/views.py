@@ -37,7 +37,26 @@ def register(request):
             user = form.save()
             # Log the user in immediately after registration
             login(request, user)
-            messages.success(request, f"Welcome, {user.first_name}! Your account has been created.")
+            #messages.success(request, f"Welcome, {user.first_name}! Your account has been created.")
+            # After auth.login(request, user):
+
+            from core.models import SiteSettings as CoreSettings
+            site_settings = CoreSettings.get()
+
+            if site_settings.email_verification_enabled:
+                user.email_verified = False
+                user.save(update_fields=['email_verified'])
+
+                from accounts.verification import send_verification_email
+                send_verification_email(user, request)
+
+                messages.info(
+                    request,
+                    f"Welcome! A verification email has been sent to {user.email}. "
+                    f"Please verify to unlock bookings."
+                )
+            else:
+                messages.success(request, "Welcome to VetProject!")
             return redirect('core:home')
         else:
             messages.error(request, "Please fix the errors below.")
@@ -352,3 +371,63 @@ def password_reset_confirm(request, uidb64, token):
 def password_reset_complete(request):
     """Step 4: Confirmation that password was reset."""
     return render(request, 'accounts/password_reset_complete.html')
+
+
+def verify_email(request, token):
+    """Handles clicking the verification link from the email."""
+    from accounts.verification import verify_token
+    from accounts.models import User
+
+    user_pk = verify_token(token)
+
+    if user_pk is None:
+        messages.error(
+            request,
+            "This verification link is invalid or has expired. "
+            "Please request a new one."
+        )
+        return render(request, 'accounts/verify_email_failed.html', status=400)
+
+    try:
+        user = User.objects.get(pk=user_pk)
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+        return redirect('core:home')
+
+    if user.email_verified:
+        messages.info(request, "Your email is already verified.")
+        return redirect('core:home')
+
+    user.email_verified = True
+    user.save(update_fields=['email_verified'])
+
+    messages.success(
+        request,
+        "Your email has been verified. You can now book consultations."
+    )
+    return redirect('core:home')
+
+
+def resend_verification(request):
+    """Resends the verification email to the logged-in user."""
+    from accounts.verification import send_verification_email
+    from core.models import SiteSettings
+
+    if not request.user.is_authenticated:
+        return redirect('accounts:login')
+
+    if request.user.email_verified:
+        messages.info(request, "Your email is already verified.")
+        return redirect('core:home')
+
+    settings_obj = SiteSettings.get()
+    if not settings_obj.email_verification_enabled:
+        return redirect('core:home')
+
+    send_verification_email(request.user, request)
+    messages.success(
+        request,
+        f"Verification email sent to {request.user.email}. "
+        f"Please check your inbox (and spam folder)."
+    )
+    return redirect(request.META.get('HTTP_REFERER', 'core:home'))

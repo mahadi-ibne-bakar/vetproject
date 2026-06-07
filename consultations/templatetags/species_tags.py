@@ -74,3 +74,13 @@ def url_replace(context, **kwargs):
     for key, value in kwargs.items():
         params[key] = value
     return params.urlencode()
+
+
+@register.simple_tag
+def has_email_verification_enabled():
+    """Returns True if email verification is currently enabled."""
+    from core.models import SiteSettings
+    try:
+        return SiteSettings.get().email_verification_enabled
+    except Exception:
+        return False

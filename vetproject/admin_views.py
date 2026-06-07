@@ -1212,6 +1212,17 @@ def site_settings(request):
                 messages.success(request, "Fee settings updated.")
             except (ValueError, TypeError):
                 messages.error(request, "Invalid values. Please enter positive numbers.")
+        elif action == 'toggle_email_verification':
+            settings.email_verification_enabled = not settings.email_verification_enabled
+            settings.save()
+            status = "enabled" if settings.email_verification_enabled else "disabled"
+            log_action(
+                request,
+                action      = AuditLog.Action.SETTINGS_CHANGED,
+                description = f"Email verification {status}",
+                target_type = 'SiteSettings',
+            )
+            messages.success(request, f"Email verification {status}.")        
         log_action(
             request,
             action      = AuditLog.Action.SETTINGS_CHANGED,

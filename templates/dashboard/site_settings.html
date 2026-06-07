@@ -59,6 +59,53 @@
         </form>
     </div>
 
+    <!-- Email verification toggle -->
+    <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
+                box-shadow:var(--md-elev-1); padding:24px; margin-bottom:20px;">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:16px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                mark_email_read
+            </span>
+            Email Verification
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_email_verification">
+            <div style="display:flex; align-items:center; justify-content:space-between;
+                        flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div style="font-weight:700; font-size:0.9rem; margin-bottom:4px;">
+                        {% if settings.email_verification_enabled %}
+                            Email verification is currently <strong style="color:#16A34A;">enabled</strong>
+                        {% else %}
+                            Email verification is currently <strong style="color:var(--md-on-surface-variant);">disabled</strong>
+                        {% endif %}
+                    </div>
+                    <div style="font-size:0.82rem; color:var(--md-on-surface-variant);
+                                font-weight:600; max-width:500px; line-height:1.5;">
+                        {% if settings.email_verification_enabled %}
+                            New users must verify their email before booking.
+                            Existing users are not affected.
+                        {% else %}
+                            New users can book immediately after registration.
+                            Enable this when you're ready for stricter onboarding.
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="submit"
+                        class="btn {% if settings.email_verification_enabled %}btn-danger{% else %}btn-tonal{% endif %}">
+                    <span class="ms sm">
+                        {% if settings.email_verification_enabled %}toggle_off{% else %}toggle_on{% endif %}
+                    </span>
+                    {% if settings.email_verification_enabled %}Disable{% else %}Enable{% endif %}
+                    Verification
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- Fee settings -->
     <div class="admin-card">
         <div style="font-weight:800; font-size:1rem; margin-bottom:6px;

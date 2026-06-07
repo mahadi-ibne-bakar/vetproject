@@ -73,6 +73,11 @@ class SiteSettings(models.Model):
         help_text="Optional — discount automatically deactivates after this date",
     )
 
+    email_verification_enabled = models.BooleanField(
+        default=False,
+        help_text="When enabled, new users must verify their email before booking.",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
