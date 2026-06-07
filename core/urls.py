@@ -15,4 +15,5 @@ urlpatterns = [
         template_name='robots.txt',
         content_type='text/plain',
     ), name='robots_txt'),
+    path('.well-known/security.txt', views.security_txt, name='security_txt'),
 ]

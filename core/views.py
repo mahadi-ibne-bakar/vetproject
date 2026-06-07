@@ -360,3 +360,23 @@ def health_check(request):
         'status':   'ok' if db_ok else 'degraded',
         'database': 'ok' if db_ok else 'error',
     }, status=status)
+
+
+def security_txt(request):
+    from django.http import HttpResponse
+    from django.utils import timezone
+    # Update the Expires date annually
+    content = """Contact: mailto:mahadi.ibne.bakar@gmail.com
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: en, bn
+Canonical: https://vetproject-avel.onrender.com/.well-known/security.txt
+Policy: https://vetproject-avel.onrender.com/about/
+"""
+    return HttpResponse(content, content_type='text/plain')
+
+
+def error_404(request, exception=None):
+    return render(request, '404.html', status=404)
+
+def error_500(request):
+    return render(request, '500.html', status=500)

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Page Not Found — VetProject{% endblock %}
+
+{% block content %}
+<div style="max-width:560px; margin:0 auto; padding:60px 16px; text-align:center;">
+    <div style="font-size:5rem; margin-bottom:16px; line-height:1;">🐾</div>
+    <h1 style="font-size:2rem; font-weight:800; margin:0 0 10px;">
+        Page Not Found
+    </h1>
+    <p style="color:var(--md-on-surface-variant); font-weight:600;
+               font-size:1rem; margin:0 0 32px; line-height:1.6;">
+        We looked everywhere but couldn't find that page.
+        It may have been moved or the link might be wrong.
+    </p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a href="/" class="btn btn-filled" style="text-decoration:none;">
+            <span class="ms sm">home</span> Back to Home
+        </a>
+        <a href="/consultations/vets/"
+           class="btn btn-tonal" style="text-decoration:none;">
+            <span class="ms sm">stethoscope</span> Browse Vets
+        </a>
+    </div>
+    <p style="margin-top:32px; font-size:0.82rem;
+               color:var(--md-on-surface-variant); font-weight:600;">
+        Error 404 — If you think this is a mistake,
+        <a href="/contact/" style="color:var(--md-primary);">contact us</a>.
+    </p>
+</div>
+{% endblock %}

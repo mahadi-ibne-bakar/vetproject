@@ -11,6 +11,9 @@ sitemaps = {
     'vets':   VetProfileSitemap,
 }
 
+handler404 = 'core.views.error_404'
+handler500 = 'core.views.error_500'
+
 urlpatterns = [
     # Django's built-in admin (keep for database emergencies)
     path('django-admin/', admin.site.urls),
