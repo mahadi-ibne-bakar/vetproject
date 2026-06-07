@@ -1070,6 +1070,9 @@ def create_blog(request):
             slug = f"{base_slug}-{counter}"
             counter += 1
 
+        # In the POST handler, after getting title and content:
+        category = request.POST.get('category', 'general_health')
+
         post = BlogPost.objects.create(
             title=title,
             slug=slug,
@@ -1077,7 +1080,9 @@ def create_blog(request):
             author=request.user,
             status=BlogPost.Status.PUBLISHED,
             published_at=timezone.now(),
+            category=category,
         )
+
 
         if 'featured_image' in request.FILES:
             from core.image_utils import compress_if_image, rename_image
@@ -1095,9 +1100,11 @@ def create_blog(request):
 
         messages.success(request, f"Blog post '{title}' published.")
         return redirect('dashboard:blog_list')
-
-    return render(request, 'dashboard/create_blog.html',
-                 admin_context(request))
+    from blog.models import BlogPost
+    return render(request, 'dashboard/create_blog.html', {
+        **admin_context(request),
+        'category_choices': BlogPost.Category.choices,
+    })
 
 
 @login_required_admin

@@ -39,13 +39,33 @@ class BlogEditForm(django_forms.Form):
 # ── Public views ───────────────────────────────────────────────────────────────
 
 def blog_list(request):
+    from blog.models import BlogPost
+
+    search   = request.GET.get('search', '').strip()
+    category = request.GET.get('category', '')
+
     posts = BlogPost.objects.filter(
         status='published'
     ).select_related('author').order_by('-published_at')
 
+    if search:
+        from django.db.models import Q
+        posts = posts.filter(
+            Q(title__icontains=search)   |
+            Q(content__icontains=search) |
+            Q(author__first_name__icontains=search) |
+            Q(author__last_name__icontains=search)
+        )
+
+    if category:
+        posts = posts.filter(category=category)
+
     ctx = {
-        'posts': posts,
-        'post_count': posts.count(),
+        'posts':            posts,
+        'search':           search,
+        'selected_category': category,
+        'categories':       BlogPost.Category.choices,
+        'total_count':      posts.count(),
     }
     return render(request, 'public/blog_list.html', ctx)
 
@@ -80,6 +100,7 @@ def submit_blog_post(request):
         if form.is_valid():
             title   = form.cleaned_data['title']
             content = form.cleaned_data['content']
+            category = request.POST.get('category', 'general_health')
 
             slug = slugify(title)
             base_slug = slug
@@ -90,6 +111,7 @@ def submit_blog_post(request):
 
             post = BlogPost.objects.create(
                 title=title,
+                category = category
                 slug=slug,
                 content=content,
                 author=request.user,
@@ -108,6 +130,7 @@ def submit_blog_post(request):
                     image_type='blog',
                     new_name=new_name,
                 )
+                
                 post.save()
 
             messages.success(

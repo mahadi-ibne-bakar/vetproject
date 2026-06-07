@@ -28,6 +28,23 @@
                         <p class="field-error">{{ form.title.errors.0 }}</p>
                     {% endif %}
                 </div>
+                <div>
+                    <div style="font-size:0.78rem; font-weight:700;
+                                color:var(--md-on-surface-variant); margin-bottom:6px;">
+                        CATEGORY
+                    </div>
+                    <select name="category"
+                            style="width:100%; padding:20px 16px 8px;
+                                background:var(--md-surface-variant);
+                                border:none; border-bottom:2px solid var(--md-outline);
+                                border-radius:var(--md-shape-sm) var(--md-shape-sm) 0 0;
+                                font-family:'Nunito',sans-serif; font-weight:600;
+                                font-size:0.9rem; outline:none;">
+                        {% for value, label in category_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
                 <div>
                     <div style="font-size:0.8rem; font-weight:700;

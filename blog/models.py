@@ -15,6 +15,22 @@ class BlogPost(models.Model):
         PUBLISHED = 'published', 'Published'
         REJECTED = 'rejected', 'Rejected'
 
+    class Category(models.TextChoices):
+        NUTRITION       = 'nutrition',       'Nutrition & Diet'
+        PREVENTIVE_CARE = 'preventive_care', 'Preventive Care'
+        EMERGENCIES     = 'emergencies',     'Emergencies'
+        BEHAVIOUR       = 'behaviour',       'Behaviour & Training'
+        GROOMING        = 'grooming',        'Grooming & Hygiene'
+        GENERAL_HEALTH  = 'general_health',  'General Health'
+        SPECIES_CARE    = 'species_care',    'Species-Specific Care'
+
+    category = models.CharField(
+        max_length=30,
+        choices=Category.choices,
+        default=Category.GENERAL_HEALTH,
+        db_index=True,
+    )
+
     author = models.ForeignKey(
         'accounts.User',
         on_delete=models.SET_NULL,
@@ -50,6 +66,13 @@ class BlogPost(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def reading_time_minutes(self):
+        """Estimates reading time based on 200 words per minute."""
+        word_count = len(self.content.split())
+        minutes    = max(1, round(word_count / 200))
+        return minutes
 
     def save(self, *args, **kwargs):
         # Auto-generate slug from title if not set
