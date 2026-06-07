@@ -201,12 +201,20 @@
                       style="color:var(--md-primary); opacity:0.5;">article</span>
             </div>
             {% endif %}
+            <!-- Updated Category Layout -->
             {% if post.category %}
-            <div style="font-size:0.72rem; font-weight:700;
-                        color:var(--md-primary); margin-bottom:6px;">
-                {{ post.get_category_display }}
+            <div style="padding: 14px 16px 0 16px;"> <!-- Added container padding to match inner text -->
+                <div style="display:inline-flex; align-items:center;
+                            background:var(--md-surface-variant);
+                            color:var(--md-on-surface-variant);
+                            padding:4px 12px; border-radius:var(--md-shape-full);
+                            font-size:0.72rem; font-weight:800; letter-spacing:0.3px;
+                            text-transform:uppercase;">
+                    {{ post.get_category_display }}
+                </div>
             </div>
             {% endif %}
+
             <div style="padding:20px 22px;">
                 <h3 style="font-size:1.05rem; font-weight:800;
                            color:var(--md-on-surface); margin:0 0 8px;
