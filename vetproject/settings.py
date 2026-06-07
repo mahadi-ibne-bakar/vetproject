@@ -7,6 +7,8 @@ Never put secrets directly in this file.
 
 from pathlib import Path
 from decouple import config, Csv
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
 
@@ -23,6 +25,21 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default='localhost,127.0.0.1')
 
+SENTRY_DSN = config('SENTRY_DSN', default='')
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            sentry_sdk.integrations.django.DjangoIntegration(),
+        ],
+        # Capture 10% of transactions for performance monitoring
+        # Free tier has limits so keep this low
+        traces_sample_rate=0.1,
+        # Don't send personally identifiable info (GDPR-conscious)
+        send_default_pii=False,
+        # Filter out health check noise
+        ignore_errors=[KeyboardInterrupt],
+    )
 
 # ─── Applications ─────────────────────────────────────────────────────────────
 

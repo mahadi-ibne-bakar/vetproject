@@ -40,6 +40,15 @@ wheels = [
 ]
 
 [[package]]
+name = "certifi"
+version = "2026.5.20"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/ce/ee2ecad540810a79593028e88299baeae54d346cc7a0d94b6199988b89b1/certifi-2026.5.20.tar.gz", hash = "sha256:69dea482ab64caa7b9f6aba1c6bf48bb6a5448d1c0f1b17ab42ad8c763a5344d", size = 135422, upload-time = "2026-05-20T11:46:50.073Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/59/8c/57e832b7af6d7c5abe66eb3fbe3a3a32f4d11ea23a1aa7131371035be991/certifi-2026.5.20-py3-none-any.whl", hash = "sha256:3c52e209ba0a4ad7aebe60436a4ab349c39e1e602e8c134221e546902ad25897", size = 134134, upload-time = "2026-05-20T11:46:48.578Z" },
+]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.4.7"
 source = { registry = "https://pypi.org/simple" }
@@ -384,6 +393,24 @@ wheels = [
 ]
 
 [[package]]
+name = "sentry-sdk"
+version = "2.61.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/63/3b/4bc6b348bbd331daa14d4babe9f2b99bc854f4da41560eefb9488d78481d/sentry_sdk-2.61.1.tar.gz", hash = "sha256:9c6adccb3feefa9ba032c8d295ca477575c2f11896046a2b0ad686c47c4af555", size = 459429, upload-time = "2026-06-01T07:24:18.875Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/df/54/c9218db183846e08efaf68534889ef42e499dde432778881104a42f7071b/sentry_sdk-2.61.1-py3-none-any.whl", hash = "sha256:fa36eaf4b8ad708f718500d4bdcc1532637526a22beb874d88cbc0a46458b5ae", size = 483735, upload-time = "2026-06-01T07:24:17.027Z" },
+]
+
+[package.optional-dependencies]
+django = [
+    { name = "django" },
+]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -436,6 +463,7 @@ dependencies = [
     { name = "psycopg2-binary" },
     { name = "python-decouple" },
     { name = "reportlab" },
+    { name = "sentry-sdk", extra = ["django"] },
     { name = "whitenoise" },
 ]
 
@@ -453,6 +481,7 @@ requires-dist = [
     { name = "psycopg2-binary", specifier = ">=2.9.12" },
     { name = "python-decouple", specifier = ">=3.8" },
     { name = "reportlab", specifier = ">=4.5.1" },
+    { name = "sentry-sdk", extras = ["django"], specifier = ">=2.61.1" },
     { name = "whitenoise", specifier = ">=6.12.0" },
 ]
 
