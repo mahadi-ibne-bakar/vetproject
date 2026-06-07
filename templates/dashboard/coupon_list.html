@@ -121,6 +121,11 @@
                 </td>
                 <td>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <a href="{% url 'dashboard:coupon_usages' coupon.id %}"
+                        class="btn btn-sm btn-tonal"
+                        title="View usage history">
+                            <span class="ms sm">bar_chart</span>
+                        </a>
                         <a href="{% url 'dashboard:coupon_edit' coupon.id %}"
                            class="btn btn-sm btn-outlined">
                             <span class="ms sm">edit</span>

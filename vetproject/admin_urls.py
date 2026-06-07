@@ -70,5 +70,6 @@ urlpatterns = [
     path('coupons/<int:coupon_id>/edit/', admin_views.coupon_edit, name='coupon_edit'),
     path('coupons/<int:coupon_id>/toggle/', admin_views.coupon_toggle, name='coupon_toggle'),
     path('coupons/<int:coupon_id>/delete/', admin_views.coupon_delete, name='coupon_delete'),
+    path('coupons/<int:coupon_id>/usages/', admin_views.coupon_usages, name='coupon_usages'),
 
 ]

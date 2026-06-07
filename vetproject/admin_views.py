@@ -675,6 +675,17 @@ def verify_payment(request):
                 if appt.status == 'awaiting_second_payment':
                     appt.status = 'completed'
                     appt.save()
+
+                    if appt.coupon and appt.discount_amount > 0:
+                        from consultations.models import CouponUsage
+                        CouponUsage.objects.get_or_create(
+                            coupon=appt.coupon,
+                            appointment=appt,
+                            defaults={
+                                'user':            appt.user,
+                                'discount_amount': appt.discount_amount,
+                            }
+                        )
                     # Send prescription ready email
                     from consultations.emails import send_prescription_ready
                     send_prescription_ready(appt)
@@ -1457,3 +1468,23 @@ def coupon_delete(request, coupon_id):
             coupon.delete()
             messages.success(request, f"Coupon '{code}' deleted.")
     return redirect('dashboard:coupon_list')
+
+
+@login_required_admin
+def coupon_usages(request, coupon_id):
+    from django.utils import timezone
+    coupon  = get_object_or_404(CouponCode, id=coupon_id)
+    usages  = CouponUsage.objects.filter(
+        coupon=coupon
+    ).select_related(
+        'user', 'appointment__pet', 'appointment__vet__user'
+    ).order_by('-used_at')
+
+    ctx = {
+        **admin_context(request),
+        'coupon': coupon,
+        'usages': usages,
+        'total_saved': sum(u.discount_amount for u in usages),
+        'today': timezone.localdate(),
+    }
+    return render(request, 'dashboard/coupon_usages.html', ctx)

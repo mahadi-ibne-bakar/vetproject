@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load species_tags %}
 {% block title %}Our Vets — VetProject{% endblock %}
 
 {% block content %}
@@ -160,9 +161,23 @@
                 <div>
                     <span style="font-size:0.78rem; color:var(--md-on-surface-variant);
                                 font-weight:600;">Consultation fee</span>
-                    <div style="font-weight:800; font-size:1rem;
-                                color:var(--md-primary);">
-                        ৳{{ vet.consultation_fee }}
+                    <div style="margin-top:2px;">
+                        {% has_sitewide_discount as show_discount %}
+                        {% if show_discount %}
+                            {% calc_discounted_fee vet.consultation_fee as final_fee %}
+                            <span style="text-decoration:line-through;
+                                        color:var(--md-on-surface-variant);
+                                        font-size:0.82rem; font-weight:600;">
+                                ৳{{ vet.consultation_fee }}
+                            </span>
+                            <span style="color:#16A34A; font-weight:800; font-size:1rem;">
+                                ৳{{ final_fee }}
+                            </span>
+                        {% else %}
+                            <span style="font-weight:800; font-size:1rem; color:var(--md-primary);">
+                                ৳{{ vet.consultation_fee }}
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
                 <span style="display:inline-flex; align-items:center; gap:6px;

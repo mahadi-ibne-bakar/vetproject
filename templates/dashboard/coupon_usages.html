@@ -1,0 +1,139 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}{{ coupon.code }} Usages — VetProject Admin{% endblock %}
+{% block page_title %}{{ coupon.code }} — Usage History{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'dashboard:coupon_list' %}"
+   class="btn btn-outlined btn-sm" style="margin-bottom:20px;">
+    <span class="ms sm">arrow_back</span> Back to Coupons
+</a>
+
+<!-- Summary -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+            gap:16px; margin-bottom:24px;">
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:var(--md-primary-container);">
+            <span class="ms filled" style="color:var(--md-primary);">group</span>
+        </div>
+        <div>
+            <div class="stat-card__value">{{ usages|length }}</div>
+            <div class="stat-card__label">Total Uses</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#DCFCE7;">
+            <span class="ms filled" style="color:#16A34A;">savings</span>
+        </div>
+        <div>
+            <div class="stat-card__value">৳{{ total_saved }}</div>
+            <div class="stat-card__label">Total Discounted</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card__icon"
+             style="background:{% if coupon.is_active %}#DCFCE7{% else %}var(--md-surface-variant){% endif %};">
+            <span class="ms filled"
+                  style="color:{% if coupon.is_active %}#16A34A{% else %}var(--md-on-surface-variant){% endif %};">
+                {% if coupon.is_active %}check_circle{% else %}pause_circle{% endif %}
+            </span>
+        </div>
+        <div>
+            <div class="stat-card__value">
+                {% if coupon.is_active %}Active{% else %}Inactive{% endif %}
+            </div>
+            <div class="stat-card__label">
+                {% if coupon.discount_type == 'percentage' %}
+                    {{ coupon.discount_value|floatformat:0 }}% off
+                {% else %}
+                    ৳{{ coupon.discount_value|floatformat:0 }} off
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% if coupon.max_uses %}
+    <div class="stat-card">
+        <div class="stat-card__icon" style="background:#FEF9C3;">
+            <span class="ms filled" style="color:#CA8A04;">bar_chart</span>
+        </div>
+        <div>
+            <div class="stat-card__value">
+                {{ usages|length }}/{{ coupon.max_uses }}
+            </div>
+            <div class="stat-card__label">Usage Cap</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Usages table -->
+<div class="admin-table-wrap">
+    <div class="admin-table-header" style="padding:16px 20px;
+         border-bottom:1px solid var(--md-outline-variant);
+         display:flex; align-items:center; justify-content:space-between;">
+        <span style="font-weight:800; font-size:1rem;">Usage History</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>User</th>
+                <th>Pet</th>
+                <th>Vet</th>
+                <th>Discount Given</th>
+                <th>Appointment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usage in usages %}
+            <tr>
+                <td style="font-size:0.85rem; white-space:nowrap;">
+                    {{ usage.used_at|date:"M d, Y" }}
+                </td>
+                <td>
+                    <div style="font-weight:700;">
+                        {{ usage.user.get_full_name|default:usage.user.email }}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--md-on-surface-variant);">
+                        {{ usage.user.email }}
+                    </div>
+                </td>
+                <td style="font-weight:600;">
+                    {% if usage.appointment.pet %}
+                        {{ usage.appointment.pet.name }}
+                    {% else %}—{% endif %}
+                </td>
+                <td style="font-weight:600;">
+                    {% if usage.appointment.vet %}
+                        Dr. {{ usage.appointment.vet.user.get_full_name }}
+                    {% else %}—{% endif %}
+                </td>
+                <td>
+                    <span style="font-weight:800; color:#16A34A;">
+                        ৳{{ usage.discount_amount }}
+                    </span>
+                </td>
+                <td>
+                    {% if usage.appointment %}
+                    <a href="{% url 'dashboard:consultation_detail' usage.appointment.id %}"
+                       class="btn btn-sm btn-outlined">
+                        <span class="ms sm">open_in_new</span> View
+                    </a>
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <span class="ms filled">history</span>
+                        <p>No usages yet for this coupon.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load species_tags %}
 {% block title %}Book an Appointment — VetProject{% endblock %}
 
 {% block content %}
@@ -287,10 +288,25 @@
                                         color:var(--md-on-surface-variant);">
                                 CONSULTATION FEE
                             </div>
-                            <div style="font-weight:800; font-size:1.1rem;
-                                        color:var(--md-primary);">
-                                ৳{{ vet.consultation_fee }}
-                            </div>
+                            {% has_sitewide_discount as show_discount %}
+                            {% if show_discount %}
+                                {% calc_discounted_fee vet.consultation_fee as final_fee %}
+                                <div>
+                                    <span style="text-decoration:line-through;
+                                                color:var(--md-on-surface-variant);
+                                                font-size:0.82rem; font-weight:600;">
+                                        ৳{{ vet.consultation_fee }}
+                                    </span>
+                                    <span style="font-weight:800; font-size:1.1rem;
+                                                color:#16A34A; margin-left:4px;">
+                                        ৳{{ final_fee }}
+                                    </span>
+                                </div>
+                            {% else %}
+                                <div style="font-weight:800; font-size:1.1rem; color:var(--md-primary);">
+                                    ৳{{ vet.consultation_fee }}
+                                </div>
+                            {% endif %}
                         </div>
                         <div style="display:flex; gap:6px;">
                             <button type="button"

@@ -124,15 +124,34 @@
                               style="color:var(--md-primary); flex-shrink:0;">
                             payments
                         </span>
-                        <div>
-                            <span style="font-weight:800; color:var(--md-on-surface);">
-                                ৳{{ vet.consultation_fee }}
-                            </span>
-                            <span style="font-weight:600;
-                                         color:var(--md-on-surface-variant);">
-                                consultation fee
-                            </span>
+                        <div style="font-size:0.78rem; font-weight:700;
+                                    color:var(--md-on-surface-variant); margin-bottom:4px;">
+                            CONSULTATION FEE
                         </div>
+                        {% has_sitewide_discount as show_discount %}
+                        {% if show_discount %}
+                            {% calc_discounted_fee vet.consultation_fee as final_fee %}
+                            {% calc_discount_amount vet.consultation_fee as discount_amt %}
+                            <div>
+                                <span style="text-decoration:line-through;
+                                            color:var(--md-on-surface-variant);
+                                            font-size:0.9rem; font-weight:600;">
+                                    ৳{{ vet.consultation_fee }}
+                                </span>
+                                <span style="font-weight:800; font-size:1.2rem;
+                                            color:#16A34A; margin-left:6px;">
+                                    ৳{{ final_fee }}
+                                </span>
+                            </div>
+                            <div style="font-size:0.75rem; font-weight:700;
+                                        color:#16A34A; margin-top:2px;">
+                                You save ৳{{ discount_amt }}
+                            </div>
+                        {% else %}
+                            <div style="font-weight:800; font-size:1.2rem; color:var(--md-primary);">
+                                ৳{{ vet.consultation_fee }}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
