@@ -302,19 +302,37 @@
         </div>
 
         <!-- Meet link -->
-        {% if appointment.meet_link %}
-        <div class="admin-card">
-            <div style="font-weight:800; margin-bottom:8px;
-                        display:flex; align-items:center; gap:6px;">
-                <span class="ms sm filled"
-                      style="color:var(--md-primary);">videocam</span>
-                Meet Link
+        {% if appointment.status == 'confirmed' or appointment.status == 'rescheduled' or appointment.status == 'in_progress' %}
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">videocam</span>
+            <div>
+                <div style="font-size:0.72rem; font-weight:700;
+                            color:var(--md-on-surface-variant);">
+                    GOOGLE MEET LINK
+                </div>
+                {% if appointment.meet_link %}
+                <a href="{{ appointment.meet_link.url }}"
+                target="_blank"
+                style="font-weight:700; color:var(--md-primary);
+                        word-break:break-all; font-size:0.875rem;">
+                    {{ appointment.meet_link.url }}
+                </a>
+                {% else %}
+                <div style="color:var(--md-error); font-weight:700;
+                            font-size:0.875rem; display:flex; align-items:center; gap:6px;">
+                    <span class="ms sm filled">warning</span>
+                    No Meet link assigned
+                </div>
+                <div style="font-size:0.78rem; font-weight:600;
+                            color:var(--md-on-surface-variant); margin-top:4px;">
+                    <a href="{% url 'dashboard:meet_links' %}"
+                    style="color:var(--md-primary); font-weight:700;">
+                        Add Meet links
+                    </a>
+                    to assign one to this appointment.
+                </div>
+                {% endif %}
             </div>
-            <a href="{{ appointment.meet_link.url }}" target="_blank"
-               style="font-size:0.875rem; color:var(--md-primary);
-                      font-weight:600; word-break:break-all;">
-                {{ appointment.meet_link.url }}
-            </a>
         </div>
         {% endif %}
 

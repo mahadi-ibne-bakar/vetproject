@@ -676,8 +676,13 @@
             <span class="ms filled">currency_exchange</span> Refunds
         </a>
         <a href="{% url 'dashboard:meet_links' %}"
-           class="sidebar-link {% if request.resolver_match.url_name == 'meet_links' %}active{% endif %}">
+        class="sidebar-link {% if 'meet' in request.resolver_match.url_name %}active{% endif %}">
             <span class="ms filled">videocam</span> Meet Links
+            {% if missing_meet_link_count %}
+            <span class="sidebar-badge" style="background:var(--md-error);">
+                {{ missing_meet_link_count }}
+            </span>
+            {% endif %}
         </a>
     </div>
 

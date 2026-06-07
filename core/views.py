@@ -333,10 +333,53 @@ def send_reminders_endpoint(request):
         send_cancellation_confirm(appt, refund_amount=None)
         cancelled_ids.append(appt.id)
 
+    # ── Auto-assign meet links to confirmed appointments that don't have one ───────
+    from core.models import MeetLink
+
+    confirmed_without_link = Appointment.objects.filter(
+        status__in=['confirmed', 'rescheduled'],
+        date__gte=today.date() if hasattr(today, 'date') else today,
+        meet_link__isnull=True,
+    ).select_related('vet')
+
+    assigned_ids = []
+    for appt in confirmed_without_link:
+        # Find a free link not used by another appointment on the same date
+        used_on_date = Appointment.objects.filter(
+            date=appt.date,
+            status__in=['confirmed', 'in_progress', 'completed', 'rescheduled'],
+            meet_link__isnull=False,
+        ).exclude(
+            id=appt.id
+        ).values_list('meet_link_id', flat=True)
+
+        free_link = MeetLink.objects.filter(
+            is_in_use=False,
+        ).exclude(
+            id__in=used_on_date,
+        ).first()
+
+        if free_link:
+            appt.meet_link      = free_link
+            free_link.is_in_use = True
+            free_link.save()
+            appt.save(update_fields=['meet_link'])
+            assigned_ids.append(appt.id)
+
+            # Notify user that their meet link is now available
+            from consultations.emails import send_booking_confirmed
+            # Only resend if appointment is more than 2 hours away
+            from datetime import datetime, time as time_cls
+            appt_datetime = datetime.combine(appt.date, appt.start_time)
+            appt_datetime = timezone.make_aware(appt_datetime)
+            if appt_datetime > now + timedelta(hours=2):
+                send_booking_confirmed(appt)
+
     return JsonResponse({
         'status':          'ok',
         'reminders_sent':  len(reminder_ids),
         'auto_cancelled':  len(cancelled_ids),
+        'meet_assigned':   len(assigned_ids),
         'appointment_ids': reminder_ids,
         'cancelled_ids':   cancelled_ids,
         'checked_at':      now.isoformat(),

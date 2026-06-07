@@ -115,23 +115,55 @@
     </div>
 
     <!-- Meet link (if confirmed) -->
-    {% if appointment.status == 'confirmed' and appointment.meet_link %}
+    {% if appointment.status == 'confirmed' or appointment.status == 'rescheduled' or appointment.status == 'in_progress' %}
     <div style="background:var(--md-surface); border-radius:var(--md-shape-xl);
-                box-shadow:var(--md-elev-1); padding:20px; margin-bottom:16px;
-                border-left:4px solid var(--md-primary);">
-        <div style="font-weight:800; margin-bottom:10px;
-                    display:flex; align-items:center; gap:6px;">
-            <span class="ms sm filled" style="color:var(--md-primary);">videocam</span>
-            Google Meet Link
+                box-shadow:var(--md-elev-1); padding:20px 24px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:1rem; margin-bottom:14px;
+                    display:flex; align-items:center; gap:8px;">
+            <span class="ms sm filled" style="color:var(--md-primary);">
+                videocam
+            </span>
+            Video Consultation Link
         </div>
-        <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
-                  font-weight:600; margin:0 0 12px;">
-            Join at the scheduled time. No download needed — opens in your browser.
-        </p>
-        <a href="{{ appointment.meet_link.url }}" target="_blank"
-           class="btn btn-filled">
-            <span class="ms sm">videocam</span> Join Meeting
-        </a>
+
+        {% if appointment.meet_link %}
+        <div style="background:var(--md-primary-container);
+                    border-radius:var(--md-shape-md); padding:14px 16px;">
+            <div style="font-size:0.78rem; font-weight:700;
+                        color:var(--md-on-primary-container);
+                        margin-bottom:6px;">
+                JOIN GOOGLE MEET
+            </div>
+            <a href="{{ appointment.meet_link.url }}"
+            target="_blank"
+            style="font-weight:800; color:var(--md-primary);
+                    word-break:break-all; font-size:0.9rem;
+                    display:flex; align-items:center; gap:6px;">
+                <span class="ms sm filled">open_in_new</span>
+                {{ appointment.meet_link.url }}
+            </a>
+            <div style="font-size:0.78rem; font-weight:600;
+                        color:var(--md-on-primary-container);
+                        margin-top:8px; opacity:0.8;">
+                Click this link at your scheduled time to join the consultation.
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning" style="margin:0;">
+            <span class="ms sm filled">schedule</span>
+            <div>
+                <div style="font-weight:700;">
+                    Your Meet link will be available soon
+                </div>
+                <div style="font-size:0.82rem; margin-top:4px; font-weight:600;">
+                    A Google Meet link will be assigned to your appointment
+                    before your session. Please check back closer to your
+                    appointment time, or contact us if it's not available
+                    1 hour before your session.
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 

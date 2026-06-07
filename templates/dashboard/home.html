@@ -4,6 +4,20 @@
 
 {% block content %}
 
+{% if missing_meet_link_count %}
+<div class="alert alert-error" style="margin-bottom:20px;">
+    <span class="ms sm filled">videocam_off</span>
+    <div>
+        <strong>{{ missing_meet_link_count }} confirmed appointment{{ missing_meet_link_count|pluralize }}</strong>
+        without a Google Meet link assigned.
+        <a href="{% url 'dashboard:meet_links' %}"
+           style="color:var(--md-error); font-weight:800; margin-left:6px;">
+            Add Meet links →
+        </a>
+    </div>
+</div>
+{% endif %}
+
 <!-- Attention banner if things need action -->
 {% if pending_vets or pending_payments %}
 <div class="alert alert-warning" style="margin-bottom: 20px;">

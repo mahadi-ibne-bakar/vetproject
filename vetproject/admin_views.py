@@ -21,6 +21,16 @@ from core.models import AuditLog
 
 def admin_context(request):
     """Returns context shared across all admin pages — sidebar badges etc."""
+    from django.utils import timezone
+    today = timezone.localdate()
+
+    # Confirmed appointments today or in future with no meet link assigned
+    missing_meet_links = Appointment.objects.filter(
+        status__in=['confirmed', 'rescheduled'],
+        date__gte=today,
+        meet_link__isnull=True,
+    ).count()
+
     return {
         'pending_vet_count': VetProfile.objects.filter(
             application_status='pending'
@@ -28,6 +38,7 @@ def admin_context(request):
         'pending_payment_count': Payment.objects.filter(
             status='pending'
         ).count(),
+        'missing_meet_link_count': missing_meet_links,
     }
 
 
@@ -944,16 +955,22 @@ def add_meet_link(request):
         url = request.POST.get('url', '').strip()
         notes = request.POST.get('notes', '').strip()
 
+        import re
+
         if not url:
             messages.error(request, "Please enter a Google Meet URL.")
             return redirect('dashboard:meet_links')
 
-        # Basic validation — must look like a Meet link
-        if 'meet.google.com' not in url:
+        # Validate it's a properly formed Google Meet link
+        # Valid format: https://meet.google.com/xxx-xxxx-xxx
+        meet_pattern = re.compile(
+            r'^https://meet\.google\.com/[a-z]{3}-[a-z]{4}-[a-z]{3}$'
+        )
+        if not meet_pattern.match(url):
             messages.error(
                 request,
-                "That doesn't look like a Google Meet link. "
-                "It should contain 'meet.google.com'."
+                "Invalid Google Meet URL. Expected format: "
+                "https://meet.google.com/abc-defg-hij"
             )
             return redirect('dashboard:meet_links')
 
