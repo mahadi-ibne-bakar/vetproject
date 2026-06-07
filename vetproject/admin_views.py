@@ -5,7 +5,7 @@ from django.db.models import Count, Sum, Avg, Q
 from django.db.models.functions import TruncDate
 from datetime import timedelta
 import json
-
+from django.core.paginator import Paginator
 from accounts.models import User, VetProfile
 from consultations.models import Appointment, Payment, Pet
 from blog.models import BlogPost, Review
@@ -13,6 +13,8 @@ from core.models import SiteSettings, MeetLink
 from accounts.decorators import login_required_admin
 from django.http import HttpResponse
 from consultations.models import CouponCode, CouponUsage
+from core.utils import log_action
+from core.models import AuditLog
 
 # ── Context helper ─────────────────────────────────────────────────────────────
 # Adds sidebar badge counts to every admin view automatically
@@ -303,6 +305,13 @@ def approve_vet(request, vet_id):
         # Update the user role to ensure it's set correctly
         vet.user.role = User.Role.VET
         vet.user.save()
+        log_action(
+            request,
+            action      = AuditLog.Action.VET_APPROVED,
+            description = f"Approved vet application for Dr. {vet.user.get_full_name()}",
+            target_id   = vet.id,
+            target_type = 'VetProfile',
+        )
         messages.success(
             request,
             f"Dr. {vet.user.get_full_name()} has been approved and can now log in."
@@ -319,6 +328,13 @@ def reject_vet(request, vet_id):
         vet.is_active = False
         vet.rejection_reason = reason
         vet.save()
+        log_action(
+            request,
+            action      = AuditLog.Action.VET_REJECTED,
+            description = f"Rejected vet application for Dr. {vet.user.get_full_name()}. Reason: {reason}",
+            target_id   = vet.id,
+            target_type = 'VetProfile',
+        )
         messages.success(
             request,
             f"Application from {vet.user.get_full_name()} has been rejected."
@@ -339,24 +355,31 @@ def toggle_vet(request, vet_id):
 @login_required_admin
 def user_list(request):
     search = request.GET.get('search', '').strip()
-    users = User.objects.filter(
-        role='user'
+    role   = request.GET.get('role', '')
+
+    qs = User.objects.exclude(
+        is_superuser=True
     ).order_by('-created_at')
 
     if search:
-        users = users.filter(
+        from django.db.models import Q
+        qs = qs.filter(
             Q(first_name__icontains=search) |
-            Q(last_name__icontains=search) |
-            Q(email__icontains=search) |
-            Q(phone_number__icontains=search)
+            Q(last_name__icontains=search)  |
+            Q(email__icontains=search)
         )
+
+    if role:
+        qs = qs.filter(role=role)
+
+    page_obj = paginate(qs, request, per_page=30)
 
     ctx = {
         **admin_context(request),
-        'users': users,
-        'search': search,
-        'total_count': User.objects.filter(role='user').count(),
-        'banned_count': User.objects.filter(role='user', is_banned=True).count(),
+        'users':       page_obj,
+        'page_obj':    page_obj,
+        'search':      search,
+        'role_filter': role,
     }
     return render(request, 'dashboard/user_list.html', ctx)
 
@@ -368,6 +391,13 @@ def ban_user(request, user_id):
         reason = request.POST.get('reason', '')
         user.is_banned = True
         user.save()
+        log_action(
+            request,
+            action      = AuditLog.Action.USER_BANNED,
+            description = f"Banned user {user.email} (#{user.id})",
+            target_id   = user.id,
+            target_type = 'User',
+        )
         messages.success(
             request,
             f"{user.get_full_name() or user.email} has been banned."
@@ -385,52 +415,54 @@ def unban_user(request, user_id):
             request,
             f"{user.get_full_name() or user.email} has been unbanned."
         )
+        log_action(
+            request,
+            action      = AuditLog.Action.USER_UNBANNED,
+            description = f"Unbanned user {user.email} (#{user.id})",
+            target_id   = user.id,
+            target_type = 'User',
+        )
     return redirect('dashboard:user_list')
 
 @login_required_admin
 def consultation_list(request):
-    tab    = request.GET.get('tab', 'upcoming')
+    tab    = request.GET.get('tab', 'all')
     search = request.GET.get('search', '').strip()
 
     base_qs = Appointment.objects.select_related(
-        'user', 'vet__user', 'pet', 'meet_link'
+        'user', 'vet__user', 'pet', 'meet_link', 'coupon'
     ).order_by('-date', '-start_time')
 
+    if tab == 'pending':
+        qs = base_qs.filter(status='pending_payment')
+    elif tab == 'upcoming':
+        qs = base_qs.filter(status__in=['confirmed', 'rescheduled'])
+    elif tab == 'completed':
+        qs = base_qs.filter(status='completed')
+    elif tab == 'cancelled':
+        qs = base_qs.filter(status='cancelled')
+    else:
+        qs = base_qs
+
     if search:
-        base_qs = base_qs.filter(
+        from django.db.models import Q
+        qs = qs.filter(
             Q(user__first_name__icontains=search) |
             Q(user__last_name__icontains=search)  |
-            Q(pet__name__icontains=search)         |
-            Q(vet__user__first_name__icontains=search) |
-            Q(vet__user__last_name__icontains=search)
+            Q(user__email__icontains=search)       |
+            Q(vet__user__last_name__icontains=search) |
+            Q(pet__name__icontains=search)
         )
 
-    upcoming = base_qs.filter(
-        status__in=['pending_payment', 'confirmed',
-                    'rescheduled', 'in_progress']
-    )
-    awaiting = base_qs.filter(status='awaiting_second_payment')
-    completed = base_qs.filter(status='completed')
-    cancelled = base_qs.filter(status='cancelled')
+    page_obj = paginate(qs, request, per_page=25)
 
     ctx = {
         **admin_context(request),
-        'tab':    tab,
-        'search': search,
-        'tabs': [
-            ('upcoming',  'Upcoming',         upcoming.count()),
-            ('awaiting',  'Awaiting Payment', awaiting.count()),
-            ('completed', 'Completed',        completed.count()),
-            ('cancelled', 'Cancelled',        None),
-        ],
-        'upcoming':        upcoming,
-        'awaiting':        awaiting,
-        'completed':       completed,
-        'cancelled':       cancelled,
-        'upcoming_count':  upcoming.count(),
-        'awaiting_count':  awaiting.count(),
-        'completed_count': completed.count(),
-        'cancelled_count': cancelled.count(),
+        'consultations': page_obj,
+        'page_obj':      page_obj,
+        'tab':           tab,
+        'search':        search,
+        'total_count':   base_qs.count(),
     }
     return render(request, 'dashboard/consultation_list.html', ctx)
 
@@ -530,30 +562,34 @@ def cancel_consultation(request, appointment_id):
 @login_required_admin
 def payment_list(request):
     status_filter = request.GET.get('status', 'pending')
+    status_choices = [
+        ('pending',  'Pending'),
+        ('verified', 'Verified'),
+        ('failed',   'Failed'),
+        ('refunded', 'Refunded'),
+    ]
 
-    payments = Payment.objects.select_related(
+    payments = Payment.objects.filter(
+        status=status_filter
+    ).select_related(
         'appointment__user',
         'appointment__vet__user',
         'appointment__pet',
+        'appointment__coupon',
         'verified_by',
     ).order_by('-created_at')
 
+    page_obj = paginate(payments, request, per_page=20)
+
     ctx = {
         **admin_context(request),
-        'payments': payments,
-        'status_filter': status_filter,
-        'pending_count': Payment.objects.filter(status='pending').count(),
+        'payments':       page_obj,
+        'page_obj':       page_obj,
+        'status_filter':  status_filter,
+        'status_choices': status_choices,
+        'pending_count':  Payment.objects.filter(status='pending').count(),
         'verified_count': Payment.objects.filter(status='verified').count(),
-        'failed_count': Payment.objects.filter(
-            status__in=['wrong_transaction', 'failed']
-        ).count(),
-        'status_choices': [
-            ('pending', 'Pending'),
-            ('verified', 'Verified'),
-            ('wrong_transaction', 'Wrong TrxID'),
-            ('failed', 'Failed'),
-            ('refunded', 'Refunded'),
-        ],
+        'failed_count':   Payment.objects.filter(status='failed').count(),
     }
     return render(request, 'dashboard/payment_list.html', ctx)
 
@@ -750,8 +786,19 @@ def quick_verify_payment(request, payment_id):
         payment.verified_at = timezone.now()
         payment.save()
 
-        # Update appointment status
-        appt = payment.appointment
+        appt = payment.appointment  # ← appt defined here first
+
+        log_action(                  # ← THEN log it
+            request,
+            action      = AuditLog.Action.PAYMENT_VERIFIED,
+            description = (
+                f"Verified {payment.get_payment_type_display()} payment of "
+                f"৳{payment.amount} — TrxID {payment.transaction_id} — "
+                f"Appointment #{appt.id} for {appt.user.get_full_name()}"
+            ),
+            target_id   = payment.id,
+            target_type = 'Payment',
+        )
 
         if payment.payment_type == 'booking':
             if appt.status == 'pending_payment':
@@ -1158,7 +1205,12 @@ def site_settings(request):
                 messages.success(request, "Fee settings updated.")
             except (ValueError, TypeError):
                 messages.error(request, "Invalid values. Please enter positive numbers.")
-
+        log_action(
+            request,
+            action      = AuditLog.Action.SETTINGS_CHANGED,
+            description = f"Updated site settings — action: {action}",
+            target_type = 'SiteSettings',
+        )
         return redirect('dashboard:site_settings')
 
     ctx = {
@@ -1369,7 +1421,7 @@ def coupon_create(request):
             for e in errors:
                 messages.error(request, e)
         else:
-            CouponCode.objects.create(
+            new_coupon = CouponCode.objects.create(
                 code=code,
                 description=description,
                 discount_type=discount_type,
@@ -1381,6 +1433,13 @@ def coupon_create(request):
                 max_uses_per_user=int(max_uses_per_user) if max_uses_per_user else 1,
                 is_active=True,
                 created_by=request.user,
+            )
+            log_action(
+                request,
+                action      = AuditLog.Action.COUPON_CREATED,
+                description = f"Created coupon '{code}' — {discount_type} {discount_value}",
+                target_id   = new_coupon.id,   # ← integer ID, not the string code
+                target_type = 'CouponCode',
             )
             messages.success(request, f"Coupon '{code}' created successfully.")
             return redirect('dashboard:coupon_list')
@@ -1449,6 +1508,13 @@ def coupon_toggle(request, coupon_id):
         coupon.is_active = not coupon.is_active
         coupon.save()
         status = "activated" if coupon.is_active else "deactivated"
+        log_action(
+            request,
+            action      = AuditLog.Action.COUPON_TOGGLED,
+            description = f"{'Activated' if coupon.is_active else 'Deactivated'} coupon '{coupon.code}'",
+            target_id   = coupon.id,
+            target_type = 'CouponCode',
+        )
         messages.success(request, f"Coupon '{coupon.code}' {status}.")
     return redirect('dashboard:coupon_list')
 
@@ -1466,6 +1532,12 @@ def coupon_delete(request, coupon_id):
             )
         else:
             coupon.delete()
+            log_action(
+                request,
+                action      = AuditLog.Action.COUPON_DELETED,
+                description = f"Deleted coupon '{code}'",
+                target_type = 'CouponCode',
+            )
             messages.success(request, f"Coupon '{code}' deleted.")
     return redirect('dashboard:coupon_list')
 
@@ -1488,3 +1560,36 @@ def coupon_usages(request, coupon_id):
         'today': timezone.localdate(),
     }
     return render(request, 'dashboard/coupon_usages.html', ctx)
+
+
+def paginate(queryset, request, per_page=25):
+    """Paginates a queryset and returns the page object."""
+    paginator = Paginator(queryset, per_page)
+    page_num  = request.GET.get('page', 1)
+    try:
+        return paginator.page(page_num)
+    except Exception:
+        return paginator.page(1)
+    
+
+@login_required_admin
+def audit_log(request):
+    from django.utils import timezone
+
+    logs = AuditLog.objects.select_related('actor').order_by('-created_at')
+
+    # Filter by action type
+    action_filter = request.GET.get('action', '')
+    if action_filter:
+        logs = logs.filter(action=action_filter)
+
+    page_obj = paginate(logs, request, per_page=30)
+
+    ctx = {
+        **admin_context(request),
+        'logs':           page_obj,
+        'page_obj':       page_obj,
+        'action_choices': AuditLog.Action.choices,
+        'action_filter':  action_filter,
+    }
+    return render(request, 'dashboard/audit_log.html', ctx)

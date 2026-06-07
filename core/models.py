@@ -106,6 +106,42 @@ class SiteSettings(models.Model):
             discount = float(self.sitewide_discount_value)
         return min(int(round(discount)), int(fee))
 
+class AuditLog(models.Model):
+    """
+    Records significant admin actions for accountability.
+    """
+    class Action(models.TextChoices):
+        PAYMENT_VERIFIED   = 'payment_verified',   'Payment Verified'
+        PAYMENT_FAILED     = 'payment_failed',     'Payment Marked Failed'
+        PAYMENT_REFUNDED   = 'payment_refunded',   'Payment Refunded'
+        USER_BANNED        = 'user_banned',        'User Banned'
+        USER_UNBANNED      = 'user_unbanned',      'User Unbanned'
+        VET_APPROVED       = 'vet_approved',       'Vet Application Approved'
+        VET_REJECTED       = 'vet_rejected',       'Vet Application Rejected'
+        SETTINGS_CHANGED   = 'settings_changed',   'Site Settings Changed'
+        COUPON_CREATED     = 'coupon_created',     'Coupon Created'
+        COUPON_TOGGLED     = 'coupon_toggled',     'Coupon Toggled'
+        COUPON_DELETED     = 'coupon_deleted',     'Coupon Deleted'
+        APPOINTMENT_CANCELLED = 'appt_cancelled',  'Appointment Cancelled by Admin'
+
+    actor       = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='audit_logs',
+    )
+    action      = models.CharField(max_length=50, choices=Action.choices)
+    description = models.TextField()
+    target_id   = models.PositiveIntegerField(null=True, blank=True)
+    target_type = models.CharField(max_length=50, blank=True, default='')
+    created_at  = models.DateTimeField(auto_now_add=True)
+    ip_address  = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.actor} — {self.action} — {self.created_at:%Y-%m-%d %H:%M}"
 
 class MeetLink(models.Model):
     """

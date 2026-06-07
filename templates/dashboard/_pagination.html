@@ -1,0 +1,38 @@
+{% if page_obj.has_other_pages %}
+<div style="display:flex; align-items:center; justify-content:space-between;
+            padding:14px 20px; border-top:1px solid var(--md-outline-variant);
+            flex-wrap:wrap; gap:10px;">
+
+    <div style="font-size:0.82rem; font-weight:600;
+                color:var(--md-on-surface-variant);">
+        Showing {{ page_obj.start_index }}–{{ page_obj.end_index }}
+        of {{ page_obj.paginator.count }} records
+    </div>
+
+    <div style="display:flex; gap:4px; align-items:center;">
+
+        {% if page_obj.has_previous %}
+        <a href="?{% url_replace page=page_obj.previous_page_number %}">
+            <span class="ms sm">chevron_left</span>
+        </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span style="padding:6px 12px; border-radius:var(--md-shape-full);
+                         background:var(--md-primary); color:#fff;
+                         font-weight:700; font-size:0.82rem;">
+                {{ num }}
+            </span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?{% url_replace page=num %}">
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?{% url_replace page=page_obj.next_page_number %}">
+        {% endif %}
+
+    </div>
+</div>
+{% endif %}

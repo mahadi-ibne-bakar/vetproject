@@ -60,3 +60,17 @@ def calc_discount_amount(fee):
         return settings.calculate_sitewide_discount(fee)
     except Exception:
         return 0
+    
+
+@register.simple_tag(takes_context=True)
+def url_replace(context, **kwargs):
+    """
+    Replaces or adds query params while preserving existing ones.
+    Usage: {% url_replace page=2 %}
+    """
+    from urllib.parse import urlencode
+    request   = context['request']
+    params    = request.GET.copy()
+    for key, value in kwargs.items():
+        params[key] = value
+    return params.urlencode()

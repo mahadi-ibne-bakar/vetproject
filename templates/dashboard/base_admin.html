@@ -703,6 +703,15 @@
         </a>
     </div>
 
+    <div class="sidebar-section">
+        <div class="sidebar-section__label">Security</div>
+        <a href="{% url 'dashboard:audit_log' %}"
+        class="sidebar-link
+            {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}">
+            <span class="ms filled">history</span> Audit Log
+        </a>
+    </div>
+
     <!-- System -->
     <div class="sidebar-section">
         <div class="sidebar-section__label">System</div>
