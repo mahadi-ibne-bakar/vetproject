@@ -100,7 +100,6 @@ def submit_blog_post(request):
         if form.is_valid():
             title   = form.cleaned_data['title']
             content = form.cleaned_data['content']
-            category = request.POST.get('category', 'general_health')
 
             slug = slugify(title)
             base_slug = slug
@@ -111,12 +110,14 @@ def submit_blog_post(request):
 
             post = BlogPost.objects.create(
                 title=title,
-                category = category
                 slug=slug,
                 content=content,
                 author=request.user,
                 status=BlogPost.Status.PENDING,
             )
+
+            category = request.POST.get('category', 'general_health')
+            post.category = category
 
             if form.cleaned_data.get('featured_image'):
                 from core.image_utils import compress_if_image, rename_image
