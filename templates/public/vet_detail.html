@@ -135,11 +135,13 @@
                             <div>
                                 <span style="text-decoration:line-through;
                                             color:var(--md-on-surface-variant);
-                                            font-size:0.9rem; font-weight:600;">
+                                            font-size:0.9rem; font-weight:600;
+                                            vertical-align:middle;">
                                     ৳{{ vet.consultation_fee }}
                                 </span>
                                 <span style="font-weight:800; font-size:1.2rem;
-                                            color:#16A34A; margin-left:6px;">
+                                            color:#16A34A; margin-left:6px;
+                                            vertical-align:middle;">
                                     ৳{{ final_fee }}
                                 </span>
                             </div>
@@ -231,7 +233,19 @@
                     <span class="ms sm filled">info</span>
                     <span style="font-size:0.82rem;">
                         Booking fee: <strong>৳50</strong> upfront.
-                        Consultation fee: <strong>৳{{ vet.consultation_fee }}</strong>
+                        Consultation fee:
+                        {% has_sitewide_discount as show_discount_info %}
+                        {% if show_discount_info %}
+                            {% calc_discounted_fee vet.consultation_fee as info_final_fee %}
+                            <strong style="text-decoration:line-through;
+                                        color:var(--md-on-primary-container);
+                                        opacity:0.6;">
+                                ৳{{ vet.consultation_fee }}
+                            </strong>
+                            <strong style="color:#16A34A;">৳{{ info_final_fee }}</strong>
+                        {% else %}
+                            <strong>৳{{ vet.consultation_fee }}</strong>
+                        {% endif %}
                         after the session.
                     </span>
                 </div>
