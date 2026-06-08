@@ -196,7 +196,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function openBanModal(userId, userName) {
     document.getElementById('banUserName').textContent = userName;
     document.getElementById('banForm').action = `/dashboard/users/${userId}/ban/`;

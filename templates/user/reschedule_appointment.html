@@ -73,7 +73,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
     const vetId = {{ appointment.vet.id }};
 
     document.getElementById('newDate').addEventListener('input', function() {

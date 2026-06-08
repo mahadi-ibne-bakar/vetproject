@@ -79,6 +79,7 @@ CRISPY_TEMPLATE_PACK = 'tailwind'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'core.middleware.CSPMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -113,6 +114,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.site_settings',
+                'core.context_processors.csp_nonce',
             ],
         },
     },
@@ -343,3 +345,8 @@ CACHES = {
 
 SITE_ID = 1
 
+# ── Content Security Policy ────────────────────────────────────────────────────
+# True = report-only mode (logs violations, doesn't block)
+# False = enforcing mode (blocks violations)
+# Start with True, switch to False after monitoring for a few days
+CSP_REPORT_ONLY = config('CSP_REPORT_ONLY', default=True, cast=bool)

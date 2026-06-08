@@ -354,7 +354,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
     // Day chip toggle styling
     document.querySelectorAll('.day-chip').forEach(label => {
         const checkbox = label.querySelector('input[type=checkbox]');

@@ -276,7 +276,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function openRejectBlogModal(postId, postTitle) {
     document.getElementById('rejectBlogTitle').textContent = postTitle;
     document.getElementById('rejectBlogForm').action = `/dashboard/blog/${postId}/reject/`;

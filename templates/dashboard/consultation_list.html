@@ -222,7 +222,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function openCancelModal(apptId, petName) {
     document.getElementById('cancelPetName').textContent = petName;
     document.getElementById('cancelForm').action =

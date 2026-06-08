@@ -472,3 +472,28 @@ self.addEventListener('fetch', event => {
     response['Service-Worker-Allowed'] = '/'
     response['Cache-Control'] = 'no-cache'
     return response
+
+
+from django.views.decorators.csrf import csrf_exempt
+from core.middleware import logger
+
+@csrf_exempt
+def csp_report(request):
+    """Receives CSP violation reports from browsers."""
+    import json
+    from django.http import HttpResponse
+
+    if request.method == 'POST':
+        try:
+            report = json.loads(request.body)
+            violation = report.get('csp-report', {})
+            blocked = violation.get('blocked-uri', 'unknown')
+            directive = violation.get('violated-directive', 'unknown')
+            document = violation.get('document-uri', 'unknown')
+            logger.warning(
+                f"CSP violation: blocked={blocked} "
+                f"directive={directive} document={document}"
+            )
+        except Exception:
+            pass
+    return HttpResponse(status=204)

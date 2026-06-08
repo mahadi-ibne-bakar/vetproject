@@ -383,7 +383,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
     const availableDates = {{ available_dates_json|safe }};
     const vetId = {{ vet.id }};
     let selectedSlot = null;

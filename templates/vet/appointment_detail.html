@@ -630,7 +630,7 @@
 
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function addMedicationRow() {
     const container = document.getElementById('medicationRows');
     const row = document.createElement('div');

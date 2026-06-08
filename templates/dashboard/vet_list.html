@@ -265,7 +265,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function openRejectModal(vetId, vetName) {
     document.getElementById('rejectVetName').textContent = vetName;
     document.getElementById('rejectForm').action = `/dashboard/vets/${vetId}/reject/`;

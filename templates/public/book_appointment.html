@@ -362,7 +362,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
     // Pet card selection highlight
     document.querySelectorAll('.pet-card').forEach(card => {
         const radio = card.querySelector('input[type=radio]');

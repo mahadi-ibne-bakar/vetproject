@@ -206,7 +206,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
     // Customer type chip highlight
     document.querySelectorAll('.type-chip').forEach(chip => {
         const radio = chip.querySelector('input[type=radio]');

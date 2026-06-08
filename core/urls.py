@@ -18,4 +18,5 @@ urlpatterns = [
     path('.well-known/security.txt', views.security_txt, name='security_txt'),
     path('offline/', views.offline_page, name='offline'),
     path('sw.js',    views.service_worker, name='service_worker'),
+    path('csp-report/', views.csp_report, name='csp_report'),
 ]

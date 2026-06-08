@@ -166,7 +166,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 const primary = '#2D6A4F';
 const primaryLight = 'rgba(45, 106, 79, 0.15)';
 const secondary = '#C75E3A';

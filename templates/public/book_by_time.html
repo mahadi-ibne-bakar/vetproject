@@ -460,7 +460,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function toggleVetProfile(vetId) {
     const panel = document.getElementById('vet-profile-' + vetId);
     const btn   = document.getElementById('profile-btn-' + vetId);

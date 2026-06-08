@@ -352,7 +352,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function toggleSitewideFields() {
     const enabled = document.getElementById('sitewideToggle').checked;
     document.getElementById('sitewideFields').style.display = enabled ? 'flex' : 'none';

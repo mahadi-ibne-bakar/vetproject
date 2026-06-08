@@ -156,7 +156,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
     // Species chip highlight
     const chips = document.querySelectorAll('.species-chip');
     chips.forEach(chip => {

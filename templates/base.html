@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>
+    <script nonce="{{ csp_nonce }}">
         (function() {
             const t = localStorage.getItem('vetproject-theme') ||
                     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -1277,7 +1277,7 @@
 </footer>
 
 <!-- ── Scripts ────────────────────────────────────────────────────── -->
-<script>
+<script nonce="{{ csp_nonce }}">
     // ── Password visibility toggle ──────────────────────────────
     function togglePasswordVisibility(inputId, btn) {
         const input = document.getElementById(inputId);

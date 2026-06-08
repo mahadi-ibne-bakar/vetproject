@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>
+    <script nonce="{{ csp_nonce }}">
         (function() {
             const t = localStorage.getItem('vetproject-theme') ||
                     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -803,7 +803,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
     function toggleSidebar() {
         const sidebar   = document.getElementById('adminSidebar');
         const backdrop  = document.getElementById('adminBackdrop');

@@ -87,7 +87,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
     const area    = document.getElementById('contentArea');
     const counter = document.getElementById('wordCount');
     function updateWordCount() {

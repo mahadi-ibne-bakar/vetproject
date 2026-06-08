@@ -132,7 +132,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
     const chips = document.querySelectorAll('.species-chip');
     chips.forEach(chip => {
         const radio = chip.querySelector('input[type=radio]');
