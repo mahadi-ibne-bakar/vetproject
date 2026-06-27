@@ -30,3 +30,5 @@ staticfiles/
 
 # Logs
 *.logtest_db.sqlite3
+media/
+staticfiles/
