@@ -1,5 +1,5 @@
 """
-Utility functions for VetProject core app.
+Utility functions for Amarvet core app.
 """
 
 import logging

@@ -7,7 +7,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ['username', 'email', 'role', 'is_banned', 'created_at']
     list_filter = ['role', 'is_banned']
     fieldsets = BaseUserAdmin.fieldsets + (
-        ('VetProject Fields', {
+        ('Amarvet Fields', {
             'fields': ('role', 'phone_number', 'address', 'profile_photo', 'is_banned')
         }),
     )

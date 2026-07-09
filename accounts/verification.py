@@ -45,15 +45,15 @@ def send_verification_email(user, request):
 
     try:
         send_mail(
-            subject="Verify your VetProject account",
+            subject="Verify your Amarvet account",
             message=(
                 f"Hi {user.first_name},\n\n"
                 f"Please verify your email address by clicking the link below:\n\n"
                 f"{link}\n\n"
                 f"This link expires in 3 days.\n\n"
-                f"If you did not create a VetProject account, "
+                f"If you did not create a Amarvet account, "
                 f"you can safely ignore this email.\n\n"
-                f"— The VetProject Team"
+                f"— The Amarvet Team"
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],

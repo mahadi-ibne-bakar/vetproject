@@ -1,5 +1,5 @@
 """
-Creates realistic demo data for VetProject.
+Creates realistic demo data for Amarvet.
 Run: python manage.py create_demo_data
 
 Creates:
@@ -355,7 +355,7 @@ class Command(BaseCommand):
                     "Very knowledgeable and patient. Milo is doing much better now!",
                     "Excellent consultation. The doctor explained everything clearly.",
                     "So convenient! Saved us a trip to the clinic and Bella got great care.",
-                    "Dr. was very thorough. Highly recommend VetProject.",
+                    "Dr. was very thorough. Highly recommend Amarvet.",
                     "Fast and professional. Will definitely use again.",
                     "Great experience. The doctor really listened to my concerns.",
                 ]

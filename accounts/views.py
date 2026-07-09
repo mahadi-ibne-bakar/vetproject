@@ -56,7 +56,7 @@ def register(request):
                     f"Please verify to unlock bookings."
                 )
             else:
-                messages.success(request, "Welcome to VetProject!")
+                messages.success(request, "Welcome to Amarvet!")
             return redirect('core:home')
         else:
             messages.error(request, "Please fix the errors below.")
@@ -306,14 +306,14 @@ def password_reset_request(request):
                 )
                 # Send the email
                 send_mail(
-                    subject="Reset your VetProject password",
+                    subject="Reset your Amarvet password",
                     message=(
                         f"Hi {user.first_name},\n\n"
                         f"Click the link below to reset your password:\n\n"
                         f"{reset_link}\n\n"
                         f"This link expires in 1 hour.\n\n"
                         f"If you didn't request this, ignore this email.\n\n"
-                        f"— The VetProject Team"
+                        f"— The Amarvet Team"
                     ),
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[email],

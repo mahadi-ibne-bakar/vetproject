@@ -98,10 +98,10 @@ def home(request):
 def about(request):
     team = [
         {
-            'name': 'The VetProject Team',
+            'name': 'The Amarvet Team',
             'role': 'Founded in Bangladesh',
             'description': (
-                'VetProject was built by a team passionate about improving '
+                'Amarvet was built by a team passionate about improving '
                 'access to veterinary care for pet owners across Bangladesh. '
                 'We believe every cat and dog deserves quality healthcare, '
                 'regardless of where their owner lives.'
@@ -196,7 +196,7 @@ def contact(request):
             )
             try:
                 send_mail(
-                    subject=f"VetProject Contact: {subject or 'No subject'}",
+                    subject=f"Amarvet Contact: {subject or 'No subject'}",
                     message=full_message,
                     from_email=django_settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[django_settings.DEFAULT_FROM_EMAIL],
@@ -229,14 +229,14 @@ def shop(request):
             try:
                 # Acknowledgement to user
                 send_mail(
-                    subject="Thanks for your feedback — VetProject Shop",
+                    subject="Thanks for your feedback — Amarvet Shop",
                     message=(
                         f"Hi,\n\n"
                         f"Thank you for sharing what you'd like to see in the "
-                        f"VetProject Shop. We read every message and your input "
+                        f"Amarvet Shop. We read every message and your input "
                         f"directly shapes what we stock.\n\n"
                         f"We'll let you know as soon as the shop is live!\n\n"
-                        f"— The VetProject Team"
+                        f"— The Amarvet Team"
                     ),
                     from_email=django_settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[email],
@@ -409,11 +409,11 @@ def security_txt(request):
     from django.http import HttpResponse
     from django.utils import timezone
     # Update the Expires date annually
-    content = """Contact: mailto:mahadi.ibne.bakar@gmail.com
+    content = """Contact: mailto:admin@amarvet.live
 Expires: 2027-01-01T00:00:00.000Z
 Preferred-Languages: en, bn
-Canonical: https://vetproject-avel.onrender.com/.well-known/security.txt
-Policy: https://vetproject-avel.onrender.com/about/
+Canonical: https://amarvet.live/.well-known/security.txt
+Policy: https://amarvet.live/about/
 """
     return HttpResponse(content, content_type='text/plain')
 

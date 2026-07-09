@@ -68,9 +68,9 @@ You will also receive a reminder 30 minutes before your appointment.
 If you need to cancel or reschedule, please do so at least 2 hours in advance
 to receive a full refund (minus the ৳10 cancellation fee).
 
-Thank you for choosing VetProject.
+Thank you for choosing Amarvet.
 
-— The VetProject Team
+— The Amarvet Team
 """
 
     _send(
@@ -99,9 +99,9 @@ Google Meet: {meet_url}
 Description:
 {appointment.complaint_description}
 
-Please log in to your VetProject dashboard to view full details.
+Please log in to your Amarvet dashboard to view full details.
 
-— The VetProject Team
+— The Amarvet Team
 """
 
     _send(
@@ -136,7 +136,7 @@ Google Meet: {meet_url}
 
 Click the Google Meet link above to join at the scheduled time.
 
-— The VetProject Team
+— The Amarvet Team
 """
 
     _send(
@@ -158,7 +158,7 @@ Time:       {time_str}
 Google Meet: {meet_url}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-— The VetProject Team
+— The Amarvet Team
 """
 
     _send(
@@ -187,12 +187,12 @@ Pet:   {pet.name}
 Date:  {date_str}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-You can view and download your prescription by logging in to VetProject
+You can view and download your prescription by logging in to Amarvet
 and visiting your appointments page.
 
-Thank you for choosing VetProject. We hope {pet.name} feels better soon!
+Thank you for choosing Amarvet. We hope {pet.name} feels better soon!
 
-— The VetProject Team
+— The Amarvet Team
 """
 
     _send(
@@ -232,9 +232,9 @@ Date:  {date_str}
 Time:  {time_str}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {refund_text}
-If you'd like to book a new appointment, visit VetProject anytime.
+If you'd like to book a new appointment, visit Amarvet anytime.
 
-— The VetProject Team
+— The Amarvet Team
 """
 
     _send(

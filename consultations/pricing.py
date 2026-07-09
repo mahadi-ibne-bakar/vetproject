@@ -1,5 +1,5 @@
 """
-Pricing utilities for VetProject consultations.
+Pricing utilities for Amarvet consultations.
 
 Handles:
 - Sitewide discount calculation

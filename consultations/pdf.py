@@ -125,7 +125,7 @@ def generate_prescription_pdf(appointment) -> bytes:
 
     # ── Header ─────────────────────────────────────────────────────────────────
     header_data = [[
-        Paragraph('VetProject', brand_title),
+        Paragraph('Amarvet', brand_title),
         Paragraph(
             f"Date: <b>{appointment.date.strftime('%B %d, %Y')}</b>",
             ParagraphStyle(
@@ -312,7 +312,7 @@ def generate_prescription_pdf(appointment) -> bytes:
             )
         ),
         Paragraph(
-            f"<b>VetProject</b><br/>"
+            f"<b>Amarvet</b><br/>"
             f"Online Veterinary Consultation<br/>"
             f"Bangladesh",
             ParagraphStyle(
@@ -334,10 +334,10 @@ def generate_prescription_pdf(appointment) -> bytes:
         width='100%', thickness=1, color=PRIMARY, spaceAfter=4
     ))
     story.append(Paragraph(
-        'This prescription was issued following an online veterinary consultation via VetProject. '
+        'This prescription was issued following an online veterinary consultation via Amarvet. '
         'It is valid for use at any registered veterinary pharmacy in Bangladesh. '
         'For emergencies or if symptoms worsen, please visit a physical veterinary clinic immediately. '
-        'VetProject does not replace in-person veterinary care.',
+        'Amarvet does not replace in-person veterinary care.',
         disclaimer
     ))
 

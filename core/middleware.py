@@ -1,5 +1,5 @@
 """
-Content Security Policy middleware for VetProject.
+Content Security Policy middleware for Amarvet.
 
 Uses a per-request nonce for inline scripts.
 Inline styles use unsafe-inline until the template refactor (Phase 7).

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Prescription — VetProject{% endblock %}
+{% block title %}Prescription — Amarvet{% endblock %}
 
 {% block content %}
 <div style="max-width:720px; margin:0 auto;">
@@ -20,7 +20,7 @@
                     display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <div style="color:#fff; font-weight:800; font-size:1.4rem;">
-                    VetProject
+                    Amarvet
                 </div>
                 <div style="color:var(--md-primary-container); font-size:0.85rem;
                             font-weight:600; margin-top:2px;">
@@ -184,7 +184,7 @@
                 <div style="font-size:0.78rem; color:var(--md-on-surface-variant);
                             font-weight:500; max-width:400px; line-height:1.4;">
                     This prescription was issued following an online consultation
-                    via VetProject. For emergencies, please visit a physical
+                    via Amarvet. For emergencies, please visit a physical
                     veterinary clinic immediately.
                 </div>
                 <a href="{% url 'consultations:download_prescription' appointment.id %}"

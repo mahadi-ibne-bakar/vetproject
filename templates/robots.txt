@@ -14,4 +14,4 @@ Disallow: /consultations/vet/
 Disallow: /consultations/payment/
 Disallow: /cron/
 
-Sitemap: https://vetproject-avel.onrender.com/sitemap.xml
+Sitemap: https://amarvet.live/sitemap.xml

@@ -1,8 +1,8 @@
-# VetProject
+# Amarvet
 
 Online veterinary consultation platform for Bangladesh. Pet owners can book video consultations with certified vets, pay via bKash, and receive prescriptions — all without leaving home.
 
-**Live:** https://vetproject-avel.onrender.com
+**Live:** https://amarvet.live
 
 ---
 
@@ -26,7 +26,7 @@ Online veterinary consultation platform for Bangladesh. Pet owners can book vide
 
 ## Overview
 
-VetProject is a full-stack Django web application built specifically for the Bangladeshi market. It handles the complete lifecycle of an online vet consultation: scheduling, bKash payment verification, Google Meet video calls, prescription generation as PDF, and post-consultation reviews.
+Amarvet is a full-stack Django web application built specifically for the Bangladeshi market. It handles the complete lifecycle of an online vet consultation: scheduling, bKash payment verification, Google Meet video calls, prescription generation as PDF, and post-consultation reviews.
 
 The platform is designed around three constraints specific to Bangladesh:
 - **Mobile-first** — most users are on Android with slow connections; WOFF2 fonts, lazy loading, and PWA support are built in
@@ -197,7 +197,7 @@ Role is stored on the `User` model. Vets also have a `VetProfile` with applicati
 
 ## Payment Flow
 
-VetProject uses a **two-payment model** with manual bKash verification:
+Amarvet uses a **two-payment model** with manual bKash verification:
 
 | Payment | Amount | Timing |
 |---|---|---|
@@ -263,7 +263,7 @@ DATABASE_URL=postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres
 # Email (Gmail SMTP)
 EMAIL_HOST_USER=your-gmail@gmail.com
 EMAIL_HOST_PASSWORD=your-app-password
-DEFAULT_FROM_EMAIL=VetProject <your-gmail@gmail.com>
+DEFAULT_FROM_EMAIL=Amarvet <your-gmail@gmail.com>
 EMAIL_TIMEOUT=10
 
 # Supabase Storage

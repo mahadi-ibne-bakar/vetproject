@@ -5,14 +5,14 @@
 <head>
     <script nonce="{{ csp_nonce }}">
         (function() {
-            const t = localStorage.getItem('vetproject-theme') ||
+            const t = localStorage.getItem('amarvet-theme') ||
                     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             document.documentElement.setAttribute('data-theme', t);
         })();
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Vet Dashboard — VetProject{% endblock %}</title>
+    <title>{% block title %}Vet Dashboard — Amarvet{% endblock %}</title>
 
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
@@ -967,13 +967,13 @@
         const current = document.documentElement.getAttribute('data-theme');
         const next    = current === 'dark' ? 'light' : 'dark';
         
-        localStorage.setItem('vetproject-theme', next);
+        localStorage.setItem('amarvet-theme', next);
         applyTheme(next);
     }
 
     // Apply saved theme immediately on load
     (function() {
-        const saved = localStorage.getItem('vetproject-theme');
+        const saved = localStorage.getItem('amarvet-theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = saved || (prefersDark ? 'dark' : 'light');
         applyTheme(theme);

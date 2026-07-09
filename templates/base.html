@@ -5,14 +5,14 @@
 <head>
     <script nonce="{{ csp_nonce }}">
         (function() {
-            const t = localStorage.getItem('vetproject-theme') ||
+            const t = localStorage.getItem('amarvet-theme') ||
                     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             document.documentElement.setAttribute('data-theme', t);
         })();
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}VetProject{% endblock %}</title>
+    <title>{% block title %}Amarvet{% endblock %}</title>
 
     {% load static %}
     <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
@@ -24,12 +24,12 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="VetProject">
+    <meta name="apple-mobile-web-app-title" content="Amarvet">
     <link rel="apple-touch-icon" href="{% static 'img/icon-192.png' %}">
 
     <!-- OpenGraph / Social sharing -->
     {% block og_title %}
-    <meta property="og:title" content="VetProject — Online Vet Consultations in Bangladesh">
+    <meta property="og:title" content="Amarvet — Online Vet Consultations in Bangladesh">
     {% endblock %}
 
     {% block og_description %}
@@ -43,10 +43,10 @@
     {% endblock %}
 
     <meta property="og:type"         content="website">
-    <meta property="og:site_name"    content="VetProject">
+    <meta property="og:site_name"    content="Amarvet">
     <meta property="og:url"          content="{{ request.build_absolute_uri }}">
     <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:site"        content="@vetproject">
+    <meta name="twitter:site"        content="@amarvet">
     <meta name="description"
         content="Connect with certified veterinarians in Bangladesh via video call. Expert care for your cats and dogs from home.">
 
@@ -819,7 +819,7 @@
         <div class="top-app-bar__logo-icon">
             <span class="ms filled" style="font-size:20px;">pets</span>
         </div>
-        VetProject
+        Amarvet
     </a>
 
     {% if request.user.is_authenticated and not request.user.email_verified %}
@@ -1117,7 +1117,7 @@
                               style="color:#fff; font-size:20px;">pets</span>
                     </div>
                     <span style="font-weight:800; font-size:1.1rem;
-                                 color:var(--md-primary);">VetProject</span>
+                                 color:var(--md-primary);">Amarvet</span>
                 </div>
                 <p style="font-size:0.875rem; color:var(--md-on-surface-variant);
                            font-weight:500; line-height:1.6; margin:0 0 16px;
@@ -1262,7 +1262,7 @@
             <div class="footer-copyright"
                 style="font-size:0.82rem; font-weight:600;
                         color:var(--md-on-surface-variant);">
-                <span style="white-space:nowrap;">© 2026 VetProject. All rights reserved.</span>
+                <span style="white-space:nowrap;">© 2026 Amarvet. All rights reserved.</span>
                 <span style="white-space:nowrap;">Made with ❤️ for pets in Bangladesh.</span>
                 <span style="white-space:nowrap;">Developed by Idaham Productions.</span>
             </div>
@@ -1493,13 +1493,13 @@
         const current = document.documentElement.getAttribute('data-theme');
         const next    = current === 'dark' ? 'light' : 'dark';
         
-        localStorage.setItem('vetproject-theme', next);
+        localStorage.setItem('amarvet-theme', next);
         applyTheme(next);
     }
 
     // Apply saved theme immediately on load
     (function() {
-        const saved = localStorage.getItem('vetproject-theme');
+        const saved = localStorage.getItem('amarvet-theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = saved || (prefersDark ? 'dark' : 'light');
         applyTheme(theme);

@@ -1,6 +1,6 @@
 {
-    "name": "VetProject",
-    "short_name": "VetProject",
+    "name": "Amarvet",
+    "short_name": "Amarvet",
     "description": "Online veterinary consultations in Bangladesh — connect with certified vets from home.",
     "start_url": "/",
     "scope": "/",
