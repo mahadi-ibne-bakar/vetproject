@@ -369,16 +369,6 @@ Google Fonts requires a network request to a third-party CDN, adds a render-bloc
 
 ---
 
-## Roadmap
-
-- [ ] Phase 7 — Template include refactor (extract vet card, appointment card, review card into `{% include %}` partials; migrate `onclick=` to `addEventListener` to enable CSP enforcing mode)
-- [ ] Phase 9 — In-app notification system (notification model, bell in navbar, key event triggers)
-- [ ] Custom domain + Resend email (currently using Gmail SMTP)
-- [ ] CSP enforcing mode (blocked on Phase 7)
-- [ ] Load testing with Locust before public launch
-
----
-
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE).
