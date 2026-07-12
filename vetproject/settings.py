@@ -231,7 +231,7 @@ EMAIL_PORT        = 465
 EMAIL_USE_SSL     = True
 EMAIL_USE_TLS     = False
 EMAIL_HOST_USER   = 'resend'          # literally the string "resend", not your email
-EMAIL_HOST_PASSWORD = config('RESEND_API_KEY')
+EMAIL_HOST_PASSWORD = config('RESEND_API_KEY', default='')
 DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='Amarvet <noreply@amarvet.live>')
 EMAIL_TIMEOUT     = 10
 

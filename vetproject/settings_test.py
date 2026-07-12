@@ -32,7 +32,7 @@ STORAGES = {
 }
 
 # Suppress emails during tests
-EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
 # Fast password hashing for tests
 PASSWORD_HASHERS = [
