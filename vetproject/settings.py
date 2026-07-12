@@ -223,16 +223,17 @@ else:
     MEDIA_ROOT = BASE_DIR / 'media'
 
 
-# ─── Email ────────────────────────────────────────────────────────────────────
 
-EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST          = 'smtp.gmail.com'
-EMAIL_PORT          = 587
-EMAIL_USE_TLS       = True
-EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
-EMAIL_TIMEOUT       = 10
+# ── Email — Resend SMTP ────────────────────────────────────────────────────────
+EMAIL_BACKEND     = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST        = 'smtp.resend.com'
+EMAIL_PORT        = 465
+EMAIL_USE_SSL     = True
+EMAIL_USE_TLS     = False
+EMAIL_HOST_USER   = 'resend'          # literally the string "resend", not your email
+EMAIL_HOST_PASSWORD = config('RESEND_API_KEY')
+DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='Amarvet <noreply@amarvet.live>')
+EMAIL_TIMEOUT     = 10
 
 
 # ─── Default Primary Key ──────────────────────────────────────────────────────
