@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_tailwind',
     'theme',
+    'anymail',
 
     # Our apps (we will add these as we create them)
     'accounts',
@@ -224,16 +225,17 @@ else:
 
 
 
-# ── Email — Resend SMTP ────────────────────────────────────────────────────────
-EMAIL_BACKEND     = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST        = 'smtp.resend.com'
-EMAIL_PORT        = 587
-EMAIL_USE_TLS     = True
-EMAIL_USE_SSL     = False
-EMAIL_HOST_USER   = 'resend'          # literally the string "resend", not your email
-EMAIL_HOST_PASSWORD = config('RESEND_API_KEY', default='')
-DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='Amarvet <noreply@amarvet.live>')
-EMAIL_TIMEOUT     = 10
+# ── Email — Resend via django-anymail HTTP API ─────────────────────────────────
+EMAIL_BACKEND    = 'anymail.backends.resend.EmailBackend'
+DEFAULT_FROM_EMAIL = config(
+    'DEFAULT_FROM_EMAIL',
+    default='Amarvet <noreply@amarvet.live>'
+)
+EMAIL_TIMEOUT    = 10
+
+ANYMAIL = {
+    'RESEND_API_KEY': config('RESEND_API_KEY', default=''),
+}
 
 
 # ─── Default Primary Key ──────────────────────────────────────────────────────

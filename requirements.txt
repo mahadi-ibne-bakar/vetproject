@@ -9,9 +9,13 @@ botocore==1.43.11
     #   boto3
     #   s3transfer
 certifi==2026.5.20
-    # via sentry-sdk
+    # via
+    #   requests
+    #   sentry-sdk
 charset-normalizer==3.4.7
-    # via reportlab
+    # via
+    #   reportlab
+    #   requests
 crispy-tailwind==1.0.3
     # via vetproject (pyproject.toml)
 dj-database-url==3.1.2
@@ -21,10 +25,13 @@ django==5.1
     #   vetproject (pyproject.toml)
     #   crispy-tailwind
     #   dj-database-url
+    #   django-anymail
     #   django-crispy-forms
     #   django-storages
     #   django-tailwind
     #   sentry-sdk
+django-anymail==15.0
+    # via vetproject (pyproject.toml)
 django-crispy-forms==2.5
     # via
     #   vetproject (pyproject.toml)
@@ -35,6 +42,10 @@ django-tailwind==4.4.2
     # via vetproject (pyproject.toml)
 gunicorn==26.0.0
     # via vetproject (pyproject.toml)
+idna==3.18
+    # via
+    #   django-anymail
+    #   requests
 jmespath==1.1.0
     # via
     #   boto3
@@ -55,6 +66,8 @@ python-decouple==3.8
     # via vetproject (pyproject.toml)
 reportlab==4.5.1
     # via vetproject (pyproject.toml)
+requests==2.34.2
+    # via django-anymail
 s3transfer==0.17.0
     # via boto3
 sentry-sdk==2.61.1
@@ -66,6 +79,8 @@ sqlparse==0.5.5
 urllib3==2.7.0
     # via
     #   botocore
+    #   django-anymail
+    #   requests
     #   sentry-sdk
 whitenoise==6.12.0
     # via vetproject (pyproject.toml)
