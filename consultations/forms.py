@@ -62,11 +62,15 @@ class VetProfileForm(forms.ModelForm):
             self.fields['last_name'].initial  = self.user.last_name
             self.fields['phone_number'].initial = self.user.phone_number
 
+        # Disable the fields to make them read-only
+        self.fields['first_name'].disabled = True
+        self.fields['last_name'].disabled = True
+        self.fields['bvc_registration_number'].disabled = True
+
     def save(self, commit=True):
         profile = super().save(commit=False)
         if self.user:
-            self.user.first_name  = self.cleaned_data['first_name']
-            self.user.last_name   = self.cleaned_data['last_name']
+            # We only save phone_number now, since first_name and last_name are read-only
             self.user.phone_number = self.cleaned_data.get('phone_number', '')
             self.user.save()
         if commit:

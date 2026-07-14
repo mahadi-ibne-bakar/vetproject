@@ -724,13 +724,21 @@
             <span class="ms sm theme-toggle-icon">dark_mode</span>
         </button>
 
-        <div title="Dr. {{ request.user.get_full_name|default:request.user.username }}"
-            style="width:34px; height:34px; border-radius:var(--md-shape-full);
-                    background:var(--md-primary); color:#fff;
-                    display:flex; align-items:center; justify-content:center;
-                    font-weight:800; font-size:0.85rem; flex-shrink:0; cursor:default;">
-            {{ request.user.first_name|first|upper }}
-        </div>
+        {% if request.user.vetprofile.profile_photo %}
+            <img src="{{ request.user.vetprofile.profile_photo.url }}" 
+                alt="Profile Photo"
+                title="Dr. {{ request.user.get_full_name|default:request.user.username }}"
+                style="width:34px; height:34px; border-radius:var(--md-shape-full); 
+                        object-fit:cover; flex-shrink:0;">
+        {% else %}
+            <div title="Dr. {{ request.user.get_full_name|default:request.user.username }}"
+                style="width:34px; height:34px; border-radius:var(--md-shape-full);
+                        background:var(--md-primary); color:#fff;
+                        display:flex; align-items:center; justify-content:center;
+                        font-weight:800; font-size:0.85rem; flex-shrink:0; cursor:default;">
+                {{ request.user.first_name|first|upper }}
+            </div>
+        {% endif %}
     </div>
 
     <div class="vet-content">

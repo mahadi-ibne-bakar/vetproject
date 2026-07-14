@@ -50,6 +50,8 @@ class UserRegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.first_name = self.cleaned_data['first_name'].strip()
+        user.last_name  = self.cleaned_data['last_name'].strip()
         user.username = self.cleaned_data['email']
         user.email = self.cleaned_data['email']
         user.phone_number = self.cleaned_data['phone_number']

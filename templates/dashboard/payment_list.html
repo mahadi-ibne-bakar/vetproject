@@ -272,17 +272,19 @@
             </div>
         </div>
 
-        <form method="post" id="quickVerifyForm">
+        <form method="post" id="quickVerifyForm"
+            onsubmit="handleVerifySubmit(this)">
             {% csrf_token %}
             <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button type="button" class="btn btn-outlined"
                         onclick="closeQuickVerify()">
                     Cancel
                 </button>
-                <button type="submit" class="btn btn-filled"
+                <button type="submit" id="verifySubmitBtn"
+                        class="btn btn-filled"
                         style="background:#16A34A;">
-                    <span class="ms sm filled">check_circle</span>
-                    Confirm Verified
+                    <span class="ms sm filled" id="verifyBtnIcon">check_circle</span>
+                    <span id="verifyBtnText">Confirm Verified</span>
                 </button>
             </div>
         </form>
@@ -311,6 +313,22 @@ function openQuickVerify(paymentId, bkash, trxId, amount, discount) {
     document.getElementById('quickVerifyForm').action =
         `/dashboard/payments/${paymentId}/quick-verify/`;
     document.getElementById('quickVerifyModal').style.display = 'flex';
+}
+
+function handleVerifySubmit(form) {
+    const btn  = document.getElementById('verifySubmitBtn');
+    const icon = document.getElementById('verifyBtnIcon');
+    const text = document.getElementById('verifyBtnText');
+
+    // Disable button and show loading state
+    btn.disabled       = true;
+    btn.style.opacity  = '0.75';
+    btn.style.cursor   = 'not-allowed';
+    icon.textContent   = 'hourglass_empty';
+    text.textContent   = 'Verifying…';
+
+    // Allow the form to submit normally
+    return true;
 }
 
 function closeQuickVerify() {
